@@ -1,6 +1,0 @@
-SELECT cdb_crankshaft.cdb_poc_xyz();
- cdb_poc_xyz 
--------------
- xyz-result
-(1 row)
-
