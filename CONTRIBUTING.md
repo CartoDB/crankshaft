@@ -5,6 +5,10 @@
 Try to put as little logic in the SQL extension as possible and
 just use it as a wrapper to the Python module functionality.
 
+Once a function is defined it should never change its signature in subsequent
+versions. To change a function's signature a new function with a different
+name must be created.
+
 ### Python
 
 ...
