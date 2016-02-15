@@ -37,7 +37,7 @@ setup(
 
     extras_require={
         'dev': ['unittest'],
-        'test': ['unittest', 'nose', 'mockredispy', 'mock'],
+        'test': ['unittest', 'nose', 'mock'],
     },
 
     # install_requires=REQUIRES,
