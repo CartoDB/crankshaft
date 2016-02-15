@@ -1,7 +1,7 @@
 ### Complete the structure:
 
 * [x] Support versioning
-* Test use of `pgpy` from python Package
+* Test use of `plpy` from python Package
 * Add integration tests
 * Add `pysal` dependency and wrapper
 
