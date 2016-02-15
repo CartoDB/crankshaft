@@ -1,0 +1,3 @@
+dist/
+test/regression.diffs
+test/regression.out
