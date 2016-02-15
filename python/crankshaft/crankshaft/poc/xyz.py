@@ -1,3 +1,5 @@
+import plpy
+
 def xyz():
-    # print "XYZ"
+    plpy.notice('XYZ...')
     return "xyz-result"
