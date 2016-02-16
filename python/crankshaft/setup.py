@@ -7,7 +7,7 @@ https://github.com/CartoDB/crankshaft
 
 from setuptools import setup, find_packages
 
-REQUIRES = [] # ['pysal','numpy']
+REQUIRES = ['pysal','numpy']
 
 setup(
     name='crankshaft',
@@ -40,9 +40,9 @@ setup(
         'test': ['unittest', 'nose', 'mock'],
     },
 
-    # install_requires=REQUIRES,
+    install_requires=REQUIRES,
 
-     # requires=REQUIRES,
+    requires=REQUIRES,
 
-     test_suite='test'
+    test_suite='test'
 )
