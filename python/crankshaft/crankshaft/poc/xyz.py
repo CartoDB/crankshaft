@@ -2,4 +2,5 @@ import plpy
 
 def xyz():
     plpy.notice('XYZ...')
-    return "xyz-result"
+    r = plpy.execute("SELECT * FROM table")
+    return r[0]['x']
