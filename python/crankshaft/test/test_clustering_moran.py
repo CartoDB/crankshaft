@@ -19,6 +19,7 @@ class MoranTest(unittest.TestCase):
     """Testing class for Moran's I functions."""
 
     def setUp(self):
+        plpy._reset()
         self.params = {"id_col": "cartodb_id",
                        "attr1": "andy",
                        "attr2": "jay_z",
@@ -116,3 +117,19 @@ class MoranTest(unittest.TestCase):
         test_ans = cc.quad_position(quads)
 
         self.assertTrue((test_ans == ans).all())
+
+    def test_moran_local(self):
+         """Test Moran's I local"""
+         plpy._define_result('select', [
+           { 'id': 1, 'attr1': 100.0, 'neighbors': [2,4,5,7,8] },
+           { 'id': 2, 'attr1': 110.0, 'neighbors': [1,4,5,6,7] },
+           { 'id': 3, 'attr1':  90.0, 'neighbors': [1,4,5,7,8] },
+           { 'id': 4, 'attr1': 100.0, 'neighbors': [1,2,5,7,8] },
+           { 'id': 5, 'attr1': 100.0, 'neighbors': [1,2,3,7,8] },
+           { 'id': 6, 'attr1': 105.0, 'neighbors': [1,2,3,7,8] },
+           { 'id': 7, 'attr1': 105.0, 'neighbors': [1,2,3,6,8] },
+           { 'id': 8, 'attr1': 105.0, 'neighbors': [1,2,3,6,7] },
+           { 'id': 9, 'attr1': 120.0, 'neighbors': [1,2,5,6,7] }
+         ])
+         result = cc.moran_local('table', 'value', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
+         # TODO: check results!

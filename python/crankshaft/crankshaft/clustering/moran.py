@@ -7,6 +7,54 @@ Moran's I geostatistics (global clustering & outliers presence)
 
 import numpy as np
 import pysal as ps
+import plpy
+
+# High level interface ---------------------------------------
+
+def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+    """
+    Moran's I implementation for PL/Python
+    Andy Eschbacher
+    """
+    # TODO: ensure that the significance output can be smaller that 1e-3 (0.001)
+    # TODO: make a wishlist of output features (zscores, pvalues, raw local lisa, what else?)
+
+    plpy.notice('** Constructing query')
+
+    # geometries with attributes that are null are ignored
+    # resulting in a collection of not as near neighbors
+
+    qvals = {"id_col": id_col,
+            "attr1": attr,
+            "geom_col": geom_column,
+             "table": t,
+             "num_ngbrs": num_ngbrs}
+
+    q = get_query(w_type, qvals)
+
+    try:
+        r = plpy.execute(q)
+        plpy.notice('** Query returned with %d rows' % len(r))
+    except plpy.SPIError:
+        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Exiting function')
+        return zip([None], [None], [None], [None])
+
+    y = get_attributes(r, 1)
+    w = get_weight(r, w_type)
+
+    # calculate LISA values
+    lisa = ps.Moran_Local(y, w)
+
+    # find units of significance
+    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+
+    plpy.notice('** Finished calculations')
+
+    return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order)
+
+
+# Low level functions ----------------------------------------
 
 def map_quads(coord):
     """
@@ -163,5 +211,22 @@ def quad_position(quads):
     """
 
     lisa_sig = np.array([map_quads(q) for q in quads])
+
+    return lisa_sig
+
+def lisa_sig_vals(pvals, quads, threshold):
+    """
+        Produce Moran's I classification based of n
+    """
+
+    sig = (pvals <= threshold)
+
+    lisa_sig = np.empty(len(sig), np.chararray)
+
+    for idx, val in enumerate(sig):
+        if val:
+            lisa_sig[idx] = map_quads(quads[idx])
+        else:
+            lisa_sig[idx] = 'Not significant'
 
     return lisa_sig
