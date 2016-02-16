@@ -1,8 +1,12 @@
+# Workflow
+
+... (branching/merging flow)
+
 # Deployment
 
 ...
 
-Deployment
+Deployment to db servers
 
 ```
 # Install python module

@@ -9,26 +9,45 @@ Once a function is defined it should never change its signature in subsequent
 versions. To change a function's signature a new function with a different
 name must be created.
 
-### Python
+### Version numbers
+
+The version of both the SQL extension and the Python package shall
+follow the[Semantic Versioning 2.0](http://semver.org/) guidelines:
+
+* When backwards incompatibility is introduced the major number is incremented
+* When functionally is added (in a backwards-compatible manner) the minor number
+  is incremented
+* When only fixes are introduced (backwards-compatible) the patch number is
+  incremented
+
+### Python Package
 
 ...
 
-### SQL
+### SQL Extension
 
-* Generate a **new subfolder version** for `sql` and `test` folders to define the new functions and tests
-  * Use symlinks to avoid file duplication between versions that don't update them
-  * Add or upgrade your SQL server functions
-  * Create tests for the client and server functions -- at least, to check that those are created
+* Generate a **new subfolder version** for `sql` and `test` folders to define
+  the new functions and tests
+  - Use symlinks to avoid file duplication between versions that don't update them
+  - Add new files or modify copies of the old files to add new functions or
+    modify existing functions (remember to rename a function if the signature
+    changes)
+  - Create tests for the new functions/behaviour
 
-* Generate the **upgrade and downgrade files** for the extension for both client and server
+* Generate the **upgrade and downgrade files** for the extension
 
-* Update the control files and the Makefiles to generate the complete SQL file for the new created version
-  * These new version file (`crankshaft--X.Y.Z.sql`)
-    must be pushed and frozen. You should add it to the `.gitignore` file.
+* Update the control file and the Makefile to generate the complete SQL
+  file for the new created version. After running `make` a new
+  file `dist/crankshaft--X.Y.Z.sql` will be created for the current version.
+  Additional files for migrating to/from the previous version A.B.Z should be
+  created:
+  - `dist/crankshaft--X.Y.Z--A.B.C.sql`
+  - `dist/crankshaft--A.B.C--X.Y.Z.sql`
+  All these new files must be added to git and pushed.
 
 * Update the public docs! ;-)
 
-## Naming things
+## Conventions
 
 # SQL
 

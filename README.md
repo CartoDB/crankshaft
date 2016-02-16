@@ -12,6 +12,3 @@ FIXME: should it be `./extension` and `./lib/python' ?
 ## Requirements
 
 * pip
-
-* sudo pip install nose
-* CREATE LANGUAGE 'plpythonu';
