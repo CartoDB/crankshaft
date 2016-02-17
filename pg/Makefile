@@ -5,7 +5,7 @@ EXTENSION    = crankshaft
 EXTVERSION   = $(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 
 # The new version to be generated from templates
-NEW_EXTENSION_ARTIFACT = dist/$(EXTENSION)--$(EXTVERSION).sql
+NEW_EXTENSION_ARTIFACT = $(EXTENSION)--$(EXTVERSION).sql
 
 # DATA is a special variable used by postgres build infrastructure
 # These are the files to be installed in the server shared dir,
@@ -16,18 +16,10 @@ DATA =  $(NEW_EXTENSION_ARTIFACT)
 SOURCES_DATA_DIR = sql/$(EXTVERSION)
 SOURCES_DATA = $(wildcard sql/$(EXTVERSION)/*.sql)
 
-# The extension installation artifacts are stored in the dist subdirectory
+# The extension installation artifacts are stored in the base subdirectory
 $(NEW_EXTENSION_ARTIFACT): $(SOURCES_DATA)
 	rm -f $@
 	cat $(SOURCES_DATA_DIR)/*.sql >> $@
-
-# The PGXS build infraestructure takes the control file from this
-# directory, but for consistency we will copy the control file to
-# the dist subdirectory too.
-dist/$(EXTENSION).control: $(EXTENSION).control
-	cp $< $@
-
-all: dist/$(EXTENSION).control
 
 REGRESS = $(notdir $(basename $(wildcard test/$(EXTVERSION)/sql/*test.sql)))
 TEST_DIR = test/$(EXTVERSION)

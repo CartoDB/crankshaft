@@ -38,11 +38,11 @@ follow the[Semantic Versioning 2.0](http://semver.org/) guidelines:
 
 * Update the control file and the Makefile to generate the complete SQL
   file for the new created version. After running `make` a new
-  file `dist/crankshaft--X.Y.Z.sql` will be created for the current version.
+  file `crankshaft--X.Y.Z.sql` will be created for the current version.
   Additional files for migrating to/from the previous version A.B.Z should be
   created:
-  - `dist/crankshaft--X.Y.Z--A.B.C.sql`
-  - `dist/crankshaft--A.B.C--X.Y.Z.sql`
+  - `crankshaft--X.Y.Z--A.B.C.sql`
+  - `crankshaft--A.B.C--X.Y.Z.sql`
   All these new files must be added to git and pushed.
 
 * Update the public docs! ;-)
