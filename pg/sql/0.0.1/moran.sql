@@ -17,6 +17,6 @@ RETURNS TABLE (
 )
 AS $$
   from crankshaft.clustering import moran_local
-  -- TODO: use named parameters or a dictionary
+  # TODO: use named parameters or a dictionary
   return moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_col, w_type)
-$$ LANGUAGE plpython2u;
+$$ LANGUAGE plpythonu;

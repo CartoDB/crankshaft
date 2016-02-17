@@ -59,3 +59,20 @@ the extension)  with `_cdb_`.
 # Python
 
 ...
+
+## Testing
+
+Running the Python tests:
+
+```
+nosetests python/crankdown/test
+```
+
+Installing the Python package and running the PostgreSQL tests:
+
+```
+sudo pip install python/crankdown --upgrade
+cd pg
+sudo make install
+make installcheck
+```

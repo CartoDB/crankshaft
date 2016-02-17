@@ -18,6 +18,6 @@ class TestPoc(unittest.TestCase):
         plpy._reset()
 
     def test_should_have_xyz(self):
-        plpy._define_result('select\s+\*\s+from\s+table', [{'x': 111}])
+        plpy._define_result('select.*from\s+pg_class', [{'reltype': 111}])
         assert crankshaft.poc.xyz() == 111
         assert plpy.notices[0] == 'XYZ...'
