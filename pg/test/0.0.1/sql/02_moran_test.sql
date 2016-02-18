@@ -4,7 +4,7 @@
 -- Moral functions perform some nondeterministic computations
 -- (to estimate the significance); we will set the seeds for the RNGs
 -- that affect those results to have repeateble results
-SELECT cdb_crankshaft.cdb_random_seeds(1234);
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
 
 SELECT ppoints.code, m.quads
   FROM ppoints
@@ -12,7 +12,7 @@ SELECT ppoints.code, m.quads
     ON ppoints.cartodb_id = m.ids
   ORDER BY ppoints.code;
 
-SELECT cdb_crankshaft.cdb_random_seeds(1234);
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
 
 SELECT ppoints2.code, m.quads
   FROM ppoints2

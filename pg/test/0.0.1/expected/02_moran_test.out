@@ -113,9 +113,9 @@ INSERT INTO ppoints2 VALUES
 -- Moral functions perform some nondeterministic computations
 -- (to estimate the significance); we will set the seeds for the RNGs
 -- that affect those results to have repeateble results
-SELECT cdb_crankshaft.cdb_random_seeds(1234);
- cdb_random_seeds 
-------------------
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+ _cdb_random_seeds 
+-------------------
  
 (1 row)
 
@@ -186,9 +186,9 @@ CONTEXT:  PL/Python function "cdb_moran_local"
  52   | LL
 (52 rows)
 
-SELECT cdb_crankshaft.cdb_random_seeds(1234);
- cdb_random_seeds 
-------------------
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+ _cdb_random_seeds 
+-------------------
  
 (1 row)
 
