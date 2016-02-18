@@ -75,5 +75,5 @@ Installing the Python package and running the PostgreSQL tests:
 sudo pip install python/crankdown --upgrade
 cd pg
 sudo make install
-make installcheck
+PGUSER=postgres make installcheck
 ```
