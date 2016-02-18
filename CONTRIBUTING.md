@@ -32,6 +32,9 @@ follow the[Semantic Versioning 2.0](http://semver.org/) guidelines:
   - Add new files or modify copies of the old files to add new functions or
     modify existing functions (remember to rename a function if the signature
     changes)
+  - Add or modify the corresponding documentation files in the `doc` folder.
+    Since we expect to have highly technical functions here, an extense
+    background explanation would be of great help to users of this extension.
   - Create tests for the new functions/behaviour
 
 * Generate the **upgrade and downgrade files** for the extension
