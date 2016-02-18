@@ -65,7 +65,8 @@ the extension)  with `_cdb_`.
 Running the Python tests:
 
 ```
-nosetests python/crankdown/test
+cd python/crankdown
+nosetests test
 ```
 
 Installing the Python package and running the PostgreSQL tests:
