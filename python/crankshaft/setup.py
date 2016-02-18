@@ -22,7 +22,7 @@ setup(
     license='MIT',
 
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Mapping comunity',
         'Topic :: Maps :: Mapping Tools',
         'License :: OSI Approved :: MIT License',
@@ -38,6 +38,8 @@ setup(
         'test': ['unittest', 'nose', 'mock'],
     },
 
+    # The choice of component versions is dictated by what's
+    # provisioned in the production servers.
     install_requires=['pysal==1.11.0','numpy==1.6.1'],
 
     requires=['pysal', 'numpy'],

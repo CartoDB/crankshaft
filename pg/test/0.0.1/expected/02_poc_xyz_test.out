@@ -1,8 +1,0 @@
-SELECT cdb_crankshaft.cdb_poc_xyz();
-NOTICE:  XYZ...
-CONTEXT:  PL/Python function "cdb_poc_xyz"
- cdb_poc_xyz 
--------------
- 83
-(1 row)
-
