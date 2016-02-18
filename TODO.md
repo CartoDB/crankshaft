@@ -6,4 +6,4 @@
 * Unify style of function comments
 * [x] Add integration tests
 * Make target to open a new version development (create symlinks, etc.)
-* Should add cartodb ext. as a dependency?
+* [x] Should add cartodb ext. as a dependency?
