@@ -54,6 +54,95 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_
     return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order)
 
 
+def moran_local_rate(t, numerator, denominator, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+    """
+    Moran's I Local Rate
+    Andy Eschbacher
+    """
+
+    plpy.notice('** Constructing query')
+
+    # geometries with attributes that are null are ignored
+    # resulting in a collection of not as near neighbors
+
+    qvals = {"id_col": id_col,
+             "numerator": numerator,
+             "denominator": denominator,
+             "geom_col": geom_column,
+             "table": t,
+             "num_ngbrs": num_ngbrs}
+
+    q = get_query(w_type, qvals)
+
+    try:
+        r = plpy.execute(q)
+        plpy.notice('** Query returned with %d rows' % len(r))
+    except plpy.SPIError:
+        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Error: %s' % plpy.SPIError)
+        plpy.notice('** Exiting function')
+        return zip([None], [None], [None], [None])
+
+        plpy.notice('r.nrows() = %d' % r.nrows())
+
+    ## collect attributes
+    numer = get_attributes(r, 1)
+    denom = get_attributes(r, 2)
+
+    w = get_weight(r, w_type, num_ngbrs)
+
+    # calculate LISA values
+    lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, w, permutations=permutations)
+
+    # find units of significance
+    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+
+    plpy.notice('** Finished calculations')
+
+    ## TODO: Decide on which return values here
+    return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order, lisa.y)
+
+def moran_local_bv(t, attr1, attr2, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+    plpy.notice('** Constructing query')
+
+    qvals = {"num_ngbrs": num_ngbrs,
+             "attr1": attr1,
+             "attr2": attr2,
+             "table": t,
+             "geom_col": geom_column,
+             "id_col": id_col}
+
+    q = get_query(w_type, qvals)
+
+    try:
+        r = plpy.execute(q)
+        plpy.notice('** Query returned with %d rows' % len(r))
+    except plpy.SPIError:
+        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Error: %s' % plpy.SPIError)
+        plpy.notice('** Exiting function')
+        return zip([None], [None], [None], [None])
+
+    ## collect attributes
+    attr1_vals = get_attributes(r, 1)
+    attr2_vals = get_attributes(r, 2)
+
+    # create weights
+    w = get_weight(r, w_type, num_ngbrs)
+
+    # calculate LISA values
+    lisa = ps.esda.moran.Moran_Local_BV(attr1_vals, attr2_vals, w)
+
+    plpy.notice("len of Is: %d" % len(lisa.Is))
+
+    # find clustering of significance
+    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+
+    plpy.notice('** Finished calculations')
+
+    return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order)
+
+
 # Low level functions ----------------------------------------
 
 def map_quads(coord):

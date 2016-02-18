@@ -11,9 +11,9 @@ import unittest
 # sys.modules['plpy'] = plpy
 from helper import plpy
 
-# import crankshaft.clustering as cc
 import crankshaft.clustering as cc
-
+from crankshaft import random_seeds
+import json
 
 class MoranTest(unittest.TestCase):
     """Testing class for Moran's I functions."""
@@ -26,6 +26,8 @@ class MoranTest(unittest.TestCase):
                        "table": "a_list",
                        "geom_col": "the_geom",
                        "num_ngbrs": 321}
+        self.neighbors_data = json.loads(open('test/fixtures/neighbors.json').read())
+        self.moran_data = json.loads(open('test/fixtures/moran.json').read())
 
     def test_map_quads(self):
         """Test map_quads."""
@@ -119,17 +121,24 @@ class MoranTest(unittest.TestCase):
         self.assertTrue((test_ans == ans).all())
 
     def test_moran_local(self):
-         """Test Moran's I local"""
-         plpy._define_result('select', [
-           { 'id': 1, 'attr1': 100.0, 'neighbors': [2,4,5,7,8] },
-           { 'id': 2, 'attr1': 110.0, 'neighbors': [1,4,5,6,7] },
-           { 'id': 3, 'attr1':  90.0, 'neighbors': [1,4,5,7,8] },
-           { 'id': 4, 'attr1': 100.0, 'neighbors': [1,2,5,7,8] },
-           { 'id': 5, 'attr1': 100.0, 'neighbors': [1,2,3,7,8] },
-           { 'id': 6, 'attr1': 105.0, 'neighbors': [1,2,3,7,8] },
-           { 'id': 7, 'attr1': 105.0, 'neighbors': [1,2,3,6,8] },
-           { 'id': 8, 'attr1': 105.0, 'neighbors': [1,2,3,6,7] },
-           { 'id': 9, 'attr1': 120.0, 'neighbors': [1,2,5,6,7] }
-         ])
-         result = cc.moran_local('table', 'value', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
-         # TODO: check results!
+        """Test Moran's I local"""
+        data = [ { 'id': d['id'], 'attr1': d['value'], 'neighbors': d['neighbors'] } for d in self.neighbors_data]
+        plpy._define_result('select', data)
+        random_seeds.set_random_seeds(1234)
+        result = cc.moran_local('table', 'value', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
+        result = [(row[0], row[1]) for row in result]
+        expected = self.moran_data
+        for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
+            self.assertAlmostEqual(res_val, exp_val)
+            self.assertEqual(res_quad, exp_quad)
+
+    def test_moran_local_rate(self):
+        """Test Moran's I rate"""
+        data = [ { 'id': d['id'], 'attr1': d['value'], 'attr2': 1, 'neighbors': d['neighbors'] } for d in self.neighbors_data]
+        plpy._define_result('select', data)
+        random_seeds.set_random_seeds(1234)
+        result = cc.moran_local_rate('table', 'numerator', 'denominator', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
+        result = [(row[0], row[1]) for row in result]
+        expected = self.moran_data
+        for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
+            self.assertAlmostEqual(res_val, exp_val)
