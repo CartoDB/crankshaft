@@ -10,10 +10,10 @@ Deployment to db servers
 
 ```
 # Install python module
-sudo pip install {{path}}/python/crankshaft --upgrade
+sudo pip install python/crankshaft --upgrade
 
 # Install extension
-cd {{path}}/pg && sudo PGUSER=postgres make all install
+(cd pg && sudo PGUSER=postgres make all install)
 ```
 
 Caveat: note that `pip install ./crankshaft` will install
