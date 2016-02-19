@@ -28,15 +28,3 @@ REGRESS_OPTS = --inputdir='$(TEST_DIR)' --outputdir='$(TEST_DIR)'
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
-
-# Install the Python package
-install_py_package:
-	pip install ../python/crankshaft --upgrade
-
-install: install_py_package
-
-# Run the Python tests
-test_py_package:
-	(cd ../python/crankshaft && nosetests test)
-
-installcheck: test_py_package
