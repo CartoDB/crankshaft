@@ -65,18 +65,15 @@ the extension)  with `_cdb_`.
 
 ## Testing
 
-Running the Python tests:
+Running just the Python tests:
 
 ```
-cd python/crankdown
-nosetests test
+(cd python/crankdown && nosetests test)
 ```
 
-Installing the Python package and running the PostgreSQL tests:
+Installing the Extension & Python package and running
+the Python & PostgreSQL tests:
 
 ```
-sudo pip install python/crankdown --upgrade
-cd pg
-sudo make install
-PGUSER=postgres make installcheck
+(cd pg && sudo make install && PGUSER=postgres make installcheck)
 ```
