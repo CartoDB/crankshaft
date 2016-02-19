@@ -9,7 +9,7 @@ import unittest
 #
 # import sys
 # sys.modules['plpy'] = plpy
-from helper import plpy
+from helper import plpy, fixture_file
 
 import crankshaft.clustering as cc
 from crankshaft import random_seeds
@@ -26,8 +26,8 @@ class MoranTest(unittest.TestCase):
                        "table": "a_list",
                        "geom_col": "the_geom",
                        "num_ngbrs": 321}
-        self.neighbors_data = json.loads(open('test/fixtures/neighbors.json').read())
-        self.moran_data = json.loads(open('test/fixtures/moran.json').read())
+        self.neighbors_data = json.loads(open(fixture_file('neighbors.json')).read())
+        self.moran_data = json.loads(open(fixture_file('moran.json')).read())
 
     def test_map_quads(self):
         """Test map_quads."""
