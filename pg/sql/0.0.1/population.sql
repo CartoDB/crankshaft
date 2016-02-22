@@ -14,6 +14,7 @@ BEGIN
   -- Note: comments contain pseudo-code that should be implemented
 
   -- Register metadata tables:
+  -- This would require super-user privileges
   /*
   SELECT cdb_add_remote_table('observatory', 'bmd_column_table');
   SELECT cdb_add_remote_table('observatory', 'bmd_column_2_column');
@@ -120,13 +121,14 @@ BEGIN
   column_name := 'total_pop';
 
   -- Register the foreign table
-  SELECT cdb_add_remote_table('observatory', table_name);
+  -- This would require super-user privileges
+  -- SELECT cdb_add_remote_table('observatory', table_name);
 
   -- Perform the query
   SELECT cdb_crankshaft.cdb_overlap_sum(
     area,
     table_name,
-    table_column,
+    column_name,
     schema_name := 'observatory')
   INTO population;
 
