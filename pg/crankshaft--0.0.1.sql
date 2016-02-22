@@ -1,3 +1,6 @@
+--DO NOT MODIFY THIS FILE, IT IS GENERATED AUTOMATICALLY FROM SOURCES
+-- Complain if script is sourced in psql, rather than via CREATE EXTENSION
+\echo Use "CREATE EXTENSION crankshaft" to load this file. \quit
 -- Internal function.
 -- Set the seeds of the RNGs (Random Number Generators)
 -- used internally.
@@ -133,4 +136,13 @@ BEGIN
   RETURN ST_Collect(points);
 END;
 $$
-LANGUAGE plpgsql VOLATILE
+LANGUAGE plpgsql VOLATILE;
+-- Make sure by default there are no permissions for publicuser
+-- NOTE: this happens at extension creation time, as part of an implicit transaction.
+-- REVOKE ALL PRIVILEGES ON SCHEMA cdb_crankshaft FROM PUBLIC, publicuser CASCADE;
+
+-- Grant permissions on the schema to publicuser (but just the schema)
+GRANT USAGE ON SCHEMA cdb_crankshaft TO publicuser;
+
+-- Revoke execute permissions on all functions in the schema by default
+-- REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA cdb_crankshaft FROM PUBLIC, publicuser;
