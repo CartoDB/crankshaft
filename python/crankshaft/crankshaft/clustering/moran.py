@@ -1,5 +1,5 @@
 """
-Moran's I geostatistics (global clustering & outliers presence)
+  Moran's I geostatistics (global clustering & outliers presence)
 """
 
 # TODO: Fill in local neighbors which have null/NoneType values with the
@@ -55,7 +55,7 @@ def moran(t, attr_name, permutations, geom_col, id_col, w_type, num_ngbrs):
 
     return zip([moran_global.I],[moran_global.EI])
 
-def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+def moran_local(t, attr, significance, num_ngbrs, permutations, geom_col, id_col, w_type):
     """
     Moran's I implementation for PL/Python
     Andy Eschbacher
@@ -70,7 +70,7 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_
 
     qvals = {"id_col": id_col,
              "attr1": attr,
-             "geom_col": geom_column,
+             "geom_col": geom_col,
              "table": t,
              "num_ngbrs": num_ngbrs}
 
@@ -91,7 +91,7 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_
     lisa = ps.esda.moran.Moran_Local(y, w)
 
     # find units of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    lisa_sig = quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
@@ -105,7 +105,7 @@ def moran_rate(t, numerator, denominator, permutations, geom_col, id_col, w_type
     qvals = {"id_col": id_col,
              "attr1": numerator,
              "attr2": denominator,
-             "geom_col": geom_column,
+             "geom_col": geom_col,
              "table": t,
              "num_ngbrs": num_ngbrs}
 
@@ -158,7 +158,7 @@ def moran_local_rate(t, numerator, denominator, permutations, geom_col, id_col, 
     qvals = {"id_col": id_col,
              "numerator": numerator,
              "denominator": denominator,
-             "geom_col": geom_column,
+             "geom_col": geom_col,
              "table": t,
              "num_ngbrs": num_ngbrs}
 
@@ -185,7 +185,7 @@ def moran_local_rate(t, numerator, denominator, permutations, geom_col, id_col, 
     lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, w, permutations=permutations)
 
     # find units of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    lisa_sig =  quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
@@ -199,7 +199,7 @@ def moran_local_bv(t, attr1, attr2, permutations, geom_col, id_col, w_type, num_
              "attr1": attr1,
              "attr2": attr2,
              "table": t,
-             "geom_col": geom_column,
+             "geom_col": geom_col,
              "id_col": id_col}
 
     q = get_query(w_type, qvals)
@@ -226,7 +226,7 @@ def moran_local_bv(t, attr1, attr2, permutations, geom_col, id_col, w_type, num_
     plpy.notice("len of Is: %d" % len(lisa.Is))
 
     # find clustering of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    lisa_sig = quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
@@ -375,7 +375,7 @@ def get_weight(query_res, w_type='queen', num_ngbrs=5):
     if w_type == 'knn':
         row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
         weights = {x['id']: row_normed_weights for x in query_res}
-    elif w_type == 'queen':
+    else:
         weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
                             if len(x['neighbors']) > 0
                             else [] for x in query_res}
@@ -390,22 +390,5 @@ def quad_position(quads):
     """
 
     lisa_sig = np.array([map_quads(q) for q in quads])
-
-    return lisa_sig
-
-def lisa_sig_vals(pvals, quads, threshold):
-    """
-        Produce Moran's I classification based of n
-    """
-
-    sig = (pvals <= threshold)
-
-    lisa_sig = np.empty(len(sig), np.chararray)
-
-    for idx, val in enumerate(sig):
-        if val:
-            lisa_sig[idx] = map_quads(quads[idx])
-        else:
-            lisa_sig[idx] = 'Not significant'
 
     return lisa_sig
