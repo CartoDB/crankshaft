@@ -11,6 +11,50 @@ import plpy
 
 # High level interface ---------------------------------------
 
+def moran(t, attr_name, permutations, geom_col, id_col, w_type, num_ngbrs):
+    """
+    Moran's I (global)
+    Andy Eschbacher
+    """
+    qvals = {"id_col": id_col,
+             "attr1": attr_name,
+             "geom_col": geom_col,
+             "table": t,
+             "num_ngbrs": num_ngbrs}
+
+    q = get_query(w_type, qvals)
+
+    plpy.notice('** Query: %s' % q)
+
+    try:
+        r = plpy.execute(q)
+        if len(r) == 0:
+            plpy.notice('** Query returned with 0 rows, trying kNN weights')
+            q = get_query('knn', qvals)
+            r = plpy.execute(q)
+        plpy.notice('** Query returned with %d rows' % len(r))
+    except plpy.SPIError:
+        plpy.error('** Moran rate failed executing query to build weight object')
+        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Error: %s' % plpy.SPIError)
+        plpy.notice('** Exiting function')
+        return zip([None], [None])
+
+    ## if there are no neighbors, exit
+    if len(r) == 0:
+        return zip([None], [None])
+
+    ## collect attributes
+    attr_vals = get_attributes(r, 1)
+
+    ## calculate weights
+    weight = get_weight(r, w_type, num_ngbrs)
+
+    ## calculate moran global
+    moran_global = ps.esda.moran.Moran(attr_vals, weight, permutations=permutations)
+
+    return zip([moran_global.I],[moran_global.EI])
+
 def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
     """
     Moran's I implementation for PL/Python
@@ -25,8 +69,8 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_
     # resulting in a collection of not as near neighbors
 
     qvals = {"id_col": id_col,
-            "attr1": attr,
-            "geom_col": geom_column,
+             "attr1": attr,
+             "geom_col": geom_column,
              "table": t,
              "num_ngbrs": num_ngbrs}
 
@@ -44,7 +88,7 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_
     w = get_weight(r, w_type)
 
     # calculate LISA values
-    lisa = ps.Moran_Local(y, w)
+    lisa = ps.esda.moran.Moran_Local(y, w)
 
     # find units of significance
     lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
@@ -53,8 +97,54 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_
 
     return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order)
 
+def moran_rate(t, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs):
+    """
+    Moran's I Rate (global)
+    Andy Eschbacher
+    """
+    qvals = {"id_col": id_col,
+             "attr1": numerator,
+             "attr2": denominator,
+             "geom_col": geom_column,
+             "table": t,
+             "num_ngbrs": num_ngbrs}
 
-def moran_local_rate(t, numerator, denominator, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+    q = get_query(w_type, qvals)
+
+    plpy.notice('** Query: %s' % q)
+
+    try:
+        r = plpy.execute(q)
+        if len(r) == 0:
+            plpy.notice('** Query returned with 0 rows, trying kNN weights')
+            q = get_query('knn', qvals)
+            r = plpy.execute(q)
+        plpy.notice('** Query returned with %d rows' % len(r))
+    except plpy.SPIError:
+        plpy.error('Moran rate failed executing query to build weight object')
+        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Error: %s' % plpy.SPIError)
+        plpy.notice('** Exiting function')
+        return zip([None], [None])
+
+    ## if there are no values returned, exit
+    if len(r) == 0:
+        return zip([None], [None])
+
+    ## collect attributes
+    numer = get_attributes(r, 1)
+    denom = get_attributes(r, 2)
+
+    w = get_weight(r, w_type, num_ngbrs)
+
+    ## calculate moran global rate
+    mr = ps.esda.moran.Moran_Rate(numer, denom, w, permutations=permutations)
+
+    plpy.notice('** Finished calculations')
+
+    return zip([mr.I],[mr.EI])
+
+def moran_local_rate(t, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs):
     """
     Moran's I Local Rate
     Andy Eschbacher
@@ -102,7 +192,7 @@ def moran_local_rate(t, numerator, denominator, significance, num_ngbrs, permuta
     ## TODO: Decide on which return values here
     return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order, lisa.y)
 
-def moran_local_bv(t, attr1, attr2, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+def moran_local_bv(t, attr1, attr2, permutations, geom_col, id_col, w_type, num_ngbrs):
     plpy.notice('** Constructing query')
 
     qvals = {"num_ngbrs": num_ngbrs,
