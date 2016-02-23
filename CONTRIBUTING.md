@@ -12,7 +12,7 @@ name must be created.
 ### Version numbers
 
 The version of both the SQL extension and the Python package shall
-follow the[Semantic Versioning 2.0](http://semver.org/) guidelines:
+follow the [Semantic Versioning 2.0](http://semver.org/) guidelines:
 
 * When backwards incompatibility is introduced the major number is incremented
 * When functionally is added (in a backwards-compatible manner) the minor number
