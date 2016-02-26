@@ -28,3 +28,6 @@ REGRESS_OPTS = --inputdir='$(TEST_DIR)' --outputdir='$(TEST_DIR)'
 PG_CONFIG = pg_config
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
+
+# This seems to be needed at least for PG 9.3.11
+all: $(DATA)
