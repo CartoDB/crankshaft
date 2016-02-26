@@ -1,7 +1,7 @@
 \i test/fixtures/touching_polygons.sql
 
 WITH joined_polygons AS (
-  SELECT cdb_union_adjacent(the_geom) the_geom FROM touching_polygons
+  SELECT cdb_crankshaft.cdb_union_adjacent(the_geom) the_geom FROM touching_polygons
 ),
 unnested_polygons as (
   select unnest(joined_polygons.the_geom) the_geom from joined_polygons
