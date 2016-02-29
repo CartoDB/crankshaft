@@ -125,7 +125,7 @@ class MoranTest(unittest.TestCase):
         data = [ { 'id': d['id'], 'attr1': d['value'], 'neighbors': d['neighbors'] } for d in self.neighbors_data]
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local('table', 'value', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
+        result = cc.moran_local('table', 'value', 99, 'the_geom', 'cartodb_id', 'knn', 5)
         result = [(row[0], row[1]) for row in result]
         expected = self.moran_data
         for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
@@ -137,7 +137,8 @@ class MoranTest(unittest.TestCase):
         data = [ { 'id': d['id'], 'attr1': d['value'], 'attr2': 1, 'neighbors': d['neighbors'] } for d in self.neighbors_data]
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local_rate('table', 'numerator', 'denominator', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
+        result = cc.moran_local_rate('table', 'numerator', 'denominator', 99, 'the_geom', 'cartodb_id', 'knn', 5)
+        print 'result == None? ', result == None
         result = [(row[0], row[1]) for row in result]
         expected = self.moran_data
         for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
