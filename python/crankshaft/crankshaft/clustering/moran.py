@@ -1,5 +1,5 @@
 """
-  Moran's I geostatistics (global clustering & outliers presence)
+Moran's I geostatistics (global clustering & outliers presence)
 """
 
 # TODO: Fill in local neighbors which have null/NoneType values with the
@@ -55,7 +55,7 @@ def moran(t, attr_name, permutations, geom_col, id_col, w_type, num_ngbrs):
 
     return zip([moran_global.I],[moran_global.EI])
 
-def moran_local(t, attr, significance, num_ngbrs, permutations, geom_col, id_col, w_type):
+def moran_local(t, attr, permutations, geom_col, id_col, w_type, num_ngbrs):
     """
     Moran's I implementation for PL/Python
     Andy Eschbacher
@@ -82,7 +82,7 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_col, id_col
     except plpy.SPIError:
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Exiting function')
-        return zip([None], [None], [None], [None])
+        return zip([None], [None], [None], [None], [None])
 
     y = get_attributes(r, 1)
     w = get_weight(r, w_type)
@@ -90,12 +90,11 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_col, id_col
     # calculate LISA values
     lisa = ps.esda.moran.Moran_Local(y, w)
 
-    # find units of significance
-    lisa_sig = quad_position(lisa.q)
+    # find quadrants for each geometry
+    quads = quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
-
-    return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order)
+    return zip(lisa.Is, quads, lisa.p_sim, w.id_order, lisa.y)
 
 def moran_rate(t, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs):
     """
@@ -167,11 +166,12 @@ def moran_local_rate(t, numerator, denominator, permutations, geom_col, id_col, 
     try:
         r = plpy.execute(q)
         plpy.notice('** Query returned with %d rows' % len(r))
+        plpy.notice('** query: %s' % q)
     except plpy.SPIError:
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Error: %s' % plpy.SPIError)
         plpy.notice('** Exiting function')
-        return zip([None], [None], [None], [None])
+        return zip([None], [None], [None], [None], [None])
 
         plpy.notice('r.nrows() = %d' % r.nrows())
 
@@ -185,12 +185,11 @@ def moran_local_rate(t, numerator, denominator, permutations, geom_col, id_col, 
     lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, w, permutations=permutations)
 
     # find units of significance
-    lisa_sig =  quad_position(lisa.q)
+    quads =  quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
-    ## TODO: Decide on which return values here
-    return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order, lisa.y)
+    return zip(lisa.Is, quads, lisa.p_sim, w.id_order, lisa.y)
 
 def moran_local_bv(t, attr1, attr2, permutations, geom_col, id_col, w_type, num_ngbrs):
     plpy.notice('** Constructing query')

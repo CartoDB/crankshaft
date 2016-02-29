@@ -12,7 +12,7 @@ RETURNS TABLE (moran FLOAT, quads TEXT, significance FLOAT, ids INT)
 AS $$
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
-  return moran(t, attr, significance, num_ngbrs, permutations, geom_col, id_col, w_type)
+  return moran(t, attr, num_ngbrs, permutations, geom_col, id_col, w_type)
 $$ LANGUAGE plpythonu;
 
 -- Moran's I Local
@@ -25,7 +25,7 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id',
       w_type TEXT DEFAULT 'knn',
       num_ngbrs INT DEFAULT 5)
-RETURNS TABLE (moran FLOAT, quads TEXT, significance FLOAT, ids INT)
+RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
 AS $$
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
@@ -62,11 +62,12 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id',
       w_type TEXT DEFAULT 'knn',
       num_ngbrs INT DEFAULT 5)
-RETURNS TABLE(moran FLOAT, quads TEXT, significance FLOAT, ids INT, y numeric)
+RETURNS
+TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
 AS $$
   from crankshaft.clustering import moran_local_rate
   # TODO: use named parameters or a dictionary
-  return moran_local_rate(t, numerator, denominator, significance, num_ngbrs, permutations, geom_column, id_col, w_type)
+  return moran_local_rate(t, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs)
 $$ LANGUAGE plpythonu;
 
 -- Moran's I Local Bivariate
