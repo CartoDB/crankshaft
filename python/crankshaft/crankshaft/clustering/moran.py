@@ -166,7 +166,6 @@ def moran_local_rate(t, numerator, denominator, permutations, geom_col, id_col, 
     try:
         r = plpy.execute(q)
         plpy.notice('** Query returned with %d rows' % len(r))
-        plpy.notice('** query: %s' % q)
     except plpy.SPIError:
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Error: %s' % plpy.SPIError)
