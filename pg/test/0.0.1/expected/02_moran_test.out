@@ -130,58 +130,58 @@ NOTICE:  ** Query returned with 52 rows
 CONTEXT:  PL/Python function "cdb_moran_local"
 NOTICE:  ** Finished calculations
 CONTEXT:  PL/Python function "cdb_moran_local"
- code |      quads      
-------+-----------------
+ code | quads 
+------+-------
  01   | HH
  02   | HL
- 03   | Not significant
- 04   | Not significant
- 05   | Not significant
- 06   | Not significant
- 07   | Not significant
- 08   | Not significant
- 09   | Not significant
- 10   | Not significant
+ 03   | LL
+ 04   | LL
+ 05   | LH
+ 06   | LL
+ 07   | HH
+ 08   | HH
+ 09   | HH
+ 10   | LL
  11   | LL
- 12   | Not significant
- 13   | Not significant
- 14   | Not significant
- 15   | Not significant
+ 12   | LL
+ 13   | HL
+ 14   | LL
+ 15   | LL
  16   | HH
- 17   | Not significant
- 18   | Not significant
- 19   | Not significant
+ 17   | HH
+ 18   | LL
+ 19   | HH
  20   | HH
  21   | LL
- 22   | Not significant
- 23   | Not significant
- 24   | Not significant
+ 22   | HH
+ 23   | LL
+ 24   | LL
  25   | HH
  26   | HH
- 27   | Not significant
- 28   | Not significant
+ 27   | LL
+ 28   | HH
  29   | LL
- 30   | Not significant
+ 30   | LL
  31   | HH
- 32   | Not significant
- 33   | Not significant
- 34   | Not significant
+ 32   | LL
+ 33   | HL
+ 34   | LH
  35   | LL
- 36   | Not significant
- 37   | Not significant
+ 36   | LL
+ 37   | HL
  38   | HL
- 39   | Not significant
- 40   | Not significant
+ 39   | HH
+ 40   | HH
  41   | HL
  42   | LH
- 43   | Not significant
- 44   | Not significant
+ 43   | LH
+ 44   | LL
  45   | LH
- 46   | Not significant
- 47   | Not significant
+ 46   | LL
+ 47   | LL
  48   | HH
- 49   | Not significant
- 50   | Not significant
+ 49   | LH
+ 50   | HH
  51   | LL
  52   | LL
 (52 rows)
@@ -203,58 +203,58 @@ NOTICE:  ** Query returned with 51 rows
 CONTEXT:  PL/Python function "cdb_moran_local_rate"
 NOTICE:  ** Finished calculations
 CONTEXT:  PL/Python function "cdb_moran_local_rate"
- code |      quads      
-------+-----------------
+ code | quads 
+------+-------
  01   | LL
- 02   | Not significant
- 03   | Not significant
- 04   | Not significant
- 05   | Not significant
- 06   | Not significant
- 07   | Not significant
- 08   | Not significant
+ 02   | LH
+ 03   | HH
+ 04   | HH
+ 05   | LL
+ 06   | HH
+ 07   | LL
+ 08   | LL
  09   | LL
- 10   | Not significant
+ 10   | HH
  11   | HH
- 12   | Not significant
- 13   | Not significant
- 14   | Not significant
- 15   | Not significant
- 16   | Not significant
+ 12   | HL
+ 13   | LL
+ 14   | HH
+ 15   | LL
+ 16   | LL
  17   | LL
- 18   | Not significant
- 19   | Not significant
+ 18   | LH
+ 19   | LL
  20   | LL
- 21   | Not significant
- 22   | Not significant
- 23   | Not significant
- 24   | Not significant
+ 21   | HH
+ 22   | LL
+ 23   | HL
+ 24   | LL
  25   | LL
  26   | LL
- 27   | Not significant
- 28   | Not significant
+ 27   | LL
+ 28   | LL
  29   | LH
- 30   | Not significant
+ 30   | HH
  31   | LL
- 32   | Not significant
- 33   | Not significant
- 34   | Not significant
+ 32   | LL
+ 33   | LL
+ 34   | LL
  35   | LH
- 36   | Not significant
- 37   | Not significant
+ 36   | HL
+ 37   | LH
  38   | LH
- 39   | Not significant
- 40   | Not significant
+ 39   | LL
+ 40   | LL
  41   | LH
  42   | HL
- 43   | Not significant
- 44   | Not significant
+ 43   | LL
+ 44   | HL
  45   | LL
- 46   | Not significant
- 47   | Not significant
+ 46   | HL
+ 47   | LL
  48   | LL
- 49   | Not significant
- 50   | Not significant
- 51   | Not significant
+ 49   | HL
+ 50   | LL
+ 51   | HH
 (51 rows)
 
