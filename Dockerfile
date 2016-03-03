@@ -178,6 +178,7 @@ RUN mkdir -p /etc/my_init.d
 ADD init_db_script.sh /etc/my_init.d/init_db_script.sh
 ADD init_db.sh /root/init_db.sh
 ADD run_tests.sh /root/run_tests.sh
+ADD run_tests.sh /root/run_server.sh
 
 # ---------- Final cleanup --------------
 #
