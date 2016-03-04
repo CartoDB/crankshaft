@@ -126,6 +126,7 @@ RUN git clone https://github.com/CartoDB/cartodb-postgresql.git &&\
 RUN apt-get -y  install python-dev python-pip  liblapack-dev gfortran libyaml-dev
 
 RUN pip install numpy pandas scipy theano keras sklearn
+RUN pip install pysal
 
 # get compiled libraries recognized
 RUN ldconfig
