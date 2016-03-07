@@ -137,6 +137,53 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql VOLATILE;
+CREATE OR REPLACE FUNCTION
+  cdb_create_segment (
+      segment_name TEXT,
+      table_name TEXT,
+  	  column_name TEXT,
+      geoid_column TEXT DEFAULT 'geoid',
+      census_table TEXT DEFAULT 'block_groups'
+  )
+RETURNS NUMERIC
+AS $$
+  from crankshaft.segmentation import create_segemnt
+  # TODO: use named parameters or a dictionary
+  return create_segment('table')
+$$ LANGUAGE plpythonu;
+
+CREATE OR REPLACE FUNCTION
+  cdb_predict_segment (
+      segment_name TEXT,
+      geoid_column TEXT DEFAULT 'geoid',
+      census_table TEXT DEFAULT 'block_groups'
+  )
+RETURNS TABLE(geoid TEXT, prediction NUMERIC)
+AS $$
+  from crankshaft.segmentation import create_segemnt
+  # TODO: use named parameters or a dictionary
+  return create_segment('table')
+$$ LANGUAGE plpythonu;
+CREATE OR REPLACE FUNCTION
+  cdb_adaptive_histogram (
+      table_name  TEXT,
+      column_name TEXT
+  )
+RETURNS TABLE (bin_start numeric,bin_end numeric,value numeric)
+
+AS $$
+  from crankshaft.bayesian_blocks import adaptive_histogram
+  return adaptive_histogram(table_name,column_name)
+$$ LANGUAGE plpythonu;
+
+CREATE OR REPLACE FUNCTION
+  cdb_simple_test (
+  )
+RETURNS NUMERIC
+
+AS $$
+  return 5
+$$ LANGUAGE plpythonu;
 -- Make sure by default there are no permissions for publicuser
 -- NOTE: this happens at extension creation time, as part of an implicit transaction.
 -- REVOKE ALL PRIVILEGES ON SCHEMA cdb_crankshaft FROM PUBLIC, publicuser CASCADE;
