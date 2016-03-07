@@ -217,12 +217,12 @@ def knn(params):
                 "i.\"{id_col}\" As id, " \
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                              "FROM \"{table}\" As j " \
+                              "FROM ({table}) As j " \
                               "WHERE %(attr_where_j)s " \
                               "ORDER BY j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
                               "LIMIT {num_ngbrs} OFFSET 1 ) " \
                 ") As neighbors " \
-            "FROM \"{table}\" As i " \
+            "FROM ({table}) As i " \
             "WHERE " \
                 "%(attr_where_i)s " \
             "ORDER BY i.\"{id_col}\" ASC;" % replacements
@@ -245,11 +245,11 @@ def queen(params):
                 "i.\"{id_col}\" As id, " \
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                 "FROM \"{table}\" As j " \
+                 "FROM ({table}) As j " \
                  "WHERE ST_Touches(i.\"{geom_col}\", j.\"{geom_col}\") AND " \
                  "%(attr_where_j)s)" \
                 ") As neighbors " \
-            "FROM \"{table}\" As i " \
+            "FROM ({table}) As i " \
             "WHERE " \
                 "%(attr_where_i)s " \
             "ORDER BY i.\"{id_col}\" ASC;" % replacements
