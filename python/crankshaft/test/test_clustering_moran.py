@@ -23,7 +23,7 @@ class MoranTest(unittest.TestCase):
         self.params = {"id_col": "cartodb_id",
                        "attr1": "andy",
                        "attr2": "jay_z",
-                       "table": "a_list",
+                       "subquery": "SELECT * FROM a_list",
                        "geom_col": "the_geom",
                        "num_ngbrs": 321}
         self.neighbors_data = json.loads(open(fixture_file('neighbors.json')).read())
@@ -60,10 +60,10 @@ class MoranTest(unittest.TestCase):
 
         ans = "SELECT i.\"cartodb_id\" As id, i.\"andy\"::numeric As attr1, " \
               "i.\"jay_z\"::numeric As attr2, (SELECT ARRAY(SELECT j.\"cartodb_id\" " \
-              "FROM \"a_list\" As j WHERE j.\"andy\" IS NOT NULL AND " \
+              "FROM (SELECT * FROM a_list) As j WHERE j.\"andy\" IS NOT NULL AND " \
               "j.\"jay_z\" IS NOT NULL AND j.\"jay_z\" <> 0 ORDER BY " \
               "j.\"the_geom\" <-> i.\"the_geom\" ASC LIMIT 321 OFFSET 1 ) ) " \
-              "As neighbors FROM \"a_list\" As i WHERE i.\"andy\" IS NOT " \
+              "As neighbors FROM (SELECT * FROM a_list) As i WHERE i.\"andy\" IS NOT " \
               "NULL AND i.\"jay_z\" IS NOT NULL AND i.\"jay_z\" <> 0 ORDER " \
               "BY i.\"cartodb_id\" ASC;"
 
@@ -74,10 +74,10 @@ class MoranTest(unittest.TestCase):
 
         ans = "SELECT i.\"cartodb_id\" As id, i.\"andy\"::numeric As attr1, " \
               "i.\"jay_z\"::numeric As attr2, (SELECT ARRAY(SELECT " \
-              "j.\"cartodb_id\" FROM \"a_list\" As j WHERE ST_Touches(" \
+              "j.\"cartodb_id\" FROM (SELECT * FROM a_list) As j WHERE ST_Touches(" \
               "i.\"the_geom\", j.\"the_geom\") AND j.\"andy\" IS NOT NULL " \
               "AND j.\"jay_z\" IS NOT NULL AND j.\"jay_z\" <> 0)) As " \
-              "neighbors FROM \"a_list\" As i WHERE i.\"andy\" IS NOT NULL " \
+              "neighbors FROM (SELECT * FROM a_list) As i WHERE i.\"andy\" IS NOT NULL " \
               "AND i.\"jay_z\" IS NOT NULL AND i.\"jay_z\" <> 0 ORDER BY " \
               "i.\"cartodb_id\" ASC;"
 
@@ -88,10 +88,10 @@ class MoranTest(unittest.TestCase):
 
         ans = "SELECT i.\"cartodb_id\" As id, i.\"andy\"::numeric As attr1, " \
               "i.\"jay_z\"::numeric As attr2, (SELECT ARRAY(SELECT " \
-              "j.\"cartodb_id\" FROM \"a_list\" As j WHERE j.\"andy\" IS " \
+              "j.\"cartodb_id\" FROM (SELECT * FROM a_list) As j WHERE j.\"andy\" IS " \
               "NOT NULL AND j.\"jay_z\" IS NOT NULL AND j.\"jay_z\" <> 0 " \
               "ORDER BY j.\"the_geom\" <-> i.\"the_geom\" ASC LIMIT 321 " \
-              "OFFSET 1 ) ) As neighbors FROM \"a_list\" As i WHERE " \
+              "OFFSET 1 ) ) As neighbors FROM (SELECT * FROM a_list) As i WHERE " \
               "i.\"andy\" IS NOT NULL AND i.\"jay_z\" IS NOT NULL AND " \
               "i.\"jay_z\" <> 0 ORDER BY i.\"cartodb_id\" ASC;"
 
@@ -125,7 +125,7 @@ class MoranTest(unittest.TestCase):
         data = [ { 'id': d['id'], 'attr1': d['value'], 'neighbors': d['neighbors'] } for d in self.neighbors_data]
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local('table', 'value', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
+        result = cc.moran_local('SELET * FROM table', 'value', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
         result = [(row[0], row[1]) for row in result]
         expected = self.moran_data
         for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
@@ -137,7 +137,7 @@ class MoranTest(unittest.TestCase):
         data = [ { 'id': d['id'], 'attr1': d['value'], 'attr2': 1, 'neighbors': d['neighbors'] } for d in self.neighbors_data]
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local_rate('table', 'numerator', 'denominator', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
+        result = cc.moran_local_rate('SELECT * FROM table', 'numerator', 'denominator', 0.05, 5, 99, 'the_geom', 'cartodb_id', 'knn')
         result = [(row[0], row[1]) for row in result]
         expected = self.moran_data
         for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
