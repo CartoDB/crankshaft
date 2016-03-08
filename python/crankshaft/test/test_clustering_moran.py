@@ -60,7 +60,8 @@ class MoranTest(unittest.TestCase):
 
         ans = "SELECT i.\"cartodb_id\" As id, i.\"andy\"::numeric As attr1, " \
               "i.\"jay_z\"::numeric As attr2, (SELECT ARRAY(SELECT j.\"cartodb_id\" " \
-              "FROM \"a_list\" As j WHERE i.\"cartodb_id\" <> j.\"cartodb_id\" AND j.\"andy\" IS NOT NULL AND " \
+              "FROM \"a_list\" As j WHERE i.\"cartodb_id\" <> j.\"cartodb_id\" " \
+              "AND j.\"andy\" IS NOT NULL AND " \
               "j.\"jay_z\" IS NOT NULL AND j.\"jay_z\" <> 0 ORDER BY " \
               "j.\"the_geom\" <-> i.\"the_geom\" ASC LIMIT 321) ) " \
               "As neighbors FROM \"a_list\" As i WHERE i.\"andy\" IS NOT " \
@@ -90,7 +91,8 @@ class MoranTest(unittest.TestCase):
 
         ans = "SELECT i.\"cartodb_id\" As id, i.\"andy\"::numeric As attr1, " \
               "i.\"jay_z\"::numeric As attr2, (SELECT ARRAY(SELECT " \
-              "j.\"cartodb_id\" FROM \"a_list\" As j WHERE i.\"cartodb_id\" <> j.\"cartodb_id\" AND j.\"andy\" IS " \
+              "j.\"cartodb_id\" FROM \"a_list\" As j " \
+              "WHERE i.\"cartodb_id\" <> j.\"cartodb_id\" AND j.\"andy\" IS " \
               "NOT NULL AND j.\"jay_z\" IS NOT NULL AND j.\"jay_z\" <> 0 " \
               "ORDER BY j.\"the_geom\" <-> i.\"the_geom\" ASC LIMIT 321" \
               ") ) As neighbors FROM \"a_list\" As i WHERE " \
