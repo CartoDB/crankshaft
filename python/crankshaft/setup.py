@@ -40,7 +40,7 @@ setup(
 
     # The choice of component versions is dictated by what's
     # provisioned in the production servers.
-    install_requires=['pysal==1.11.0', 'numpy==1.6.1', 'scipy==0.17.0', 'pandas==0.17.1', 'scikit-learn==0.17.0', 'statsmodels==0.6.1', 'keras==0.3.2', 'shapely==1.5.3', 'osgeo==2.0.2'],
+    install_requires=['pysal==1.11.0', 'numpy==1.10.4', 'scipy==0.17.0', 'pandas==0.17.1', 'scikit-learn==0.17.0', 'statsmodels==0.6.1', 'keras==0.3.2', 'shapely==1.5.3', 'osgeo==2.0.2'],
 
     requires=['pysal', 'numpy', 'scipy', 'pandas', 'scikit-learn', 'statsmodels', 'keras', 'shapely', 'osgeo'],
 
