@@ -1,5 +1,5 @@
-EXT_DIR = pg
-PYP_DIR = python
+EXT_DIR = src/pg
+PYP_DIR = src/py
 
 .PHONY: install
 .PHONY: run_tests
