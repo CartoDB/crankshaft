@@ -13,6 +13,7 @@ CartoDB Spatial Analysis extension for PostgreSQL.
 ## Requirements
 
 * pip, virtualenv, PostgreSQL
+* python-scipy system package
 
 # Working Process
 
