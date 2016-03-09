@@ -5,6 +5,8 @@
 #                      and make it available to PostgreSQL
 # PGUSER=postgres make installcheck -- test the 'dev' extension
 
+SED = sed
+
 EXTENSION    = crankshaft
 
 DATA         = $(EXTENSION)--dev.sql \
@@ -14,8 +16,14 @@ DATA         = $(EXTENSION)--dev.sql \
 SOURCES_DATA_DIR = sql
 SOURCES_DATA = $(wildcard $(SOURCES_DATA_DIR)/*.sql)
 
+VIRTUALENV_PATH = $(realpath ../py/)
+ESC_VIRVIRTUALENV_PATH = $(subst /,\/,$(VIRTUALENV_PATH))
+
+REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g' \
+               -e 's/@@VIRTUALENV_PATH@@/$(ESC_VIRVIRTUALENV_PATH)/g'
+
 $(DATA): $(SOURCES_DATA)
-	cat $(SOURCES_DATA_DIR)/*.sql > $@
+	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > $@
 
 TEST_DIR = test
 REGRESS = $(notdir $(basename $(wildcard $(TEST_DIR)/sql/*test.sql)))
@@ -27,6 +35,7 @@ include $(PGXS)
 
 # This seems to be needed at least for PG 9.3.11
 all: $(DATA)
+
 
 # WIP: goals for releasing the extension...
 
