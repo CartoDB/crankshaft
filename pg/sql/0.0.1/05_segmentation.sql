@@ -8,9 +8,9 @@ CREATE OR REPLACE FUNCTION
   )
 RETURNS NUMERIC
 AS $$
-  from crankshaft.segmentation import create_segemnt
+  from crankshaft import segmentation
   # TODO: use named parameters or a dictionary
-  return create_segment('table')
+  return segmentation.create_segment(segment_name,table_name,column_name,geoid_column,census_table,'random_forest')
 $$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION
