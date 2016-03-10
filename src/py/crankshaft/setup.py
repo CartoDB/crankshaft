@@ -44,7 +44,7 @@ setup(
         'numpy>=1.10.4,<2',
         'scipy>=0.11,<1', # see https://github.com/pysal/pysal/blob/master/requirements.txt
         'pysal>=1.11.0,<2',
-    ]
+    ],
 
     requires=['pysal', 'numpy'],
 
