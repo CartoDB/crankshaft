@@ -40,7 +40,11 @@ setup(
 
     # The choice of component versions is dictated by what's
     # provisioned in the production servers.
-    install_requires=['pysal==1.11.0','numpy==1.6.1','scipy==0.17.0'],
+    install_requires=[
+        'numpy>=1.10.4,<2',
+        'scipy>=0.11,<1', # see https://github.com/pysal/pysal/blob/master/requirements.txt
+        'pysal>=1.11.0,<2',
+    ],
 
     requires=['pysal', 'numpy'],
 
