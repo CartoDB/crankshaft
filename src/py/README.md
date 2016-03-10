@@ -20,80 +20,111 @@ nosetests test/
 
 ---
 
-### Sample session with virtualenv
+We have two possible approaches being considered as to how manage
+the Python virtual environment: using a pure virtual enviroment
+or combine it with some system packages that include depencencies
+for the *hard-to-compile* packages (and pin them in somewhat old versions).
+
+### Alternative A: pure virtual environment
+
+In this case we will install all the packages needed in the
+virtual environment.
+This will involve, specially for the numerical packages compiling
+and linking code that uses a number of third party libraries,
+and requires having theses depencencies solved for the production
+environments.
+
 #### Create and use a virtual env
 
+We'll use a virtual enviroment directory `dev`
+under the `src/pg` directory.
+
     # Create the virtual environment for python
-    $ virtualenv myenv
+    $ virtualenv dev
 
     # Activate the virtualenv
-    $ source myenv/bin/activate
+    $ source dev/bin/activate
 
     # Install all the requirements
     # expect this to take a while, as it will trigger a few compilations
-    (myenv) $ pip install -r requirements.txt
+    (dev) $ pip install -r requirements.txt
 
     # Add a new pip to the party
-    (myenv) $ pip install pandas
+    (dev) $ pip install pandas
 
 #### Test the libraries with that virtual env
+
 ##### Test numpy library dependency:
 
     import numpy
     numpy.test('full')
-
-output:
-```
-======================================================================
-ERROR: test_multiarray.TestNewBufferProtocol.test_relaxed_strides
-----------------------------------------------------------------------
-Traceback (most recent call last):
-  File "/home/ubuntu/www/crankshaft/src/py/dev2/lib/python2.7/site-packages/nose/case.py", line 197, in runTest
-    self.test(*self.arg)
-  File "/home/ubuntu/www/crankshaft/src/py/dev2/lib/python2.7/site-packages/numpy/core/tests/test_multiarray.py", line 5366, in test_relaxed_strides
-    fd.write(c.data)
-TypeError: 'buffer' does not have the buffer interface
-
-----------------------------------------------------------------------
-Ran 6153 tests in 84.561s
-
-FAILED (KNOWNFAIL=3, SKIP=5, errors=1)
-Out[2]: <nose.result.TextTestResult run=6153 errors=1 failures=0>
-```
-
-NOTE: this is expected to fail with Python 2.7.3, which is the version embedded in our postgresql installation
-
 
 ##### Run scipy tests
 
     import scipy
     scipy.test('full')
 
-Output:
-```
-Ran 21562 tests in 321.610s
-
-OK (KNOWNFAIL=130, SKIP=1840)
-Out[2]: <nose.result.TextTestResult run=21562 errors=0 failures=0>
-```
-Ok, this looks good...
-
 ##### Testing pysal
+
 See [http://pysal.readthedocs.org/en/latest/developers/testing.html]
+
+This will require putting this into `dev/lib/python2.7/site-packages/setup.cfg`:
+
+```
+[nosetests]
+ignore-files=collection
+exclude-dir=pysal/contrib
+
+[wheel]
+universal=1
+```
+
+And copying some files before executing the tests:
+(we'll use a temporary directory from where the tests will be executed because
+some tests expect some files in the current directory). Next must be executed
+from
+
+```
+cp dev/lib/python2.7/site-packages/pysal/examples/geodanet/* dev/local/lib/python2.7/site-packages/pysal/examples
+mkdir -p test_tmp && cd test_tmp && cp ../dev/lib/python2.7/site-packages/pysal/examples/geodanet/* ./
+```
+
+Then, execute the tests with:
 
     import pysal
     import nose
     nose.runmodule('pysal')
 
+
+### Alternative B: using some packaged modules
+
+This option avoids troublesome compilations/linkings, at the cost
+of freezing some module versions as available in system packages,
+namely numpy 1.6.1 and scipy 0.9.0. (in turn, this implies
+the most recent version of PySAL we can use is 1.9.1)
+
+
+TODO: to use this alternative the python-scipy package must be
+installed (this will have to be included in server provisioning)
+
 ```
-Ran 537 tests in 42.182s
-
-FAILED (errors=48, failures=17)
-An exception has occurred, use %tb to see the full traceback.
+apt-get install -y python-scipy
 ```
 
-This doesn't look good... Taking a deeper look at the failures, many have the `IOError: [Errno 2] No such file or directory: 'streets.shp'`
+#### Create and use a virtual env
 
-In the source code, there's the following [config](https://github.com/pysal/pysal/blob/master/setup.cfg) that seems to be missing in the pip package. By copying it to `lib/python2.7/site-packages` within the environment, it goes down to 17 failures.
+We'll use a `dev` enviroment as before, but will configure it to
+use also system modules.
 
-The remaining failures don't look good. I see two types: precision calculation errors and arrays/matrices missing 1 element when comparing... TODO: FIX this
+
+    # Create the virtual environment for python
+    $ virtualenv --system-site-packages dev
+
+    # Activate the virtualenv
+    $ source dev/bin/activate
+
+    # Install all the requirements
+    # expect this to take a while, as it will trigger a few compilations
+    (dev) $ pip install -I ./crankshaft
+
+Then we can proceed to testing as in Alternative A.

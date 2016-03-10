@@ -46,5 +46,3 @@ EXTVERSION   = $(shell grep default_version $(EXTENSION).control | sed -e "s/def
 
 release: ../release/$(EXTENSION).control
 	cp $(EXTENSION)--dev.sql $(EXTENSION)--$(EXTVERSION).sql
-	# pending: create upgrade/downgrade scripts,
-	#          commit, push, tag....
