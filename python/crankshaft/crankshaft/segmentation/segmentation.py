@@ -5,11 +5,15 @@ Segmentation creation and prediction
 import sklearn
 import numpy as np
 import pandas as pd
-import pickle
+import cPickle
 import plpy
+import sys
 from sklearn.ensemble import ExtraTreesRegressor
 from sklearn import metrics
+from sklearn.externals import joblib
 from sklearn.cross_validation import train_test_split
+import StringIO
+import gzip
 
 # High level interface ---------------------------------------
 
@@ -22,9 +26,23 @@ def create_segment(segment_name,table_name,column_name,geoid_column,census_table
     features = data[data.columns.difference([column_name, 'geoid','the_geom'])]
     target, mean, std = normalize(data[column_name])
     model, accuracy = train_model(target,features, test_split=0.2)
-    # save_model(segment_name, model, accuracy, table_name, column_name, census_table, geoid_column, method)
+    save_model(segment_name, model, accuracy, table_name, column_name, census_table, geoid_column, method)
     # predict_segment
     return accuracy
+
+def create_and_predict_segment(segment_name,table_name,column_name,geoid_column,census_table,method):
+    """
+    generate a segment with machine learning
+    Stuart Lynn
+    """
+    data     = pd.DataFrame(join_with_census(table_name, column_name,geoid_column, census_table))
+    features = data[data.columns.difference([column_name, 'geoid','the_geom'])]
+    target, mean, std = normalize(data[column_name])
+    model, accuracy, used_features = train_model(target,features, test_split=0.2)
+    # save_model(segment_name, model, accuracy, table_name, column_name, census_table, geoid_column, method)
+    result = predict_segment(model,used_features,geoid_column,census_table)
+    return result
+
 
 def normalize(target):
     mean = np.mean(target)
@@ -37,20 +55,17 @@ def denormalize(target, mean ,std):
 
 def train_model(target,features,test_split):
     plpy.notice('training the model')
-    plpy.notice('dataframe shape '+ str(np.shape(features)))
-    plpy.notice('dataframe columns '+ str(features.dtypes))
+    plpy.notice('before ', str(np.shape(features)))
     features = features.dropna(axis =1, how='all').fillna(0)
+    plpy.notice('after ', str(np.shape(features)))
     target = target.fillna(0)
     features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=test_split)
-    plpy.notice('training the model test train split')
-    model = ExtraTreesRegressor(n_estimators = 40, max_features=len(features.columns))
-    plpy.notice('training the model created tree')
-    plpy.notice('features '+str(np.shape(features_train))+" "+str(np.shape(features_test)) )
-
+    model = ExtraTreesRegressor(n_estimators = 100, max_features=len(features.columns))
+    plpy.notice('training the model: fitting to data')
     model.fit(features_train, target_train)
-    plpy.notice('training the model fitting model')
+    plpy.notice('training the model: fitting one')
     accuracy = calculate_model_accuracy(model,features,target)
-    return model, accuracy
+    return model, accuracy, features.columns
 
 def calculate_model_accuracy(model,features,target):
     prediction = model.predict(features)
@@ -82,13 +97,25 @@ def predict_segment(model,features,geoid_column,census_table):
     predict a segment with machine learning
     Stuart Lynn
     """
-    data     = fetch_model(segment_name)
-    model    = data['model']
-    features = ",".join(data['features'])
-    targets  = plpy.execute('select {features} from {census_table}')
-    geo_ids  = plpy.execute('select geoid from {census_table}')
-    result   = model.predict(targets)
-    return zip(geo_ids,prediction)
+    # data     = fetch_model(segment_name)
+    # model    = data['model']
+    # features = ",".join(features)
+
+    joined_features  = ','.join(['\"'+a+'\"' for a in features])
+    targets  = pd.DataFrame(query_to_dictionary(plpy.execute('select {joined_features} from {census_table}'.format(**locals()))))
+    plpy.notice('predicting:' + str(len(features)) + ' '+str(np.shape(targets)))
+    plpy.notice(joined_features)
+    targets = targets.dropna(axis =1, how='all').fillna(0)
+    plpy.notice('predicting:' + str(len(features)) + ' '+str(np.shape(targets)))
+    geo_ids  = plpy.execute('select geoid from {census_table}'.format(**locals()))
+    geoms  = plpy.execute('select the_geom from {census_table}'.format(**locals()))
+
+    plpy.notice('predicting: predicting data')
+
+    prediction   = model.predict(targets)
+    plpy.notice('predicting: predicted')
+
+    return zip( [a['the_geom'] for a in geoms], [a['geoid'] for a in geo_ids],prediction)
 
 
 def fetch_model(model_name):
@@ -127,7 +154,21 @@ def save_model(model_name,model,accuracy,table_name, column_name,census_table,ge
     plpy.execute('''
         DELETE FROM _cdb_models WHERE name = '{model_name}'
     '''.format(**locals()))
-    model_pickle = pickle.dumps(model)
+
+    # stringio = StringIO.StringIO()
+    # gzip_file = gzip.GzipFile(fileobj=stringio, mode='w')
+    # gzip_file.write()
+    # gzip_file.close()
+
+    model_pickle = cPickle.dumps(model) #stringio.getvalue()
+
+
+    # stringio.close()
+
+    plpy.notice(type(model_pickle))
+    plpy.notice(len(model_pickle))
+    plpy.notice(sys.getsizeof(model_pickle))
+    model_pickle  =plpy.quote_literal(model_pickle)
     plpy.execute("""
-        INSERT INTO _cdb_models ('{model_name}','{model_pickle}',{accuracy}, '{table_name}', '{census_table}', '{method}')
+        INSERT INTO _cdb_models VALUES ('{model_name}',$${model_pickle}$$, Array['test1', 'test2'],{accuracy}, '{table_name}', '{census_table}', '{method}')
     """.format(**locals()))
