@@ -1,9 +1,9 @@
 # Install the package locally for development
 install:
-	virtualenv --system-site-packages dev
-	./dev/bin/pip install -I ./crankshaft
-	./dev/bin/pip install -I nose
+	virtualenv --system-site-packages environment
+	./environment/bin/pip install -I -U ./crankshaft
+	./environment/bin/pip install -I nose
 
 # Test develpment install
-testinstalled:
-	./dev/bin/nosetests crankshaft/test/
+test:
+	./environment/bin/nosetests crankshaft/test/

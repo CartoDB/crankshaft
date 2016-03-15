@@ -8,6 +8,12 @@ install:
 	$(MAKE) -C $(PYP_DIR) install
 	$(MAKE) -C $(EXT_DIR) install
 
-testinstalled:
-	$(MAKE) -C $(PYP_DIR) testinstalled
-	$(MAKE) -C $(EXT_DIR) installcheck
+test:
+	$(MAKE) -C $(PYP_DIR) test
+	$(MAKE) -C $(EXT_DIR) test
+
+release: install
+	$(MAKE) -C $(EXT_DIR) release
+
+deploy:
+	 echo 'not yet implemented'

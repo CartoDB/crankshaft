@@ -40,7 +40,14 @@ Update local installation with `sudo make install`
 
 Run the tests with `PGUSER=postgres make test`
 
-Update extension in working database with
+The commands mentioned, executed from the top directory,
+install and test both the Pyhton package and the PostgreSQL extension.
+
+When developing the Pyhon package, it can be
+installed and tested in its own from the `src/pg` directory with the same commands.
+
+When a new development extension has beeen installed it is available
+in PostgreSQL; update extension in any specific database with
 
 * `ALTER EXTENSION crankshaft VERSION TO 'current';`
   `ALTER EXTENSION crankshaft VERSION TO 'dev';`
