@@ -40,9 +40,9 @@ setup(
 
     # The choice of component versions is dictated by what's
     # provisioned in the production servers.
-    install_requires=['pysal==1.11.0','numpy==1.6.1','scipy==0.17.0'],
+    install_requires=['pysal==1.11.0','numpy==1.10.1','scipy==0.17.0', 'matplotlib==1.4.3'],
 
-    requires=['pysal', 'numpy'],
+    requires=['pysal', 'numpy', 'matplotlib'],
 
     test_suite='test'
 )
