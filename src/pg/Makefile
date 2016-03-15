@@ -72,12 +72,12 @@ deploy:
 	$(VIRTUALENV_PATH)/$(EXTVERSION)/bin/pip install -I nose
 
 clean-dev:
-	rm $(EXTNAME)--*.sql
+	rm -f $(EXTENSION)--*.sql
 
 clean-releases:
 	rm -rf ../../release/python/*
-	rm ../../release/$(EXTNAME)--*.sql
-	rm ../../release/$(EXTNAME).control
+	rm -f ../../release/$(EXTNAME)--*.sql
+	rm -f ../../release/$(EXTNAME).control
 
 clean-environments:
 	rm -rf ../../envs/*
