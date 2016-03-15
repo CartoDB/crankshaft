@@ -9,6 +9,7 @@ CartoDB Spatial Analysis extension for PostgreSQL.
 * - *src/pg* contains the PostgreSQL extension source code
 * - *src/py* Python module source code
 * *release* reseleased versions
+* *env* base directory for Python virtual environments
 
 ## Requirements
 
@@ -17,16 +18,24 @@ CartoDB Spatial Analysis extension for PostgreSQL.
 
 # Working Process
 
+We use the default `develop` branch as the basis for development.
+This branch and `master` are maintained by the *Release Manager*.
+The `master` branch is used to merge and tag releases to be
+deployed in production.
+
+In addition to these two permanent branches, temporal *topic*
+branches will be used for all modifications.
+
 ## Development
 
-Work in `src/pg/sql`, `src/py/crankshaft`;
-use a topic branch. See src/py/README.md
-for the procedure to work with the Python local environment.
+A topic branch should be created out of the `develop` branch
+and be used for the development process; see src/py/README.md
 
+Modifications are done inside `src/pg/sql` and `src/py/crankshaft`.
 Take into account:
 
-*  Always remember to add tests for any new functionality
-   documentation.
+*  Always remember to add tests (`src/pg/test`, `src/py/crankshaft/test`)
+   for any new functionality.
 *  Add or modify the corresponding documentation files in the `doc` folder.
    Since we expect to have highly technical functions here, an extense
    background explanation would be of great help to users of this extension.
@@ -35,12 +44,22 @@ Take into account:
    and private functions (to be used only internally inside
    the extension)  with `_cdb_`.
 
-Update local installation with `sudo make install`
-(this will update the 'dev' version of the extension in 'src/pg/')
+Update the local development installation with `sudo make install`.
+This will update the 'dev' version of the extension in 'src/pg/' and
+make it available to PostgreSQL.
+It will also install the python package (crankshaft) in a virtual
+environment `env/dev`.
 
-Run the tests with `PGUSER=postgres make test`
+Run the tests with `make test`
 
-Update extension in working database with
+To use the python extension for custom tests, activate the virtual
+environment with:
+
+```
+source envs/dev/bin/activate
+```
+
+Update extension in a working database with:
 
 * `ALTER EXTENSION crankshaft VERSION TO 'current';`
   `ALTER EXTENSION crankshaft VERSION TO 'dev';`
@@ -57,23 +76,28 @@ we can:
 
 * `CREATE EXTENSION crankshaft WITH VERSION 'dev';`
 
+Note: the development extension uses the development pyhton virtual
+environment automatically.
+
 Once the tests are succeeding a new Pull-Request can be created.
-CI-tests must be checked to be successfull.
+CI-tests must be checked to be successful.
 
-Before merging a topic branch peer code reviewing of the code is a must.
-
+Before proceeding to the release process peer code reviewing of the code is a must.
 
 ## Release
 
 The release process of a new version of the extension
 shall by performed by the designated *Release Manager*.
 
-Note that we expect to gradually automate this process.
+Note that we expect to gradually automate more of this process.
 
-Having checkout the topic branch of the PR to be released:
+Having checked the topic branch of the PR to be released it shall be
+merged back into the `develop` branch to prepare the new release.
 
 The version number in `pg/cranckshaft.control` must first be updated.
 To do so [Semantic Versioning 2.0](http://semver.org/) is in order.
+
+Thew `NEWS.md` will be updated.
 
 We now will explain the process for the case of backwards-compatible
 releases (updating the minor or patch version numbers).
@@ -81,7 +105,8 @@ releases (updating the minor or patch version numbers).
 TODO: document the complex case of major releases.
 
 The next command must be executed to produce the main installation
-script for the new release, `release/cranckshaft--X.Y.Z.sql`.
+script for the new release, `release/cranckshaft--X.Y.Z.sql` and
+also to copy the python package to `release/python/X.Y.Z/crankshaft`.
 
 ```
 make release
@@ -93,10 +118,32 @@ releases this simply consist in extracting the functions that have changed
 and placing them in the proper `release/cranckshaft--X.Y.Z--A.B.C.sql`
 file.
 
-TODO: configure the local enviroment to be used by the release;
-currently should be directory `src/py/X.Y.Z`, but this must be fixed;
-a possibility to explore is to use the `cdb_conf` table.
+The new release can be deployed for staging/smoke tests with this command:
 
-TODO: testing procedure for the new release
+```
+sudo make deploy
+```
 
-TODO: push, merge, tag, deploy procedures.
+This will make the 'X.Y.Z' version of the extension to PostgreSQL.
+The corresponding Python extension will be installed in a
+virtual environment in `envs/X.Y.Z`
+
+It can be activated with:
+
+```
+source envs/X.Y.Z/bin/activate
+```
+
+But note that this is needed only for using the package directly;
+the 'X.Y.Z' version of the extension will automatically use the
+python package from this virtual environment.
+
+The `sudo make deploy` operation can be also used for installing
+the new version after it has been released.
+
+TODO: testing procedure for the new release.
+
+TODO: procedure for staging deployment.
+
+TODO: procedure for merging to master, tagging and deploying
+in production.

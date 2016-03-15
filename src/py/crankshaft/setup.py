@@ -10,7 +10,7 @@ from setuptools import setup, find_packages
 setup(
     name='crankshaft',
 
-    version='0.0.1',
+    version='0.0.0',
 
     description='CartoDB Spatial Analysis Python Library',
 

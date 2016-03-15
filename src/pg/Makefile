@@ -1,9 +1,13 @@
-# Generation of a new development version 'dev' (with an alias 'current' for
-# updating easily by upgrading to 'current', then 'dev')
-
-# sudo make install -- generate the 'dev' version from current source
-#                      and make it available to PostgreSQL
-# PGUSER=postgres make installcheck -- test the 'dev' extension
+# Development tasks:
+#
+# * install generates the control & script files into src/pg/
+#   and installs then into the PostgreSQL extensions directory;
+#   requires sudo. In additionof the current development version
+#   named 'dev', an alias 'current' is generating for ease of
+#   update (upgrade to 'current', then to 'dev').
+#   the python module is installed in a virtualenv in envs/dev/
+# * test runs the tests for the currently generated Development
+#   extension.
 
 SED = sed
 
@@ -16,7 +20,7 @@ DATA         = $(EXTENSION)--dev.sql \
 SOURCES_DATA_DIR = sql
 SOURCES_DATA = $(wildcard $(SOURCES_DATA_DIR)/*.sql)
 
-VIRTUALENV_PATH = $(realpath ../py/)
+VIRTUALENV_PATH = $(realpath ../../envs)
 ESC_VIRVIRTUALENV_PATH = $(subst /,\/,$(VIRTUALENV_PATH))
 
 REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g' \
@@ -36,13 +40,46 @@ include $(PGXS)
 # This seems to be needed at least for PG 9.3.11
 all: $(DATA)
 
+test: export PGUSER=postgres
+test: installcheck
 
-# WIP: goals for releasing the extension...
+# Release tasks
 
+PACKAGE = crankshaft
 EXTVERSION   = $(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 
-../release/$(EXTENSION).control: $(EXTENSION).control
+../../release/$(EXTENSION).control: $(EXTENSION).control
 	cp $< $@
 
-release: ../release/$(EXTENSION).control
-	cp $(EXTENSION)--dev.sql $(EXTENSION)--$(EXTVERSION).sql
+# Prepare new release from the currently installed development version,
+# for the current version X.Y.Z (defined in the control file)
+# producing the extension script and control files in releases/
+# and the python package in releases/python/X.Y.Z/crankshaft/
+release: ../../release/$(EXTENSION).control
+	cp $(EXTENSION)--dev.sql ../../release/$(EXTENSION)--$(EXTVERSION).sql
+	mkdir -p ../../release/python/$(EXTVERSION)
+	cp -r ../py/$(PACKAGE) ../../release/python/$(EXTVERSION)/
+	$(SED) -i -r 's/version='"'"'[0-9]+\.[0-9]+\.[0-9]+'"'"'/version='"'"'$(EXTVERSION)'"'"'/g'  ../../release/python/$(EXTVERSION)/$(PACKAGE)/setup.py
+
+# Install the current relese into the PostgreSQL extensions directory
+# and the Python package in a virtual environment envs/X.Y.Z
+deploy:
+	$(INSTALL_DATA) ../../release/$(EXTENSION).control '$(DESTDIR)$(datadir)/extension/'
+	$(INSTALL_DATA) ../../release/*.sql '$(DESTDIR)$(datadir)/extension/'
+	# TODO: install also upgrade/downgrade files (manually generated)
+	virtualenv --system-site-packages $(VIRTUALENV_PATH)/$(EXTVERSION)
+	$(VIRTUALENV_PATH)/$(EXTVERSION)/bin/pip install -I -U ../../release/python/$(EXTVERSION)/$(PACKAGE)
+	$(VIRTUALENV_PATH)/$(EXTVERSION)/bin/pip install -I nose
+
+clean-dev:
+	rm $(EXTNAME)--*.sql
+
+clean-releases:
+	rm -rf ../../release/python/*
+	rm ../../release/$(EXTNAME)--*.sql
+	rm ../../release/$(EXTNAME).control
+
+clean-environments:
+	rm -rf ../../envs/*
+
+clean-all: clean-dev clean-releases clean-environments
