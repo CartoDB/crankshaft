@@ -42,7 +42,7 @@ clean-dev: ## clean up development extension script files
 	rm -f src/pg/$(EXTENSION)--*.sql
 
 # Cleanup all releases
-clean-releases:
+clean-releases: ## clean up all releases
 	rm -rf release/python/*
 	rm -f release/$(EXTENSION)--*.sql
 	rm -f release/$(EXTENSION).control
