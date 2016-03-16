@@ -24,33 +24,43 @@ The `master` branch is used to merge and tag releases to be
 deployed in production.
 
 In addition to these two permanent branches, temporal *topic*
-branches will be used for all modifications.
+branches must be used for all modifications.
 
 ## Development
 
-A topic branch should be created out of the `develop` branch
+For any modification of crankshaft, including adding new features,
+a topic branch must be created out of the `develop` branch
 and be used for the development process; see src/py/README.md
+for further details about the Pyhton package development.
 
 Modifications are done inside `src/pg/sql` and `src/py/crankshaft`.
 Take into account:
 
-*  Always remember to add tests (`src/pg/test`, `src/py/crankshaft/test`)
-   for any new functionality.
+*  Test must be added for any new functionality
+   (`src/pg/test`, `src/py/crankshaft/test`) as well as for
+   detected any bugs corrected.
 *  Add or modify the corresponding documentation files in the `doc` folder.
    Since we expect to have highly technical functions here, an extense
    background explanation would be of great help to users of this extension.
-*  Convention: Use snake case (i.e. `snake_case` and not `CamelCase`) for all
-   functions. Prefix functions intended for public use with `cdb_`
+*  Convention: snake case(i.e. `snake_case` and not `CamelCase`)
+   shall be used for all function names.
+   Prefix function names intended for public use with `cdb_`
    and private functions (to be used only internally inside
    the extension)  with `_cdb_`.
 
-Update the local development installation with `sudo make install`.
-This will update the 'dev' version of the extension in 'src/pg/' and
+Once the code is ready to be tested, update the local development installation
+with `sudo make install`.
+This will update the 'dev' version of the extension in `src/pg/` and
 make it available to PostgreSQL.
 It will also install the python package (crankshaft) in a virtual
 environment `env/dev`.
 
-Run the tests with `make test`
+The version number of the Python package, defined in
+`src/pg/crankshaft/setup.py` will be overridden when
+the package is released and always match the extension version number,
+but for development it shall be kept as '0.0.0'.
+
+Run the tests with `make test`.
 
 To use the python extension for custom tests, activate the virtual
 environment with:
@@ -71,23 +81,27 @@ changes involve incompatible function changes such as a different
 return type; in that case the offending function (or the whole extension)
 should be dropped manually before the update.
 
-If the extension has not previously been installed in a database
-we can:
+If the extension has not previously been installed in a database,
+it can be installed directly with:
 
 * `CREATE EXTENSION crankshaft WITH VERSION 'dev';`
 
-Note: the development extension uses the development pyhton virtual
+Note: the development extension uses the development python virtual
 environment automatically.
 
-Once the tests are succeeding a new Pull-Request can be created.
-CI-tests must be checked to be successful.
+Once the tests are succeeding a new Pull-Request can be created
+to the develop branch. CI-tests must be checked to be successful.
 
-Before proceeding to the release process peer code reviewing of the code is a must.
+Before proceeding to the release process peer code reviewing of the code is
+a must.
+
+When the code is accepted by the peer reviewing (and CI tests succeed)
+a request for release will be send to the Release Manager.
 
 ## Release
 
 The release process of a new version of the extension
-shall by performed by the designated *Release Manager*.
+shall be performed by the designated *Release Manager*.
 
 Note that we expect to gradually automate more of this process.
 
@@ -124,9 +138,9 @@ The new release can be deployed for staging/smoke tests with this command:
 sudo make deploy
 ```
 
-This will make the 'X.Y.Z' version of the extension to PostgreSQL.
-The corresponding Python extension will be installed in a
-virtual environment in `envs/X.Y.Z`
+This will copy the current 'X.Y.Z' released version of the extension to
+PostgreSQL. The corresponding Python extension will be installed in a
+virtual environment in `envs/X.Y.Z`.
 
 It can be activated with:
 
@@ -140,6 +154,13 @@ python package from this virtual environment.
 
 The `sudo make deploy` operation can be also used for installing
 the new version after it has been released.
+
+To install a specific version 'X.Y.Z' different from the current one
+(which must be present in `releases/`) you can:
+
+```
+sudo make deploy RELEASE_VERSION=X.Y.Z
+```
 
 TODO: testing procedure for the new release.
 
