@@ -41,11 +41,11 @@ deploy: ## Deploy a released extension. Only for release manager. Requires sudo.
 clean-dev: ## clean up development extension script files
 	rm -f src/pg/$(EXTENSION)--*.sql
 
-# # Cleanup all releases
-# clean-releases:
-# 	rm -rf release/python/*
-# 	rm -f release/$(EXTENSION)--*.sql
-# 	rm -f release/$(EXTENSION).control
+# Cleanup all releases
+clean-releases:
+	rm -rf release/python/*
+	rm -f release/$(EXTENSION)--*.sql
+	rm -f release/$(EXTENSION).control
 
 # Cleanup current/specific version
 clean-release: ## clean up current release
