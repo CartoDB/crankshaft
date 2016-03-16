@@ -168,3 +168,35 @@ TODO: procedure for staging deployment.
 
 TODO: procedure for merging to master, tagging and deploying
 in production.
+
+## Relevant tasks available in the Makefile
+
+```
+* `make help` show a short description of the available targets
+
+# Development tasks
+
+* `sudo make install` will generate the extension scripts for the development
+  version ('dev'/'current') and install the python package into the
+  development virtual environment `envs/dev`.
+  Intended for use by developers.
+
+* `make test` will run the tests for the installed development extension.
+  Intended for use by developers.
+
+# Release tasks
+
+* `make release` will generate a new release (version number defined in
+  `src/pg/crankshaft.control`) into `release/`.
+  Intended for use by the release manager.
+
+* `sudo make deploy` will install the current release X.Y.Z from the
+  `release/` files into PostgreSQL and a Python virtual environment
+  `envs/X.Y.Z`.
+  Intended for use by the release manager and deployment jobs.
+
+* `sudo make deploy RELEASE_VERSION=X.Y.Z` will install specified version
+  previously generated in `release/`
+  into PostgreSQL and a Python virtual environment `envs/X.Y.Z`.
+  Intended for use by the release manager and deployment jobs.
+```
