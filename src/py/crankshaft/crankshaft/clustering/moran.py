@@ -11,7 +11,7 @@ import plpy
 
 # High level interface ---------------------------------------
 
-def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+def moran_local(subquery, attr, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
     """
     Moran's I implementation for PL/Python
     Andy Eschbacher
@@ -27,7 +27,7 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_
     qvals = {"id_col": id_col,
             "attr1": attr,
             "geom_col": geom_column,
-             "table": t,
+             "subquery": subquery,
              "num_ngbrs": num_ngbrs}
 
     q = get_query(w_type, qvals)
@@ -54,7 +54,7 @@ def moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_
     return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order)
 
 
-def moran_local_rate(t, numerator, denominator, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+def moran_local_rate(subquery, numerator, denominator, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
     """
     Moran's I Local Rate
     Andy Eschbacher
@@ -69,7 +69,7 @@ def moran_local_rate(t, numerator, denominator, significance, num_ngbrs, permuta
              "numerator": numerator,
              "denominator": denominator,
              "geom_col": geom_column,
-             "table": t,
+             "subquery": subquery,
              "num_ngbrs": num_ngbrs}
 
     q = get_query(w_type, qvals)
@@ -171,7 +171,7 @@ def query_attr_select(params):
     """
 
     attrs = [k for k in params
-             if k not in ('id_col', 'geom_col', 'table', 'num_ngbrs')]
+             if k not in ('id_col', 'geom_col', 'table', 'num_ngbrs', 'subquery')]
 
     template = "i.\"{%(col)s}\"::numeric As attr%(alias_num)s, "
 
@@ -187,7 +187,7 @@ def query_attr_where(params):
         Create portion of WHERE clauses for weeding out NULL-valued geometries
     """
     attrs = sorted([k for k in params
-                    if k not in ('id_col', 'geom_col', 'table', 'num_ngbrs')])
+                    if k not in ('id_col', 'geom_col', 'table', 'num_ngbrs', 'subquery')])
 
     attr_string = []
 
@@ -217,12 +217,12 @@ def knn(params):
                 "i.\"{id_col}\" As id, " \
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                              "FROM \"{table}\" As j " \
+                              "FROM \"({subquery})\" As j " \
                               "WHERE %(attr_where_j)s " \
                               "ORDER BY j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
                               "LIMIT {num_ngbrs} OFFSET 1 ) " \
                 ") As neighbors " \
-            "FROM \"{table}\" As i " \
+            "FROM \"({subquery})\" As i " \
             "WHERE " \
                 "%(attr_where_i)s " \
             "ORDER BY i.\"{id_col}\" ASC;" % replacements
@@ -245,11 +245,11 @@ def queen(params):
                 "i.\"{id_col}\" As id, " \
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                 "FROM \"{table}\" As j " \
+                 "FROM \"({subquery})\" As j " \
                  "WHERE ST_Touches(i.\"{geom_col}\", j.\"{geom_col}\") AND " \
                  "%(attr_where_j)s)" \
                 ") As neighbors " \
-            "FROM \"{table}\" As i " \
+            "FROM \"({subquery})\" As i " \
             "WHERE " \
                 "%(attr_where_i)s " \
             "ORDER BY i.\"{id_col}\" ASC;" % replacements
