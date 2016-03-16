@@ -30,14 +30,17 @@ def create_segment(segment_name,table_name,column_name,geoid_column,census_table
     # predict_segment
     return accuracy
 
-def create_and_predict_segment(segment_name,table_name,column_name,geoid_column,census_table,target_table,method):
+def create_and_predict_segment(segment_name,query,geoid_column,census_table,target_table,method):
     """
     generate a segment with machine learning
     Stuart Lynn
     """
-    data     = pd.DataFrame(join_with_census(table_name, column_name,geoid_column, census_table))
-    features = data[data.columns.difference([column_name, 'the_geom_webmercator', 'geoid','the_geom'])]
-    target, mean, std = normalize(data[column_name])
+    data     = pd.DataFrame(join_with_census(query,geoid_column, census_table))
+    features = data[data.columns.difference(['target', 'the_geom_webmercator', 'geoid','the_geom'])]
+    target, mean, std = normalize(data['target'])
+
+    normed_target,target_mean, target_std = normalize(target)
+
     model, accuracy, used_features = train_model(target,features, test_split=0.2)
     # save_model(segment_name, model, accuracy, table_name, column_name, census_table, geoid_column, method)
     result = predict_segment(model,used_features,geoid_column,target_table)
@@ -71,17 +74,20 @@ def calculate_model_accuracy(model,features,target):
     prediction = model.predict(features)
     return metrics.mean_squared_error(prediction,target)/np.std(target)
 
-def join_with_census(table_name, column_name, geoid_column, census_table):
-    columns          = plpy.execute('select * from {census_table} limit 1 '.format(**locals()))
-    combined_columns = [ a for a in columns[0].keys() if a not in ['the_geom','cartodb_id','geoid','the_geom_webmercator']]
+def join_with_census(query, geoid_column, census_table):
+    columns          = plpy.execute('select * from  {census_table}  limit 1  '.format(**locals()))
+    combined_columns = [ a for a in columns[0].keys() if a not in ['target','the_geom','cartodb_id','geoid','the_geom_webmercator']]
+    plpy.notice(combined_columns)
     feature_names    = ",".join([ " {census_table}.\"{a}\"::Numeric as \"{a}\" ".format(**locals()) for a in combined_columns])
+    plpy.notice(feature_names)
+
     plpy.notice('joining with census data')
     join_data     = plpy.execute('''
 
-        SELECT {feature_names}, {table_name}.{column_name}
-        FROM   {table_name}
+        SELECT {feature_names}, a.target
+        FROM   ({query}) a
         JOIN   {census_table}
-        ON  {table_name}.{geoid_column}::numeric = {census_table}.geoid::numeric
+        ON  a.{geoid_column}::numeric = {census_table}.geoid::numeric
     '''.format(**locals()))
 
     if len(join_data) == 0:
@@ -113,6 +119,7 @@ def predict_segment(model,features,geoid_column,census_table):
     plpy.notice('predicting: predicting data')
 
     prediction   = model.predict(targets)
+    de_norm_prediciton = []
     plpy.notice('predicting: predicted')
 
     return zip( [a['the_geom'] for a in geoms], [a['geoid'] for a in geo_ids],prediction)
