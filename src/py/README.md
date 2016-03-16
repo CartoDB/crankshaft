@@ -20,37 +20,29 @@ nosetests test/
 
 ---
 
-We have two possible approaches being considered as to how manage
-the Python virtual environment: using a pure virtual enviroment
-or combine it with some system packages that include depencencies
-for the *hard-to-compile* packages (and pin them in somewhat old versions).
+To avoid troublesome compilations/linkings we will use
+the available system package `python-scipy`.
+This package and its dependencies provide numpy 1.6.1
+and scipy 0.9.0. To be able to use these versions we cannot
+PySAL 1.10 or later, so we'll stick to 1.9.1.
 
-### Alternative A: pure virtual environment
+```
+apt-get install -y python-scipy
+```
 
-In this case we will install all the packages needed in the
-virtual environment.
-This will involve, specially for the numerical packages compiling
-and linking code that uses a number of third party libraries,
-and requires having theses depencencies solved for the production
-environments.
+We'll use virtual environments to install our packages,
+but configued to use also system modules so that the
+mentioned scipy and numpy are used.
 
-#### Create and use a virtual env
-
-We'll use a virtual enviroment directory `dev`
-under the `src/pg` directory.
-
-    # Create the virtual environment for python
-    $ virtualenv dev
+    # Create a virtual environment for python
+    $ virtualenv --system-site-packages dev
 
     # Activate the virtualenv
     $ source dev/bin/activate
 
     # Install all the requirements
     # expect this to take a while, as it will trigger a few compilations
-    (dev) $ pip install -r requirements.txt
-
-    # Add a new pip to the party
-    (dev) $ pip install pandas
+    (dev) $ pip install -I ./crankshaft
 
 #### Test the libraries with that virtual env
 
@@ -94,37 +86,3 @@ Then, execute the tests with:
     import pysal
     import nose
     nose.runmodule('pysal')
-
-
-### Alternative B: using some packaged modules
-
-This option avoids troublesome compilations/linkings, at the cost
-of freezing some module versions as available in system packages,
-namely numpy 1.6.1 and scipy 0.9.0. (in turn, this implies
-the most recent version of PySAL we can use is 1.9.1)
-
-
-TODO: to use this alternative the python-scipy package must be
-installed (this will have to be included in server provisioning)
-
-```
-apt-get install -y python-scipy
-```
-
-#### Create and use a virtual env
-
-We'll use a `dev` enviroment as before, but will configure it to
-use also system modules.
-
-
-    # Create the virtual environment for python
-    $ virtualenv --system-site-packages dev
-
-    # Activate the virtualenv
-    $ source dev/bin/activate
-
-    # Install all the requirements
-    # expect this to take a while, as it will trigger a few compilations
-    (dev) $ pip install -I ./crankshaft
-
-Then we can proceed to testing as in Alternative A.
