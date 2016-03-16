@@ -61,15 +61,17 @@ release: ../../release/$(EXTENSION).control $(SOURCES_DATA)
 	cp -r ../py/$(PACKAGE) ../../release/python/$(EXTVERSION)/
 	$(SED) -i -r 's/version='"'"'[0-9]+\.[0-9]+\.[0-9]+'"'"'/version='"'"'$(EXTVERSION)'"'"'/g'  ../../release/python/$(EXTVERSION)/$(PACKAGE)/setup.py
 
+RELEASE_VERSION ?= $(EXTVERSION)
+
 # Install the current relese into the PostgreSQL extensions directory
 # and the Python package in a virtual environment envs/X.Y.Z
 deploy:
 	$(INSTALL_DATA) ../../release/$(EXTENSION).control '$(DESTDIR)$(datadir)/extension/'
 	$(INSTALL_DATA) ../../release/*.sql '$(DESTDIR)$(datadir)/extension/'
 	# TODO: install also upgrade/downgrade files (manually generated)
-	virtualenv --system-site-packages $(VIRTUALENV_PATH)/$(EXTVERSION)
-	$(VIRTUALENV_PATH)/$(EXTVERSION)/bin/pip install -I -U ../../release/python/$(EXTVERSION)/$(PACKAGE)
-	$(VIRTUALENV_PATH)/$(EXTVERSION)/bin/pip install -I nose
+	virtualenv --system-site-packages $(VIRTUALENV_PATH)/$(RELEASE_VERSION)
+	$(VIRTUALENV_PATH)/$(RELEASE_VERSION)/bin/pip install -I -U ../../release/python/$(RELEASE_VERSION)/$(PACKAGE)
+	$(VIRTUALENV_PATH)/$(RELEASE_VERSION)/bin/pip install -I nose
 
 clean-dev:
 	rm -f $(EXTENSION)--*.sql

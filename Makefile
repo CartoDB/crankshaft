@@ -29,5 +29,7 @@ release:
 # Install the current release.
 # The Python package is installed in a virtual environment envs/X.Y.Z/
 # Requires sudo.
+# Use the RELEASE_VERSION environment variable to deploy a specific version:
+#     sudo make deploy RELEASE_VERSION=1.0.0
 deploy:
 	$(MAKE) -C $(EXT_DIR) deploy
