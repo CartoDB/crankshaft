@@ -27,7 +27,6 @@ We distinguish two roles regarding the development cycle of crankshaft:
   no concurrent releases will ever be in the works.
 
 We use the default `develop` branch as the basis for development.
-This branch and `master` are maintained by the *Release Manager*.
 The `master` branch is used to merge and tag releases to be
 deployed in production.
 

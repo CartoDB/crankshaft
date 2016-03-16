@@ -66,11 +66,12 @@ environment automatically.
 Before proceeding to the release process peer code reviewing of the code is
 a must.
 
-Once the feature or bugfix is completed, all the tests are passing
-and the code has been accepted by peer reviewing,
-the topic branch can be merged back into the `develop` branch and a
-new Pull-Request can be created on it.
-CI-tests must be checked to be successful.
+Once the feature or bugfix is completed and all the tests are passing
+a Pull-Request shall be created on the topic branch, reviewed by a peer
+and then merged back into the `develop` branch when all CI tests pass.
+
+When the changes in the `develop` branch are to be released in a new
+version of the extension, a PR must be created on the `develop` branch.
 
 The release manage will take hold of the PR at this moment to proceed
 to the release process for a new revision of the extension.
