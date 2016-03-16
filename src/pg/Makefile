@@ -1,3 +1,5 @@
+include ../../Makefile.global
+
 # Development tasks:
 #
 # * install generates the control & script files into src/pg/
@@ -8,10 +10,6 @@
 #   the python module is installed in a virtualenv in envs/dev/
 # * test runs the tests for the currently generated Development
 #   extension.
-
-SED = sed
-
-EXTENSION    = crankshaft
 
 DATA         = $(EXTENSION)--dev.sql \
 	             $(EXTENSION)--current--dev.sql \
@@ -45,9 +43,6 @@ test: installcheck
 
 # Release tasks
 
-PACKAGE = crankshaft
-EXTVERSION   = $(shell grep default_version $(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
-
 ../../release/$(EXTENSION).control: $(EXTENSION).control
 	cp $< $@
 
@@ -57,31 +52,9 @@ EXTVERSION   = $(shell grep default_version $(EXTENSION).control | sed -e "s/def
 # and the python package in releases/python/X.Y.Z/crankshaft/
 release: ../../release/$(EXTENSION).control $(SOURCES_DATA)
 	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > ../../release/$(EXTENSION)--$(EXTVERSION).sql
-	mkdir -p ../../release/python/$(EXTVERSION)
-	cp -r ../py/$(PACKAGE) ../../release/python/$(EXTVERSION)/
-	$(SED) -i -r 's/version='"'"'[0-9]+\.[0-9]+\.[0-9]+'"'"'/version='"'"'$(EXTVERSION)'"'"'/g'  ../../release/python/$(EXTVERSION)/$(PACKAGE)/setup.py
-
-RELEASE_VERSION ?= $(EXTVERSION)
 
 # Install the current relese into the PostgreSQL extensions directory
 # and the Python package in a virtual environment envs/X.Y.Z
 deploy:
 	$(INSTALL_DATA) ../../release/$(EXTENSION).control '$(DESTDIR)$(datadir)/extension/'
 	$(INSTALL_DATA) ../../release/*.sql '$(DESTDIR)$(datadir)/extension/'
-	# TODO: install also upgrade/downgrade files (manually generated)
-	virtualenv --system-site-packages $(VIRTUALENV_PATH)/$(RELEASE_VERSION)
-	$(VIRTUALENV_PATH)/$(RELEASE_VERSION)/bin/pip install -I -U ../../release/python/$(RELEASE_VERSION)/$(PACKAGE)
-	$(VIRTUALENV_PATH)/$(RELEASE_VERSION)/bin/pip install -I nose
-
-clean-dev:
-	rm -f $(EXTENSION)--*.sql
-
-clean-releases:
-	rm -rf ../../release/python/*
-	rm -f ../../release/$(EXTNAME)--*.sql
-	rm -f ../../release/$(EXTNAME).control
-
-clean-environments:
-	rm -rf ../../envs/*
-
-clean-all: clean-dev clean-releases clean-environments
