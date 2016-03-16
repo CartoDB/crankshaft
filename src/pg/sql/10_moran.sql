@@ -11,6 +11,7 @@ CREATE OR REPLACE FUNCTION
       w_type TEXT DEFAULT 'knn')
 RETURNS TABLE (moran FLOAT, quads TEXT, significance FLOAT, ids INT)
 AS $$
+  plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
   return moran_local(t, attr, significance, num_ngbrs, permutations, geom_column, id_col, w_type)
@@ -29,6 +30,7 @@ CREATE OR REPLACE FUNCTION
 		 w_type TEXT DEFAULT 'knn')
 RETURNS TABLE(moran FLOAT, quads TEXT, significance FLOAT, ids INT, y numeric)
 AS $$
+  plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local_rate
   # TODO: use named parameters or a dictionary
   return moran_local_rate(t, numerator, denominator, significance, num_ngbrs, permutations, geom_column, id_col, w_type)

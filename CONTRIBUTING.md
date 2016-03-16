@@ -1,84 +1,91 @@
-# Contributing guide
+# Development process
 
-## How to add new functions
+Please read the Working Process/Quickstart Guide in README.md first.
 
-Try to put as little logic in the SQL extension as possible and
-just use it as a wrapper to the Python module functionality.
+For any modification of crankshaft, such as adding new features,
+refactoring or bug-fixing, topic branch must be created out of the `develop`
+branch and be used for the development process.
 
-Once a function is defined it should never change its signature in subsequent
-versions. To change a function's signature a new function with a different
-name must be created.
+Modifications are done inside `src/pg/sql` and `src/py/crankshaft`.
 
-### Version numbers
+Take into account:
 
-The version of both the SQL extension and the Python package shall
-follow the [Semantic Versioning 2.0](http://semver.org/) guidelines:
+*  Tests must be added for any new functionality
+   (inside `src/pg/test`, `src/py/crankshaft/test`) as well as to
+   detect any bugs that are being fixed.
+*  Add or modify the corresponding documentation files in the `doc` folder.
+   Since we expect to have highly technical functions here, an extense
+   background explanation would be of great help to users of this extension.
+*  Convention: snake case(i.e. `snake_case` and not `CamelCase`)
+   shall be used for all function names.
+   Prefix function names intended for public use with `cdb_`
+   and private functions (to be used only internally inside
+   the extension)  with `_cdb_`.
 
-* When backwards incompatibility is introduced the major number is incremented
-* When functionally is added (in a backwards-compatible manner) the minor number
-  is incremented
-* When only fixes are introduced (backwards-compatible) the patch number is
-  incremented
+Once the code is ready to be tested, update the local development installation
+with `sudo make install`.
+This will update the 'dev' version of the extension in `src/pg/` and
+make it available to PostgreSQL.
+It will also install the python package (crankshaft) in a virtual
+environment `env/dev`.
 
-### Python Package
+The version number of the Python package, defined in
+`src/pg/crankshaft/setup.py` will be overridden when
+the package is released and always match the extension version number,
+but for development it shall be kept as '0.0.0'.
 
-...
+Run the tests with `make test`.
 
-### SQL Extension
-
-* Generate a **new subfolder version** for `sql` and `test` folders to define
-  the new functions and tests
-  - Use symlinks to avoid file duplication between versions that don't update them
-  - Add new files or modify copies of the old files to add new functions or
-    modify existing functions (remember to rename a function if the signature
-    changes)
-  - Add or modify the corresponding documentation files in the `doc` folder.
-    Since we expect to have highly technical functions here, an extense
-    background explanation would be of great help to users of this extension.
-  - Create tests for the new functions/behaviour
-
-* Generate the **upgrade and downgrade files** for the extension
-
-* Update the control file and the Makefile to generate the complete SQL
-  file for the new created version. After running `make` a new
-  file `crankshaft--X.Y.Z.sql` will be created for the current version.
-  Additional files for migrating to/from the previous version A.B.Z should be
-  created:
-  - `crankshaft--X.Y.Z--A.B.C.sql`
-  - `crankshaft--A.B.C--X.Y.Z.sql`
-  All these new files must be added to git and pushed.
-
-* Update the public docs! ;-)
-
-## Conventions
-
-# SQL
-
-Use snake case (i.e. `snake_case` and not `CamelCase`) for all
-functions. Prefix functions intended for public use with `cdb_`
-and private functions (to be used only internally inside
-the extension)  with `_cdb_`.
-
-# Python
-
-...
-
-## Testing
-
-Running just the Python tests:
+To use the python extension for custom tests, activate the virtual
+environment with:
 
 ```
-(cd python && make test)
+source envs/dev/bin/activate
 ```
 
-Installing the Extension and running just the PostgreSQL tests:
+Update extension in a working database with:
+
+* `ALTER EXTENSION crankshaft VERSION TO 'current';`
+  `ALTER EXTENSION crankshaft VERSION TO 'dev';`
+
+Note: we keep the current development version install as 'dev' always;
+we update through the 'current' alias to allow changing the extension
+contents but not the version identifier. This will fail if the
+changes involve incompatible function changes such as a different
+return type; in that case the offending function (or the whole extension)
+should be dropped manually before the update.
+
+If the extension has not previously been installed in a database,
+it can be installed directly with:
+
+* `CREATE EXTENSION crankshaft WITH VERSION 'dev';`
+
+Note: the development extension uses the development python virtual
+environment automatically.
+
+Before proceeding to the release process peer code reviewing of the code is
+a must.
+
+Once the feature or bugfix is completed and all the tests are passing
+a Pull-Request shall be created on the topic branch, reviewed by a peer
+and then merged back into the `develop` branch when all CI tests pass.
+
+When the changes in the `develop` branch are to be released in a new
+version of the extension, a PR must be created on the `develop` branch.
+
+The release manage will take hold of the PR at this moment to proceed
+to the release process for a new revision of the extension.
+
+## Relevant development tasks available in the Makefile
 
 ```
-(cd pg && sudo make install && PGUSER=postgres make installcheck)
-```
+* `make help` show a short description of the available targets
 
-Installing and testing everything:
+* `sudo make install` will generate the extension scripts for the development
+  version ('dev'/'current') and install the python package into the
+  development virtual environment `envs/dev`.
+  Intended for use by developers.
 
-```
-sudo make install && PGUSER=postgres make testinstalled
+* `make test` will run the tests for the installed development extension.
+  Intended for use by developers.
 ```
