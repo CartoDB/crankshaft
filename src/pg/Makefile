@@ -55,8 +55,8 @@ EXTVERSION   = $(shell grep default_version $(EXTENSION).control | sed -e "s/def
 # for the current version X.Y.Z (defined in the control file)
 # producing the extension script and control files in releases/
 # and the python package in releases/python/X.Y.Z/crankshaft/
-release: ../../release/$(EXTENSION).control
-	cp $(EXTENSION)--dev.sql ../../release/$(EXTENSION)--$(EXTVERSION).sql
+release: ../../release/$(EXTENSION).control $(SOURCES_DATA)
+	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > ../../release/$(EXTENSION)--$(EXTVERSION).sql
 	mkdir -p ../../release/python/$(EXTVERSION)
 	cp -r ../py/$(PACKAGE) ../../release/python/$(EXTVERSION)/
 	$(SED) -i -r 's/version='"'"'[0-9]+\.[0-9]+\.[0-9]+'"'"'/version='"'"'$(EXTVERSION)'"'"'/g'  ../../release/python/$(EXTVERSION)/$(PACKAGE)/setup.py
