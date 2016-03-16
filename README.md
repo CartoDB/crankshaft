@@ -18,27 +18,42 @@ CartoDB Spatial Analysis extension for PostgreSQL.
 
 # Working Process
 
+We distinguish two roles regarding the development cycle of crankshaft:
+
+* *developers* will implement new functionality and bugfixes into
+  the codebase and will request for new releases of the extension.
+* A *release manager* will attend these requests and will handle
+  the release process. The release process is sequential:
+  no concurrent releases will ever be in the works.
+
 We use the default `develop` branch as the basis for development.
 This branch and `master` are maintained by the *Release Manager*.
 The `master` branch is used to merge and tag releases to be
 deployed in production.
 
-In addition to these two permanent branches, temporal *topic*
-branches must be used for all modifications.
+Developers shall create a new topic branch from `develop` for any new feature
+or bugfix and commit their changes to it and eventually merge back into
+the `develop` branch. When a new release is required a Pull Request
+will be open againt the `develop` branch.
+
+The `develop` pull requests will be handled by the release manage,
+who will merge into master where new releases are prepared and tagged.
+The `master` branch is the sole responsibility of the release masters
+and developers must not commit or merge into it.
 
 ## Development
 
-For any modification of crankshaft, including adding new features,
-a topic branch must be created out of the `develop` branch
-and be used for the development process; see src/py/README.md
-for further details about the Pyhton package development.
+For any modification of crankshaft, such as adding new features,
+refactoring or bug-fixing, topic branch must be created out of the `develop`
+branch and be used for the development process.
 
 Modifications are done inside `src/pg/sql` and `src/py/crankshaft`.
+
 Take into account:
 
-*  Test must be added for any new functionality
-   (`src/pg/test`, `src/py/crankshaft/test`) as well as for
-   detected any bugs corrected.
+*  Tests must be added for any new functionality
+   (inside `src/pg/test`, `src/py/crankshaft/test`) as well as to
+   detect any bugs that are being fixed.
 *  Add or modify the corresponding documentation files in the `doc` folder.
    Since we expect to have highly technical functions here, an extense
    background explanation would be of great help to users of this extension.
@@ -89,14 +104,17 @@ it can be installed directly with:
 Note: the development extension uses the development python virtual
 environment automatically.
 
-Once the tests are succeeding a new Pull-Request can be created
-to the develop branch. CI-tests must be checked to be successful.
-
 Before proceeding to the release process peer code reviewing of the code is
 a must.
 
-When the code is accepted by the peer reviewing (and CI tests succeed)
-a request for release will be send to the Release Manager.
+Once the feature or bugfix is completed, all the tests are passing
+and the code has been accepted by peer reviewing,
+the topic branch can be merged back into the `develop` branch and a
+new Pull-Request can be created on it.
+CI-tests must be checked to be successful.
+
+The release manage will take hold of the PR at this moment to proceed
+to the release process for a new revision of the extension.
 
 ## Release
 
@@ -105,8 +123,8 @@ shall be performed by the designated *Release Manager*.
 
 Note that we expect to gradually automate more of this process.
 
-Having checked the topic branch of the PR to be released it shall be
-merged back into the `develop` branch to prepare the new release.
+Having checked PR to be released it shall be
+merged back into the `master` branch to prepare the new release.
 
 The version number in `pg/cranckshaft.control` must first be updated.
 To do so [Semantic Versioning 2.0](http://semver.org/) is in order.
