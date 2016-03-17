@@ -40,11 +40,11 @@ def create_and_predict_segment(segment_name,query,geoid_column,census_table,targ
     target, mean, std = normalize(data['target'])
 
     normed_target,target_mean, target_std = normalize(target)
-
+    plpy.notice('mean ', target_mean, " std ", target_std)
     model, accuracy, used_features = train_model(target,features, test_split=0.2)
     # save_model(segment_name, model, accuracy, table_name, column_name, census_table, geoid_column, method)
-    result = predict_segment(model,used_features,geoid_column,target_table)
-    return result
+    geoms, geoids, result = predict_segment(model,used_features,geoid_column,target_table)
+    return zip(geoms,geoids, [denormalize(t,target_mean, target_std) for t in result] )
 
 
 def normalize(target):
@@ -63,7 +63,7 @@ def train_model(target,features,test_split):
     plpy.notice('after ', str(np.shape(features)))
     target = target.fillna(0)
     features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=test_split)
-    model = ExtraTreesRegressor(n_estimators = 100, max_features=len(features.columns))
+    model = ExtraTreesRegressor(n_estimators = 200, max_features=len(features.columns))
     plpy.notice('training the model: fitting to data')
     model.fit(features_train, target_train)
     plpy.notice('training the model: fitting one')
@@ -122,7 +122,7 @@ def predict_segment(model,features,geoid_column,census_table):
     de_norm_prediciton = []
     plpy.notice('predicting: predicted')
 
-    return zip( [a['the_geom'] for a in geoms], [a['geoid'] for a in geo_ids],prediction)
+    return  [a['the_geom'] for a in geoms], [a['geoid'] for a in geo_ids],prediction
 
 
 def fetch_model(model_name):
