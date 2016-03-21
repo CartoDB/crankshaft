@@ -14,7 +14,7 @@ CartoDB Spatial Analysis extension for PostgreSQL.
 ## Requirements
 
 * pip, virtualenv, PostgreSQL
-* python-scipy system package (see src/py/README.md)
+* python-scipy system package (see [src/py/README.md](https://github.com/CartoDB/crankshaft/blob/master/src/py/README.md))
 
 # Working Process -- Quickstart Guide
 
@@ -33,7 +33,7 @@ deployed in production.
 Developers shall create a new topic branch from `develop` for any new feature
 or bugfix and commit their changes to it and eventually merge back into
 the `develop` branch. When a new release is required a Pull Request
-will be open againt the `develop` branch.
+will be open against the `develop` branch.
 
 The `develop` pull requests will be handled by the release manage,
 who will merge into master where new releases are prepared and tagged.
@@ -43,7 +43,7 @@ and developers must not commit or merge into it.
 ## Development Guidelines
 
 For a detailed description of the development process please see
-the CONTRIBUTING.md guide.
+the [CONTRIBUTING.md](https://github.com/CartoDB/crankshaft/blob/master/CONTRIBUTING.md) guide.
 
 Any modification to the source code (`src/pg/sql` for the SQL extension,
 `src/py/crankshaft` for the Python package) shall always be done
@@ -52,7 +52,7 @@ in a topic branch created from the `develop` branch.
 Tests, documentation and peer code reviewing are required for all
 modifications.
 
-The tests (both for SQL and Pyhton) are executed by running,
+The tests (both for SQL and Python) are executed by running,
 from the top directory:
 
 ```
@@ -67,5 +67,5 @@ branch.
 ## Release
 
 The release and deployment process is described in the
-RELEASE.md guide and it is the responsibility of the designated
+[RELEASE.md](https://github.com/CartoDB/crankshaft/blob/master/RELEASE.md) guide and it is the responsibility of the designated
 release manager.

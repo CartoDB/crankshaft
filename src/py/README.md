@@ -8,7 +8,7 @@ cd crankshaft
 nosetests test/
 ```
 
-## Notes about python dependencies
+## Notes about Python dependencies
 * This extension is targeted at production databases. Therefore certain restrictions must be assumed about the production environment vs other experimental environments.
 * We're using `pip` and `virtualenv` to generate a suitable isolated environment for python code that has  all the dependencies
 * Every dependency should be:
