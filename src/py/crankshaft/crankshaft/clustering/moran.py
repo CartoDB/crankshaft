@@ -11,7 +11,51 @@ import plpy
 
 # High level interface ---------------------------------------
 
-def moran_local(subquery, attr, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+def moran(subquery, attr_name, permutations, geom_col, id_col, w_type, num_ngbrs):
+    """
+    Moran's I (global)
+    Andy Eschbacher
+    """
+    qvals = {"id_col": id_col,
+             "attr1": attr_name,
+             "geom_col": geom_col,
+             "subquery": subquery,
+             "num_ngbrs": num_ngbrs}
+
+    q = get_query(w_type, qvals)
+
+    plpy.notice('** Query: %s' % q)
+
+    try:
+        r = plpy.execute(q)
+        if (len(r) == 0) & (w_type != 'knn'):
+            plpy.notice('** Query returned with 0 rows, trying kNN weights')
+            q = get_query('knn', qvals)
+            r = plpy.execute(q)
+        plpy.notice('** Query returned with %d rows' % len(r))
+    except plpy.SPIError:
+        plpy.error('** Moran rate failed executing query to build weight object')
+        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Error: %s' % plpy.SPIError)
+        plpy.notice('** Exiting function')
+        return zip([None], [None])
+
+    ## if there are no neighbors, exit
+    if len(r) == 0:
+        return zip([None], [None])
+
+    ## collect attributes
+    attr_vals = get_attributes(r, 1)
+
+    ## calculate weights
+    weight = get_weight(r, w_type, num_ngbrs)
+
+    ## calculate moran global
+    moran_global = ps.esda.moran.Moran(attr_vals, weight, permutations=permutations)
+
+    return zip([moran_global.I],[moran_global.EI])
+
+def moran_local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs):
     """
     Moran's I implementation for PL/Python
     Andy Eschbacher
@@ -25,8 +69,8 @@ def moran_local(subquery, attr, significance, num_ngbrs, permutations, geom_colu
     # resulting in a collection of not as near neighbors
 
     qvals = {"id_col": id_col,
-            "attr1": attr,
-            "geom_col": geom_column,
+             "attr1": attr,
+             "geom_col": geom_col,
              "subquery": subquery,
              "num_ngbrs": num_ngbrs}
 
@@ -38,23 +82,68 @@ def moran_local(subquery, attr, significance, num_ngbrs, permutations, geom_colu
     except plpy.SPIError:
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Exiting function')
-        return zip([None], [None], [None], [None])
+        return zip([None], [None], [None], [None], [None])
 
     y = get_attributes(r, 1)
     w = get_weight(r, w_type)
 
     # calculate LISA values
-    lisa = ps.Moran_Local(y, w)
+    lisa = ps.esda.moran.Moran_Local(y, w)
 
-    # find units of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    # find quadrants for each geometry
+    quads = quad_position(lisa.q)
+
+    plpy.notice('** Finished calculations')
+    return zip(lisa.Is, quads, lisa.p_sim, w.id_order, lisa.y)
+
+def moran_rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs):
+    """
+    Moran's I Rate (global)
+    Andy Eschbacher
+    """
+    qvals = {"id_col": id_col,
+             "attr1": numerator,
+             "attr2": denominator,
+             "geom_col": geom_col,
+             "subquery": subquery,
+             "num_ngbrs": num_ngbrs}
+
+    q = get_query(w_type, qvals)
+
+    plpy.notice('** Query: %s' % q)
+
+    try:
+        r = plpy.execute(q)
+        if len(r) == 0:
+            plpy.notice('** Query returned with 0 rows, trying kNN weights')
+            q = get_query('knn', qvals)
+            r = plpy.execute(q)
+        plpy.notice('** Query returned with %d rows' % len(r))
+    except plpy.SPIError:
+        plpy.error('Moran rate failed executing query to build weight object')
+        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Error: %s' % plpy.SPIError)
+        plpy.notice('** Exiting function')
+        return zip([None], [None])
+
+    ## if there are no values returned, exit
+    if len(r) == 0:
+        return zip([None], [None])
+
+    ## collect attributes
+    numer = get_attributes(r, 1)
+    denom = get_attributes(r, 2)
+
+    w = get_weight(r, w_type, num_ngbrs)
+
+    ## calculate moran global rate
+    mr = ps.esda.moran.Moran_Rate(numer, denom, w, permutations=permutations)
 
     plpy.notice('** Finished calculations')
 
-    return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order)
+    return zip([mr.I],[mr.EI])
 
-
-def moran_local_rate(subquery, numerator, denominator, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+def moran_local_rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs):
     """
     Moran's I Local Rate
     Andy Eschbacher
@@ -68,7 +157,7 @@ def moran_local_rate(subquery, numerator, denominator, significance, num_ngbrs, 
     qvals = {"id_col": id_col,
              "numerator": numerator,
              "denominator": denominator,
-             "geom_col": geom_column,
+             "geom_col": geom_col,
              "subquery": subquery,
              "num_ngbrs": num_ngbrs}
 
@@ -81,7 +170,7 @@ def moran_local_rate(subquery, numerator, denominator, significance, num_ngbrs, 
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Error: %s' % plpy.SPIError)
         plpy.notice('** Exiting function')
-        return zip([None], [None], [None], [None])
+        return zip([None], [None], [None], [None], [None])
 
         plpy.notice('r.nrows() = %d' % r.nrows())
 
@@ -95,21 +184,20 @@ def moran_local_rate(subquery, numerator, denominator, significance, num_ngbrs, 
     lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, w, permutations=permutations)
 
     # find units of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    quads =  quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
-    ## TODO: Decide on which return values here
-    return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order, lisa.y)
+    return zip(lisa.Is, quads, lisa.p_sim, w.id_order, lisa.y)
 
-def moran_local_bv(t, attr1, attr2, significance, num_ngbrs, permutations, geom_column, id_col, w_type):
+def moran_local_bv(subquery, attr1, attr2, permutations, geom_col, id_col, w_type, num_ngbrs):
     plpy.notice('** Constructing query')
 
     qvals = {"num_ngbrs": num_ngbrs,
              "attr1": attr1,
              "attr2": attr2,
-             "table": t,
-             "geom_col": geom_column,
+             "subquery": subquery,
+             "geom_col": geom_col,
              "id_col": id_col}
 
     q = get_query(w_type, qvals)
@@ -136,7 +224,7 @@ def moran_local_bv(t, attr1, attr2, significance, num_ngbrs, permutations, geom_
     plpy.notice("len of Is: %d" % len(lisa.Is))
 
     # find clustering of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    lisa_sig = quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
@@ -171,7 +259,7 @@ def query_attr_select(params):
     """
 
     attrs = [k for k in params
-             if k not in ('id_col', 'geom_col', 'table', 'num_ngbrs', 'subquery')]
+             if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs')]
 
     template = "i.\"{%(col)s}\"::numeric As attr%(alias_num)s, "
 
@@ -187,7 +275,7 @@ def query_attr_where(params):
         Create portion of WHERE clauses for weeding out NULL-valued geometries
     """
     attrs = sorted([k for k in params
-                    if k not in ('id_col', 'geom_col', 'table', 'num_ngbrs', 'subquery')])
+                    if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs')])
 
     attr_string = []
 
@@ -217,12 +305,12 @@ def knn(params):
                 "i.\"{id_col}\" As id, " \
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                              "FROM \"({subquery})\" As j " \
+                              "FROM ({subquery}) As j " \
                               "WHERE %(attr_where_j)s " \
                               "ORDER BY j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
                               "LIMIT {num_ngbrs} OFFSET 1 ) " \
                 ") As neighbors " \
-            "FROM \"({subquery})\" As i " \
+            "FROM ({subquery}) As i " \
             "WHERE " \
                 "%(attr_where_i)s " \
             "ORDER BY i.\"{id_col}\" ASC;" % replacements
@@ -245,11 +333,11 @@ def queen(params):
                 "i.\"{id_col}\" As id, " \
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                 "FROM \"({subquery})\" As j " \
+                 "FROM ({subquery}) As j " \
                  "WHERE ST_Touches(i.\"{geom_col}\", j.\"{geom_col}\") AND " \
                  "%(attr_where_j)s)" \
                 ") As neighbors " \
-            "FROM \"({subquery})\" As i " \
+            "FROM ({subquery}) As i " \
             "WHERE " \
                 "%(attr_where_i)s " \
             "ORDER BY i.\"{id_col}\" ASC;" % replacements
@@ -285,10 +373,10 @@ def get_weight(query_res, w_type='queen', num_ngbrs=5):
     if w_type == 'knn':
         row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
         weights = {x['id']: row_normed_weights for x in query_res}
-    elif w_type == 'queen':
+    else:
         weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
-                            if len(x['neighbors']) > 0
-                            else [] for x in query_res}
+                             if len(x['neighbors']) > 0
+                             else [] for x in query_res}
 
     neighbors = {x['id']: x['neighbors'] for x in query_res}
 
@@ -300,22 +388,5 @@ def quad_position(quads):
     """
 
     lisa_sig = np.array([map_quads(q) for q in quads])
-
-    return lisa_sig
-
-def lisa_sig_vals(pvals, quads, threshold):
-    """
-        Produce Moran's I classification based of n
-    """
-
-    sig = (pvals <= threshold)
-
-    lisa_sig = np.empty(len(sig), np.chararray)
-
-    for idx, val in enumerate(sig):
-        if val:
-            lisa_sig[idx] = map_quads(quads[idx])
-        else:
-            lisa_sig[idx] = 'Not significant'
 
     return lisa_sig
