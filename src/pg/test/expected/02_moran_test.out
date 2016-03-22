@@ -126,13 +126,65 @@ SELECT ppoints.code, m.quads
   ORDER BY ppoints.code;
 NOTICE:  ** Constructing query
 CONTEXT:  PL/Python function "cdb_moran_local"
-NOTICE:  ** Query failed: "SELECT i."cartodb_id" As id, i."value"::numeric As attr1, (SELECT ARRAY(SELECT j."cartodb_id" FROM "(SELECT * FROM ppoints)" As j WHERE j."value" IS NOT NULL ORDER BY j."the_geom" <-> i."the_geom" ASC LIMIT 5 OFFSET 1 ) ) As neighbors FROM "(SELECT * FROM ppoints)" As i WHERE i."value" IS NOT NULL ORDER BY i."cartodb_id" ASC;"
+NOTICE:  ** Query returned with 52 rows
 CONTEXT:  PL/Python function "cdb_moran_local"
-NOTICE:  ** Exiting function
+NOTICE:  ** Finished calculations
 CONTEXT:  PL/Python function "cdb_moran_local"
  code | quads 
 ------+-------
-(0 rows)
+ 01   | HH
+ 02   | HL
+ 03   | LL
+ 04   | LL
+ 05   | LH
+ 06   | LL
+ 07   | HH
+ 08   | HH
+ 09   | HH
+ 10   | LL
+ 11   | LL
+ 12   | LL
+ 13   | HL
+ 14   | LL
+ 15   | LL
+ 16   | HH
+ 17   | HH
+ 18   | LL
+ 19   | HH
+ 20   | HH
+ 21   | LL
+ 22   | HH
+ 23   | LL
+ 24   | LL
+ 25   | HH
+ 26   | HH
+ 27   | LL
+ 28   | HH
+ 29   | LL
+ 30   | LL
+ 31   | HH
+ 32   | LL
+ 33   | HL
+ 34   | LH
+ 35   | LL
+ 36   | LL
+ 37   | HL
+ 38   | HL
+ 39   | HH
+ 40   | HH
+ 41   | HL
+ 42   | LH
+ 43   | LH
+ 44   | LL
+ 45   | LH
+ 46   | LL
+ 47   | LL
+ 48   | HH
+ 49   | LH
+ 50   | HH
+ 51   | LL
+ 52   | LL
+(52 rows)
 
 SELECT cdb_crankshaft._cdb_random_seeds(1234);
  _cdb_random_seeds 
@@ -147,12 +199,62 @@ SELECT ppoints2.code, m.quads
   ORDER BY ppoints2.code;
 NOTICE:  ** Constructing query
 CONTEXT:  PL/Python function "cdb_moran_local_rate"
-NOTICE:  ** Query failed: "SELECT i."cartodb_id" As id, i."denominator"::numeric As attr1, i."numerator"::numeric As attr2, (SELECT ARRAY(SELECT j."cartodb_id" FROM "(SELECT * FROM ppoints2)" As j WHERE j."denominator" IS NOT NULL AND j."numerator" IS NOT NULL AND j."numerator" <> 0 ORDER BY j."the_geom" <-> i."the_geom" ASC LIMIT 5 OFFSET 1 ) ) As neighbors FROM "(SELECT * FROM ppoints2)" As i WHERE i."denominator" IS NOT NULL AND i."numerator" IS NOT NULL AND i."numerator" <> 0 ORDER BY i."cartodb_id" ASC;"
+NOTICE:  ** Query returned with 51 rows
 CONTEXT:  PL/Python function "cdb_moran_local_rate"
-NOTICE:  ** Error: <class 'plpy.SPIError'>
+NOTICE:  ** Finished calculations
 CONTEXT:  PL/Python function "cdb_moran_local_rate"
-NOTICE:  ** Exiting function
-CONTEXT:  PL/Python function "cdb_moran_local_rate"
-ERROR:  length of returned sequence did not match number of columns in row
-CONTEXT:  while creating return value
-PL/Python function "cdb_moran_local_rate"
+ code | quads 
+------+-------
+ 01   | LL
+ 02   | LH
+ 03   | HH
+ 04   | HH
+ 05   | LL
+ 06   | HH
+ 07   | LL
+ 08   | LL
+ 09   | LL
+ 10   | HH
+ 11   | HH
+ 12   | HL
+ 13   | LL
+ 14   | HH
+ 15   | LL
+ 16   | LL
+ 17   | LL
+ 18   | LH
+ 19   | LL
+ 20   | LL
+ 21   | HH
+ 22   | LL
+ 23   | HL
+ 24   | LL
+ 25   | LL
+ 26   | LL
+ 27   | LL
+ 28   | LL
+ 29   | LH
+ 30   | HH
+ 31   | LL
+ 32   | LL
+ 33   | LL
+ 34   | LL
+ 35   | LH
+ 36   | HL
+ 37   | LH
+ 38   | LH
+ 39   | LL
+ 40   | LL
+ 41   | LH
+ 42   | HL
+ 43   | LL
+ 44   | HL
+ 45   | LL
+ 46   | HL
+ 47   | LL
+ 48   | LL
+ 49   | HL
+ 50   | LL
+ 51   | HH
+(51 rows)
+
