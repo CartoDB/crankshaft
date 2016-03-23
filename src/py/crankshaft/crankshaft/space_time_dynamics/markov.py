@@ -54,7 +54,7 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, ge
     ## rebin time data
     if num_time_per_bin > 1:
         ## rebin
-        t_data = rebin_data(t_data, num_time_per_bin)
+        t_data = rebin_data(t_data, int(num_time_per_bin))
 
     sp_markov_result = ps.Spatial_Markov(t_data, weights, k=7, fixed=False)
 
@@ -68,7 +68,7 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, ge
     prob_dist = get_prob_dist(lag_classes, sp_markov_result.classes)
 
     ## find the ups and down and overall distribution of each cell
-    trend, trend_up, trend_down, volatility = get_prob_stats(prob_dist)
+    trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist)
 
     ## output the results
 
@@ -127,12 +127,29 @@ def get_prob_dist(transition_matrix, lag_indices, unit_indices):
     return np.array([transition_matrix[(lag_indices[i], unit_indices[i])] for i in range(len(lag_indices))])
 
 def get_prob_stats(prob_dist, unit_indices):
-# trend, trend_up, trend_down, volatility = get_prob_stats(prob_dist)
+    """
+        get the statistics of the probability distributions
 
-    trend_up = np.array([prob_dist[:, i:].sum() for i in unit_indices])
-    trend_down = np.array([prob_dist[:, :i].sum() for i in unit_indices])
-    trend = trend_up - trend_down
+        Outputs:
+            @param trend_up ndarray(float): sum of probabilities for upward
+               movement (relative to the unit index of that prob)
+            @param trend_down ndarray(float): sum of probabilities for downard
+               movement (relative to the unit index of that prob)
+            @param trend ndarray(float): difference of upward and downward
+               movements
+    """
+
+    num_elements = len(prob_dist)
+    trend_up   = np.empty(num_elements)
+    trend_down = np.empty(num_elements)
+    trend      = np.empty(num_elements)
+
+    for i in range(num_elements):
+        trend_up[i] = prob_dist[i, (unit_indices[i]+1):].sum()
+        trend_down[i] = prob_dist[i, :unit_indices[i]].sum()
+        trend[i] = (trend_up[i] - trend_down[i]) / prob_dist[i, unit_indices[i]]
+
+    ## calculate volatility of distribution
     volatility = prob_dist.std(axis=1)
-
 
     return trend_up, trend_down, trend, volatility
