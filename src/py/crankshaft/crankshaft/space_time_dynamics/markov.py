@@ -140,9 +140,9 @@ def get_prob_stats(prob_dist, unit_indices):
     """
 
     num_elements = len(prob_dist)
-    trend_up   = np.empty(num_elements)
-    trend_down = np.empty(num_elements)
-    trend      = np.empty(num_elements)
+    trend_up   = np.empty(num_elements, dtype=float)
+    trend_down = np.empty(num_elements, dtype=float)
+    trend      = np.empty(num_elements, dtype=float)
 
     for i in range(num_elements):
         trend_up[i] = prob_dist[i, (unit_indices[i]+1):].sum()
