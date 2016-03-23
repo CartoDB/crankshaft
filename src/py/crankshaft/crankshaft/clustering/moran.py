@@ -47,7 +47,7 @@ def moran_local(subquery, attr, significance, num_ngbrs, permutations, geom_colu
     lisa = ps.Moran_Local(y, w)
 
     # find units of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    lisa_sig = quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
@@ -95,7 +95,7 @@ def moran_local_rate(subquery, numerator, denominator, significance, num_ngbrs, 
     lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, w, permutations=permutations)
 
     # find units of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    lisa_sig = quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
@@ -136,7 +136,7 @@ def moran_local_bv(t, attr1, attr2, significance, num_ngbrs, permutations, geom_
     plpy.notice("len of Is: %d" % len(lisa.Is))
 
     # find clustering of significance
-    lisa_sig = lisa_sig_vals(lisa.p_sim, lisa.q, significance)
+    lisa_sig = quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
 
@@ -169,33 +169,62 @@ def query_attr_select(params):
         :param params: dict of information used in query (column names,
                        table name, etc.)
     """
-
-    attrs = [k for k in params
-             if k not in ('id_col', 'geom_col', 'table', 'num_ngbrs', 'subquery')]
-
-    template = "i.\"{%(col)s}\"::numeric As attr%(alias_num)s, "
-
+    template = "i.\"%(col)s\"::numeric As attr%(alias_num)s, "
     attr_string = ""
 
-    for idx, val in enumerate(sorted(attrs)):
-        attr_string += template % {"col": val, "alias_num": idx + 1}
+    if 'time_cols' in params:
+        ## if markov analysis
+        attrs = params['time_cols']
+
+        for idx, val in enumerate(attrs):
+            attr_string += template % {"col": val, "alias_num": idx + 1}
+    else:
+        ## if moran's analysis
+        attrs = [k for k in params
+                 if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')]
+
+        for idx, val in enumerate(sorted(attrs)):
+            attr_string += template % {"col": params[val], "alias_num": idx + 1}
 
     return attr_string
 
 def query_attr_where(params):
     """
         Create portion of WHERE clauses for weeding out NULL-valued geometries
+        Input: dict of params:
+            {'subquery': ...,
+             'numerator': 'data1',
+             'denominator': 'data2',
+             '': ...}
+        Output: 'idx_replace."data1" IS NOT NULL AND idx_replace."data2" IS NOT NULL'
+
+        Input:
+        {'subquery': ...,
+         'time_cols': ['time1', 'time2', 'time3'],
+         'etc': ...}
+        Output: 'idx_replace."time1" IS NOT NULL AND idx_replace."time2" IS NOT NULL AND idx_replace."time3" IS NOT NULL'
     """
-    attrs = sorted([k for k in params
-                    if k not in ('id_col', 'geom_col', 'table', 'num_ngbrs', 'subquery')])
-
     attr_string = []
+    template = "idx_replace.\"%s\" IS NOT NULL"
 
-    for attr in attrs:
-        attr_string.append("idx_replace.\"{%s}\" IS NOT NULL" % attr)
+    if 'time_cols' in params:
+        ## markov where clauses
+        attrs = params['time_cols']
+        # add values to template
+        for attr in attrs:
+            attr_string.append(template % attr)
+    else:
+        ## moran where clauses
 
-    if len(attrs) == 2:
-        attr_string.append("idx_replace.\"{%s}\" <> 0" % attrs[1])
+        # get keys
+        attrs = sorted([k for k in params
+                        if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')])
+        # add values to template
+        for attr in attrs:
+            attr_string.append(template % params[attr])
+
+        if len(attrs) == 2:
+            attr_string.append("idx_replace.\"%s\" <> 0" % params[attrs[1]])
 
     out = " AND ".join(attr_string)
 
@@ -217,15 +246,16 @@ def knn(params):
                 "i.\"{id_col}\" As id, " \
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                              "FROM \"({subquery})\" As j " \
+                              "FROM ({subquery}) As j " \
                               "WHERE %(attr_where_j)s " \
                               "ORDER BY j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
                               "LIMIT {num_ngbrs} OFFSET 1 ) " \
                 ") As neighbors " \
-            "FROM \"({subquery})\" As i " \
+            "FROM ({subquery}) As i " \
             "WHERE " \
                 "%(attr_where_i)s " \
             "ORDER BY i.\"{id_col}\" ASC;" % replacements
+    print query
 
     return query.format(**params)
 
@@ -245,11 +275,11 @@ def queen(params):
                 "i.\"{id_col}\" As id, " \
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                 "FROM \"({subquery})\" As j " \
+                 "FROM ({subquery}) As j " \
                  "WHERE ST_Touches(i.\"{geom_col}\", j.\"{geom_col}\") AND " \
                  "%(attr_where_j)s)" \
                 ") As neighbors " \
-            "FROM \"({subquery})\" As i " \
+            "FROM ({subquery}) As i " \
             "WHERE " \
                 "%(attr_where_i)s " \
             "ORDER BY i.\"{id_col}\" ASC;" % replacements
@@ -300,22 +330,5 @@ def quad_position(quads):
     """
 
     lisa_sig = np.array([map_quads(q) for q in quads])
-
-    return lisa_sig
-
-def lisa_sig_vals(pvals, quads, threshold):
-    """
-        Produce Moran's I classification based of n
-    """
-
-    sig = (pvals <= threshold)
-
-    lisa_sig = np.empty(len(sig), np.chararray)
-
-    for idx, val in enumerate(sig):
-        if val:
-            lisa_sig[idx] = map_quads(quads[idx])
-        else:
-            lisa_sig[idx] = 'Not significant'
 
     return lisa_sig
