@@ -41,17 +41,17 @@ class MoranTest(unittest.TestCase):
     def test_query_attr_select(self):
         """Test query_attr_select."""
 
-        ans = "i.\"{attr1}\"::numeric As attr1, " \
-              "i.\"{attr2}\"::numeric As attr2, "
+        ans = "i.\"andy\"::numeric As attr1, " \
+              "i.\"jay_z\"::numeric As attr2, "
 
         self.assertEqual(cc.query_attr_select(self.params), ans)
 
     def test_query_attr_where(self):
         """Test query_attr_where."""
 
-        ans = "idx_replace.\"{attr1}\" IS NOT NULL AND "\
-              "idx_replace.\"{attr2}\" IS NOT NULL AND "\
-              "idx_replace.\"{attr2}\" <> 0"
+        ans = "idx_replace.\"andy\" IS NOT NULL AND "\
+              "idx_replace.\"jay_z\" IS NOT NULL AND "\
+              "idx_replace.\"jay_z\" <> 0"
 
         self.assertEqual(cc.query_attr_where(self.params), ans)
 
