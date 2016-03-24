@@ -26,6 +26,11 @@ class MoranTest(unittest.TestCase):
                        "subquery": "SELECT * FROM a_list",
                        "geom_col": "the_geom",
                        "num_ngbrs": 321}
+        self.params_markov = {"id_col": "cartodb_id",
+                              "time_cols": ["_2013_dec", "_2014_jan", "_2014_feb"],
+                              "subquery": "SELECT * FROM a_list",
+                              "geom_col": "the_geom",
+                              "num_ngbrs": 321}
         self.neighbors_data = json.loads(open(fixture_file('neighbors.json')).read())
         self.moran_data = json.loads(open(fixture_file('moran.json')).read())
 
@@ -67,7 +72,26 @@ class MoranTest(unittest.TestCase):
               "NULL AND i.\"jay_z\" IS NOT NULL AND i.\"jay_z\" <> 0 ORDER " \
               "BY i.\"cartodb_id\" ASC;"
 
+        ans_markov = "SELECT i.\"cartodb_id\" As id, " \
+              "i.\"_2013_dec\"::numeric As attr1, " \
+              "i.\"_2014_jan\"::numeric As attr2, " \
+              "i.\"_2014_feb\"::numeric As attr3, " \
+              "(SELECT ARRAY(SELECT j.\"cartodb_id\" " \
+                            "FROM (SELECT * FROM a_list) As j " \
+                            "WHERE j.\"_2013_dec\" IS NOT NULL AND " \
+                                  "j.\"_2014_jan\" IS NOT NULL AND " \
+                                  "j.\"_2014_feb\" IS NOT NULL " \
+                            "ORDER BY j.\"the_geom\" <-> i.\"the_geom\" ASC " \
+                            "LIMIT 321 OFFSET 1 ) ) As neighbors " \
+              "FROM (SELECT * FROM a_list) As i " \
+              "WHERE i.\"_2013_dec\" IS NOT NULL AND " \
+                    "i.\"_2014_jan\" IS NOT NULL AND " \
+                    "i.\"_2014_feb\" IS NOT NULL "\
+              "ORDER BY i.\"cartodb_id\" ASC;"
+
         self.assertEqual(cc.knn(self.params), ans)
+
+        self.assertEqual(cc.knn(self.params_markov), ans_markov)
 
     def test_queen(self):
         """Test queen neighbors function."""
