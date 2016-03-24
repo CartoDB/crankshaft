@@ -98,6 +98,15 @@ def join_with_census(query, geoid_column, census_table):
 def query_to_dictionary(result):
     return [ dict(zip(r.keys(), r.values())) for r in result ]
 
+def query_in_batches(query,batch_size):
+    cursor = plpy.cursor(query)
+    while True:
+        rows = cursor.fetch(batch_size)
+        if not rows:
+            break
+        else:
+            yield query_to_dictionary(rows)
+
 def predict_segment(model,features,geoid_column,census_table):
     """
     predict a segment with machine learning
@@ -109,20 +118,20 @@ def predict_segment(model,features,geoid_column,census_table):
 
     joined_features  = ','.join(['\"'+a+'\"::numeric' for a in features])
     targets  = pd.DataFrame(query_to_dictionary(plpy.execute('select {joined_features} from {census_table}'.format(**locals()))))
-    plpy.notice('predicting:' + str(len(features)) + ' '+str(np.shape(targets)))
-    plpy.notice(joined_features)
-    targets = targets.dropna(axis =1, how='all').fillna(0)
-    plpy.notice('predicting:' + str(len(features)) + ' '+str(np.shape(targets)))
+
+    predition = []
+    for batch in query_in_batches('select {joined_features} from {census_table}'.format(**locals()),2000):
+        targets = pd.DataFrame(batch)
+        plpy.notice('predicting:' + str(len(features)) + ' '+str(np.shape(targets)))
+        plpy.notice(joined_features)
+        targets = targets.dropna(axis =1, how='all').fillna(0)
+        plpy.notice('predicting:' + str(len(features)) + ' '+str(np.shape(targets)))
+        batch_prediction   = model.predict(targets)
+        prediciton.append(batch_prediction.to_maxtrix)
+
     geo_ids  = plpy.execute('select geoid from {census_table}'.format(**locals()))
-    geoms  = plpy.execute('select the_geom from {census_table}'.format(**locals()))
 
-    plpy.notice('predicting: predicting data')
-
-    prediction   = model.predict(targets)
-    de_norm_prediciton = []
-    plpy.notice('predicting: predicted')
-
-    return  [a['the_geom'] for a in geoms], [a['geoid'] for a in geo_ids],prediction
+    return  [[a['geoid'] for a in geo_ids],prediction]
 
 
 def fetch_model(model_name):
