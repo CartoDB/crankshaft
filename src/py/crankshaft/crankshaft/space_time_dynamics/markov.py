@@ -6,7 +6,7 @@ Spatial dynamics measurements using Spatial Markov
 import numpy as np
 import pysal as ps
 import plpy
-from crankshaft.clustering import get_query
+from crankshaft.clustering import get_query, get_weight
 
 def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, geom_col, id_col, w_type, num_ngbrs):
     """
@@ -44,7 +44,9 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, ge
     try:
         query_result = plpy.execute(query)
     except:
-        zip([None],[None],[None])
+        plpy.notice('** Query failed: %s' % query)
+        plpy.error('Query failed: check the input parameters')
+        return zip([None], [None], [None], [None], [None])
 
     ## build weight
     weights = get_weight(query_result, w_type)
@@ -58,17 +60,17 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, ge
 
     sp_markov_result = ps.Spatial_Markov(t_data, weights, k=7, fixed=False)
 
-    ## get lags
-    lags = ps.lag_spatial(weights, t_data)
+    ## get lags of last time slice
+    lags = ps.lag_spatial(weights, t_data[:, -1])
 
     ## get lag classes
-    lag_classes = ps.Quantiles(lags.flatten(), k=7).yb
+    lag_classes = ps.Quantiles(lags, k=7).yb
 
     ## look up probablity distribution for each unit according to class and lag class
-    prob_dist = get_prob_dist(lag_classes, sp_markov_result.classes)
+    prob_dist = get_prob_dist(sp_markov_result.P, lag_classes, sp_markov_result.classes[:, -1])
 
     ## find the ups and down and overall distribution of each cell
-    trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist)
+    trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist, sp_markov_result.classes[:, -1])
 
     ## output the results
 
@@ -78,7 +80,9 @@ def get_time_data(markov_data, time_cols):
     """
         Extract the time columns and bin appropriately
     """
-    return np.array([[x[t_col] for x in query_result] for t_col in time_cols], dtype=float)
+    num_attrs = len(time_cols)
+    return np.array([[x['attr' + str(i)] for x in markov_data]
+                     for i in range(1, num_attrs+1)], dtype=float).T
 
 def rebin_data(time_data, num_time_per_bin):
     """
@@ -139,7 +143,7 @@ def get_prob_stats(prob_dist, unit_indices):
                movements
     """
 
-    num_elements = len(prob_dist)
+    num_elements = len(unit_indices)
     trend_up   = np.empty(num_elements, dtype=float)
     trend_down = np.empty(num_elements, dtype=float)
     trend      = np.empty(num_elements, dtype=float)
