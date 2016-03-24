@@ -20,7 +20,7 @@ CREATE OR REPLACE FUNCTION
   	  id_col TEXT DEFAULT 'cartodb_id',
       w_type TEXT DEFAULT 'knn',
       num_ngbrs int DEFAULT 5)
-RETURNS TABLE (moran FLOAT, quads TEXT, significance FLOAT, ids INT)
+RETURNS TABLE (trend numeric, trend_up numeric, trend_down numeric, volatility numeric, ids int)
 AS $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
 
