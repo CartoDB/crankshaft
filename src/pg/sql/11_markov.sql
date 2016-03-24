@@ -23,9 +23,12 @@ CREATE OR REPLACE FUNCTION
 RETURNS TABLE (moran FLOAT, quads TEXT, significance FLOAT, ids INT)
 AS $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
-  from crankshaft.space_time_predictions import spatial_markov
-  # TODO: use named parameters or a dictionary
-  return def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, geom_col, id_col, w_type, num_ngbrs)
+
+  from crankshaft.space_time_dynamics import spatial_markov_trend
+
+  ## TODO: use named parameters or a dictionary
+
+  return spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, geom_col, id_col, w_type, num_ngbrs)
 $$ LANGUAGE plpythonu;
 
 -- input table format: identical to above but in a predictable format
