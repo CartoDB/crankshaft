@@ -8,7 +8,8 @@ import pysal as ps
 import plpy
 from crankshaft.clustering import get_query, get_weight
 
-def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, geom_col, id_col, w_type, num_ngbrs):
+def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
+                         permutations, geom_col, id_col, w_type, num_ngbrs):
     """
         Predict the trends of a unit based on:
         1. history of its transitions to different classes (e.g., 1st quantile -> 2nd quantile)
@@ -32,6 +33,9 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, ge
         @param volatility float: a measure of the volatility based on probability stddev(prob array)
         @param
     """
+
+    if num_time_per_bin < 1:
+        plpy.error('Error: number of time bins must be >= 1')
 
     qvals = {"id_col": id_col,
              "time_cols": time_cols,
@@ -58,13 +62,14 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, ge
         ## rebin
         t_data = rebin_data(t_data, int(num_time_per_bin))
 
-    sp_markov_result = ps.Spatial_Markov(t_data, weights, k=7, fixed=False)
-
-    ## get lags of last time slice
-    lags = ps.lag_spatial(weights, t_data[:, -1])
+    sp_markov_result = ps.Spatial_Markov(t_data,
+                                         weights,
+                                         k=7,
+                                         fixed=False,
+                                         permutations=permutations)
 
     ## get lag classes
-    lag_classes = ps.Quantiles(lags, k=7).yb
+    lag_classes = ps.Quantiles(ps.lag_spatial(weights, t_data[:, -1]), k=7).yb
 
     ## look up probablity distribution for each unit according to class and lag class
     prob_dist = get_prob_dist(sp_markov_result.P, lag_classes, sp_markov_result.classes[:, -1])
@@ -86,7 +91,8 @@ def get_time_data(markov_data, time_cols):
 
 def rebin_data(time_data, num_time_per_bin):
     """
-        convert an n x l matrix into an (n/m) x l matrix where the values are reduced (averaged) for the intervening states:
+        convert an n x l matrix into an (n/m) x l matrix where the values are
+         reduced (averaged) for the intervening states:
           1 2 3 4    1.5 3.5
           5 6 7 8 -> 5.5 7.5
           9 8 7 6    8.5 6.5
@@ -94,12 +100,17 @@ def rebin_data(time_data, num_time_per_bin):
 
           if m = 2
 
-        This process effectively resamples the data at a longer time span n units longer than the input data.
-        For cases when there is a remainder (remainder(5/3) = 2), the remaining two columns are binned together as the last time period, while the first three are binned together.
+        This process effectively resamples the data at a longer time span n
+         units longer than the input data.
+        For cases when there is a remainder (remainder(5/3) = 2), the remaining
+         two columns are binned together as the last time period, while the
+         first three are binned together.
 
         Input:
-          @param time_data n x l  ndarray: measurements of an attribute at different time intervals
-          @param num_time_per_bin int: number of columns to average into a new column
+          @param time_data n x l  ndarray: measurements of an attribute at
+           different time intervals
+          @param num_time_per_bin int: number of columns to average into a new
+           column
         Output:
           ceil(n / m) x l ndarray of resampled time series
     """
@@ -111,13 +122,12 @@ def rebin_data(time_data, num_time_per_bin):
         ## fit remainders into an additional column
         n_max = time_data.shape[1] / num_time_per_bin + 1
 
-    return np.array([
-             time_data[:,
-                num_time_per_bin*i:num_time_per_bin*(i+1)].mean(axis=1)
+    return np.array([time_data[:, num_time_per_bin * i:num_time_per_bin * (i+1)].mean(axis=1)
              for i in range(n_max)]).T
 def get_prob_dist(transition_matrix, lag_indices, unit_indices):
     """
-        given an array of transition matrices, look up the probability associated with the arrangements passed
+        given an array of transition matrices, look up the probability
+        associated with the arrangements passed
 
         Input:
         @param transition_matrix ndarray[k,k,k]:
@@ -128,7 +138,8 @@ def get_prob_dist(transition_matrix, lag_indices, unit_indices):
         Array of probability distributions
     """
 
-    return np.array([transition_matrix[(lag_indices[i], unit_indices[i])] for i in range(len(lag_indices))])
+    return np.array([transition_matrix[(lag_indices[i], unit_indices[i])]
+                     for i in range(len(lag_indices))])
 
 def get_prob_stats(prob_dist, unit_indices):
     """
@@ -144,9 +155,9 @@ def get_prob_stats(prob_dist, unit_indices):
     """
 
     num_elements = len(unit_indices)
-    trend_up   = np.empty(num_elements, dtype=float)
+    trend_up = np.empty(num_elements, dtype=float)
     trend_down = np.empty(num_elements, dtype=float)
-    trend      = np.empty(num_elements, dtype=float)
+    trend = np.empty(num_elements, dtype=float)
 
     for i in range(num_elements):
         trend_up[i] = prob_dist[i, (unit_indices[i]+1):].sum()
