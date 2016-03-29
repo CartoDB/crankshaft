@@ -14,6 +14,7 @@ import plpy
 def moran(subquery, attr_name, permutations, geom_col, id_col, w_type, num_ngbrs):
     """
     Moran's I (global)
+    Implementation building neighors with a PostGIS database and Moran's I core clusters with PySAL.
     Andy Eschbacher
     """
     qvals = {"id_col": id_col,
@@ -171,8 +172,6 @@ def moran_local_rate(subquery, numerator, denominator, permutations, geom_col, i
         plpy.notice('** Error: %s' % plpy.SPIError)
         plpy.notice('** Exiting function')
         return zip([None], [None], [None], [None], [None])
-
-        plpy.notice('r.nrows() = %d' % r.nrows())
 
     ## collect attributes
     numer = get_attributes(r, 1)

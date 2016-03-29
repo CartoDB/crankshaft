@@ -110,7 +110,7 @@ INSERT INTO ppoints2 VALUES
 (24,'0101000020E61000009C5F91C5095C17C0C78784B15A4F4540'::geometry,'24','07',0.3, 1.0),
 (29,'0101000020E6100000C34D4A5B48E712C092E680892C684240'::geometry,'29','01',0.3, 1.0),
 (52,'0101000020E6100000406A545EB29A07C04E5F0BDA39A54140'::geometry,'52','19',0.0, 1.01)
--- Moral functions perform some nondeterministic computations
+-- Areas of Interest functions perform some nondeterministic computations
 -- (to estimate the significance); we will set the seeds for the RNGs
 -- that affect those results to have repeateble results
 SELECT cdb_crankshaft._cdb_random_seeds(1234);
@@ -121,15 +121,15 @@ SELECT cdb_crankshaft._cdb_random_seeds(1234);
 
 SELECT ppoints.code, m.quads
   FROM ppoints
-  JOIN cdb_crankshaft.cdb_moran_local('SELECT * FROM ppoints', 'value') m
+  JOIN cdb_crankshaft.CDB_AreasOfInterest_Local('SELECT * FROM ppoints', 'value') m
     ON ppoints.cartodb_id = m.ids
   ORDER BY ppoints.code;
 NOTICE:  ** Constructing query
-CONTEXT:  PL/Python function "cdb_moran_local"
+CONTEXT:  PL/Python function "cdb_areasofinterest_local"
 NOTICE:  ** Query returned with 52 rows
-CONTEXT:  PL/Python function "cdb_moran_local"
+CONTEXT:  PL/Python function "cdb_areasofinterest_local"
 NOTICE:  ** Finished calculations
-CONTEXT:  PL/Python function "cdb_moran_local"
+CONTEXT:  PL/Python function "cdb_areasofinterest_local"
  code | quads 
 ------+-------
  01   | HH
@@ -194,15 +194,15 @@ SELECT cdb_crankshaft._cdb_random_seeds(1234);
 
 SELECT ppoints2.code, m.quads
   FROM ppoints2
-  JOIN cdb_crankshaft.cdb_moran_local_rate('SELECT * FROM ppoints2', 'numerator', 'denominator') m
+  JOIN cdb_crankshaft.CDB_AreasOfInterest_Local_Rate('SELECT * FROM ppoints2', 'numerator', 'denominator') m
     ON ppoints2.cartodb_id = m.ids
   ORDER BY ppoints2.code;
 NOTICE:  ** Constructing query
-CONTEXT:  PL/Python function "cdb_moran_local_rate"
+CONTEXT:  PL/Python function "cdb_areasofinterest_local_rate"
 NOTICE:  ** Query returned with 51 rows
-CONTEXT:  PL/Python function "cdb_moran_local_rate"
+CONTEXT:  PL/Python function "cdb_areasofinterest_local_rate"
 NOTICE:  ** Finished calculations
-CONTEXT:  PL/Python function "cdb_moran_local_rate"
+CONTEXT:  PL/Python function "cdb_areasofinterest_local_rate"
  code | quads 
 ------+-------
  01   | LL

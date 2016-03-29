@@ -1,6 +1,6 @@
 -- Moran's I (global)
 CREATE OR REPLACE FUNCTION
-  cdb_moran (
+  CDB_AreasOfInterest_Global (
       subquery TEXT,
       attr_name TEXT,
       permutations INT DEFAULT 99,
@@ -17,7 +17,7 @@ $$ LANGUAGE plpythonu;
 
 -- Moran's I Local
 CREATE OR REPLACE FUNCTION
-  cdb_moran_local (
+  CDB_AreasOfInterest_Local(
       subquery TEXT,
       attr TEXT,
       permutations INT DEFAULT 99,
@@ -34,7 +34,7 @@ $$ LANGUAGE plpythonu;
 
 -- Moran's I Rate (global)
 CREATE OR REPLACE FUNCTION
-  cdb_moran_rate (
+  CDB_AreasOfInterest_Global_Rate(
       subquery TEXT,
       numerator TEXT,
       denominator TEXT,
@@ -53,7 +53,7 @@ $$ LANGUAGE plpythonu;
 
 -- Moran's I Local Rate
 CREATE OR REPLACE FUNCTION
-  cdb_moran_local_rate(
+  CDB_AreasOfInterest_Local_Rate(
       subquery TEXT,
       numerator TEXT,
       denominator TEXT,
