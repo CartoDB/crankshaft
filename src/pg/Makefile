@@ -18,7 +18,6 @@ DATA         = $(EXTENSION)--dev.sql \
 SOURCES_DATA_DIR = sql
 SOURCES_DATA = $(wildcard $(SOURCES_DATA_DIR)/*.sql)
 
-VIRTUALENV_PATH = $(realpath ../../envs)
 ESC_VIRVIRTUALENV_PATH = $(subst /,\/,$(VIRTUALENV_PATH))
 
 REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g' \
