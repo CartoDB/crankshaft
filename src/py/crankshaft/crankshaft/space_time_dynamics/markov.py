@@ -49,7 +49,7 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
         query_result = plpy.execute(query)
     except:
         plpy.notice('** Query failed: %s' % query)
-        plpy.error('Query failed: check the input parameters')
+        plpy.error('Spatial Markov failed: check the input parameters')
         return zip([None], [None], [None], [None], [None])
 
     ## build weight
@@ -91,7 +91,7 @@ def get_time_data(markov_data, time_cols):
 
 def rebin_data(time_data, num_time_per_bin):
     """
-        convert an n x l matrix into an (n/m) x l matrix where the values are
+        Convert an n x l matrix into an (n/m) x l matrix where the values are
          reduced (averaged) for the intervening states:
           1 2 3 4    1.5 3.5
           5 6 7 8 -> 5.5 7.5
@@ -126,7 +126,7 @@ def rebin_data(time_data, num_time_per_bin):
              for i in range(n_max)]).T
 def get_prob_dist(transition_matrix, lag_indices, unit_indices):
     """
-        given an array of transition matrices, look up the probability
+        Given an array of transition matrices, look up the probability
         associated with the arrangements passed
 
         Input:
