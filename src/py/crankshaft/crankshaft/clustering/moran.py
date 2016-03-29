@@ -35,7 +35,7 @@ def moran(subquery, attr_name, permutations, geom_col, id_col, w_type, num_ngbrs
             r = plpy.execute(q)
         plpy.notice('** Query returned with %d rows' % len(r))
     except plpy.SPIError:
-        plpy.error('** Moran rate failed executing query to build weight object')
+        plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Error: %s' % plpy.SPIError)
         plpy.notice('** Exiting function')
@@ -81,6 +81,7 @@ def moran_local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbr
         r = plpy.execute(q)
         plpy.notice('** Query returned with %d rows' % len(r))
     except plpy.SPIError:
+        plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Exiting function')
         return zip([None], [None], [None], [None], [None])
@@ -121,7 +122,7 @@ def moran_rate(subquery, numerator, denominator, permutations, geom_col, id_col,
             r = plpy.execute(q)
         plpy.notice('** Query returned with %d rows' % len(r))
     except plpy.SPIError:
-        plpy.error('Moran rate failed executing query to build weight object')
+        plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Error: %s' % plpy.SPIError)
         plpy.notice('** Exiting function')
@@ -168,6 +169,7 @@ def moran_local_rate(subquery, numerator, denominator, permutations, geom_col, i
         r = plpy.execute(q)
         plpy.notice('** Query returned with %d rows' % len(r))
     except plpy.SPIError:
+        plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Error: %s' % plpy.SPIError)
         plpy.notice('** Exiting function')
@@ -205,6 +207,7 @@ def moran_local_bv(subquery, attr1, attr2, permutations, geom_col, id_col, w_typ
         r = plpy.execute(q)
         plpy.notice('** Query returned with %d rows' % len(r))
     except plpy.SPIError:
+        plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % q)
         plpy.notice('** Error: %s' % plpy.SPIError)
         plpy.notice('** Exiting function')
