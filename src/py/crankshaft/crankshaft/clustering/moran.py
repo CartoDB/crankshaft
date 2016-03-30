@@ -31,15 +31,15 @@ def moran(subquery, attr_name,
 
     try:
         result = plpy.execute(query)
-        ## if there are no neighbors, exit
+        # if there are no neighbors, exit
         if len(result) == 0:
-            return zip([None], [None])
+            return empty_zipped_array(2)
         plpy.notice('** Query returned with %d rows' % len(result))
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % query)
         plpy.notice('** Error: %s' % plpy.SPIError)
-        return zip([None], [None])
+        return empty_zipped_array(2)
 
     ## collect attributes
     attr_vals = get_attributes(result)
@@ -72,12 +72,13 @@ def moran_local(subquery, attr,
 
     try:
         result = plpy.execute(query)
+        # if there are no neighbors, exit
         if len(result) == 0:
-            return zip([None], [None], [None], [None], [None])
+            return empty_zipped_array(5)
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % query)
-        return zip([None], [None], [None], [None], [None])
+        return empty_zipped_array(5)
 
     attr_vals = get_attributes(result)
     weight = get_weight(result, w_type)
@@ -111,15 +112,15 @@ def moran_rate(subquery, numerator, denominator,
 
     try:
         result = plpy.execute(query)
+        # if there are no neighbors, exit
         if len(result) == 0:
-            ## if there are no values returned, exit
-            return zip([None], [None])
+            return empty_zipped_array(2)
         plpy.notice('** Query returned with %d rows' % len(result))
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % query)
         plpy.notice('** Error: %s' % plpy.SPIError)
-        return zip([None], [None])
+        return empty_zipped_array(2)
 
     ## collect attributes
     numer = get_attributes(result, 1)
@@ -152,14 +153,14 @@ def moran_local_rate(subquery, numerator, denominator,
 
     try:
         result = plpy.execute(query)
-        plpy.notice('** Query returned with %d rows' % len(result))
+        # if there are no neighbors, exit
         if len(result) == 0:
-            return zip([None], [None], [None], [None], [None])
+            return empty_zipped_array(5)
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
         plpy.notice('** Query failed: "%s"' % query)
         plpy.notice('** Error: %s' % plpy.SPIError)
-        return zip([None], [None], [None], [None], [None])
+        return empty_zipped_array(5)
 
     ## collect attributes
     numer = get_attributes(result, 1)
@@ -194,13 +195,14 @@ def moran_local_bv(subquery, attr1, attr2,
 
     try:
         result = plpy.execute(query)
-        plpy.notice('** Query returned with %d rows' % len(result))
+        # if there are no neighbors, exit
         if len(result) == 0:
-            return zip([None], [None], [None], [None])
+            return empty_zipped_array(4)
     except plpy.SPIError:
-        plpy.error('Error: areas of interest query failed, check input parameters')
+        plpy.error("Error: areas of interest query failed, " \
+                   "check input parameters")
         plpy.notice('** Query failed: "%s"' % query)
-        return zip([None], [None], [None], [None])
+        return empty_zipped_array(4)
 
     ## collect attributes
     attr1_vals = get_attributes(result, 1)
@@ -222,7 +224,6 @@ def moran_local_bv(subquery, attr1, attr2,
 
     return zip(lisa.Is, lisa_sig, lisa.p_sim, weight.id_order)
 
-
 # Low level functions ----------------------------------------
 
 def map_quads(coord):
@@ -231,6 +232,8 @@ def map_quads(coord):
         HH=1, LH=2, LL=3, HL=4
         Input:
         @param coord (int): quadrant of a specific measurement
+        Output:
+            classification (one of 'HH', 'LH', 'LL', or 'HL')
     """
     if coord == 1:
         return 'HH'
@@ -298,9 +301,10 @@ def knn(params):
                 "%(attr_select)s" \
                 "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
                               "FROM ({subquery}) As j " \
-                              "WHERE %(attr_where_j)s " \
+                              "WHERE %(attr_where_j)s AND " \
+                                    "i.\"{id_col}\" <> j.\"{id_col}\" " \
                               "ORDER BY j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
-                              "LIMIT {num_ngbrs} OFFSET 1 ) " \
+                              "LIMIT {num_ngbrs}) " \
                 ") As neighbors " \
             "FROM ({subquery}) As i " \
             "WHERE " \
@@ -387,3 +391,14 @@ def quad_position(quads):
     lisa_sig = np.array([map_quads(q) for q in quads])
 
     return lisa_sig
+
+def return_empty_zipped_array(num_nones):
+    """
+        prepare return values for cases of empty weights objects (no neighbors)
+        Input:
+        @param num_nones int: number of columns (e.g., 4)
+        Output:
+        [(None, None, None, None)]
+    """
+
+    return [tuple([None] * num_nones)]
