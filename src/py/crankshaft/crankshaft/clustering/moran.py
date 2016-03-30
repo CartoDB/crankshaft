@@ -11,10 +11,12 @@ import plpy
 
 # High level interface ---------------------------------------
 
-def moran(subquery, attr_name, permutations, geom_col, id_col, w_type, num_ngbrs):
+def moran(subquery, attr_name,
+          permutations, geom_col, id_col, w_type, num_ngbrs):
     """
     Moran's I (global)
-    Implementation building neighors with a PostGIS database and Moran's I core clusters with PySAL.
+    Implementation building neighbors with a PostGIS database and Moran's I
+     core clusters with PySAL.
     Andy Eschbacher
     """
     qvals = {"id_col": id_col,
@@ -23,48 +25,39 @@ def moran(subquery, attr_name, permutations, geom_col, id_col, w_type, num_ngbrs
              "subquery": subquery,
              "num_ngbrs": num_ngbrs}
 
-    q = get_query(w_type, qvals)
+    query = construct_neighbor_query(w_type, qvals)
 
-    plpy.notice('** Query: %s' % q)
+    plpy.notice('** Query: %s' % query)
 
     try:
-        r = plpy.execute(q)
-        if (len(r) == 0) & (w_type != 'knn'):
-            plpy.notice('** Query returned with 0 rows, trying kNN weights')
-            q = get_query('knn', qvals)
-            r = plpy.execute(q)
-        plpy.notice('** Query returned with %d rows' % len(r))
+        result = plpy.execute(query)
+        ## if there are no neighbors, exit
+        if len(result) == 0:
+            return zip([None], [None])
+        plpy.notice('** Query returned with %d rows' % len(result))
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
-        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Query failed: "%s"' % query)
         plpy.notice('** Error: %s' % plpy.SPIError)
-        plpy.notice('** Exiting function')
-        return zip([None], [None])
-
-    ## if there are no neighbors, exit
-    if len(r) == 0:
         return zip([None], [None])
 
     ## collect attributes
-    attr_vals = get_attributes(r, 1)
+    attr_vals = get_attributes(result)
 
     ## calculate weights
-    weight = get_weight(r, w_type, num_ngbrs)
+    weight = get_weight(result, w_type, num_ngbrs)
 
     ## calculate moran global
     moran_global = ps.esda.moran.Moran(attr_vals, weight, permutations=permutations)
 
-    return zip([moran_global.I],[moran_global.EI])
+    return zip([moran_global.I], [moran_global.EI])
 
-def moran_local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs):
+def moran_local(subquery, attr,
+                permutations, geom_col, id_col, w_type, num_ngbrs):
     """
     Moran's I implementation for PL/Python
     Andy Eschbacher
     """
-    # TODO: ensure that the significance output can be smaller that 1e-3 (0.001)
-    # TODO: make a wishlist of output features (zscores, pvalues, raw local lisa, what else?)
-
-    plpy.notice('** Constructing query')
 
     # geometries with attributes that are null are ignored
     # resulting in a collection of not as near neighbors
@@ -75,30 +68,32 @@ def moran_local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbr
              "subquery": subquery,
              "num_ngbrs": num_ngbrs}
 
-    q = get_query(w_type, qvals)
+    query = construct_neighbor_query(w_type, qvals)
 
     try:
-        r = plpy.execute(q)
-        plpy.notice('** Query returned with %d rows' % len(r))
+        result = plpy.execute(query)
+        if len(result) == 0:
+            return zip([None], [None], [None], [None], [None])
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
-        plpy.notice('** Query failed: "%s"' % q)
-        plpy.notice('** Exiting function')
+        plpy.notice('** Query failed: "%s"' % query)
         return zip([None], [None], [None], [None], [None])
 
-    y = get_attributes(r, 1)
-    w = get_weight(r, w_type)
+    attr_vals = get_attributes(result)
+    weight = get_weight(result, w_type)
 
     # calculate LISA values
-    lisa = ps.esda.moran.Moran_Local(y, w)
+    lisa = ps.esda.moran.Moran_Local(attr_vals, weight,
+                                     permutations=permutations)
 
     # find quadrants for each geometry
     quads = quad_position(lisa.q)
 
     plpy.notice('** Finished calculations')
-    return zip(lisa.Is, quads, lisa.p_sim, w.id_order, lisa.y)
+    return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
 
-def moran_rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs):
+def moran_rate(subquery, numerator, denominator,
+               permutations, geom_col, id_col, w_type, num_ngbrs):
     """
     Moran's I Rate (global)
     Andy Eschbacher
@@ -110,88 +105,82 @@ def moran_rate(subquery, numerator, denominator, permutations, geom_col, id_col,
              "subquery": subquery,
              "num_ngbrs": num_ngbrs}
 
-    q = get_query(w_type, qvals)
+    query = construct_neighbor_query(w_type, qvals)
 
-    plpy.notice('** Query: %s' % q)
+    plpy.notice('** Query: %s' % query)
 
     try:
-        r = plpy.execute(q)
-        if len(r) == 0:
-            plpy.notice('** Query returned with 0 rows, trying kNN weights')
-            q = get_query('knn', qvals)
-            r = plpy.execute(q)
-        plpy.notice('** Query returned with %d rows' % len(r))
+        result = plpy.execute(query)
+        if len(result) == 0:
+            ## if there are no values returned, exit
+            return zip([None], [None])
+        plpy.notice('** Query returned with %d rows' % len(result))
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
-        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Query failed: "%s"' % query)
         plpy.notice('** Error: %s' % plpy.SPIError)
-        plpy.notice('** Exiting function')
-        return zip([None], [None])
-
-    ## if there are no values returned, exit
-    if len(r) == 0:
         return zip([None], [None])
 
     ## collect attributes
-    numer = get_attributes(r, 1)
-    denom = get_attributes(r, 2)
+    numer = get_attributes(result, 1)
+    denom = get_attributes(result, 2)
 
-    w = get_weight(r, w_type, num_ngbrs)
+    weight = get_weight(result, w_type, num_ngbrs)
 
     ## calculate moran global rate
-    mr = ps.esda.moran.Moran_Rate(numer, denom, w, permutations=permutations)
+    lisa_rate = ps.esda.moran.Moran_Rate(numer, denom, weight,
+                                         permutations=permutations)
 
-    plpy.notice('** Finished calculations')
+    return zip([lisa_rate.I], [lisa_rate.EI])
 
-    return zip([mr.I],[mr.EI])
-
-def moran_local_rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs):
+def moran_local_rate(subquery, numerator, denominator,
+                     permutations, geom_col, id_col, w_type, num_ngbrs):
     """
-    Moran's I Local Rate
-    Andy Eschbacher
+        Moran's I Local Rate
+        Andy Eschbacher
     """
-
-    plpy.notice('** Constructing query')
-
-    # geometries with attributes that are null are ignored
+    # geometries with values that are null are ignored
     # resulting in a collection of not as near neighbors
 
-    qvals = {"id_col": id_col,
-             "numerator": numerator,
-             "denominator": denominator,
-             "geom_col": geom_col,
-             "subquery": subquery,
-             "num_ngbrs": num_ngbrs}
-
-    q = get_query(w_type, qvals)
+    query = construct_neighbor_query(w_type,
+                                     {"id_col": id_col,
+                                      "numerator": numerator,
+                                      "denominator": denominator,
+                                      "geom_col": geom_col,
+                                      "subquery": subquery,
+                                      "num_ngbrs": num_ngbrs})
 
     try:
-        r = plpy.execute(q)
-        plpy.notice('** Query returned with %d rows' % len(r))
+        result = plpy.execute(query)
+        plpy.notice('** Query returned with %d rows' % len(result))
+        if len(result) == 0:
+            return zip([None], [None], [None], [None], [None])
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
-        plpy.notice('** Query failed: "%s"' % q)
+        plpy.notice('** Query failed: "%s"' % query)
         plpy.notice('** Error: %s' % plpy.SPIError)
-        plpy.notice('** Exiting function')
         return zip([None], [None], [None], [None], [None])
 
     ## collect attributes
-    numer = get_attributes(r, 1)
-    denom = get_attributes(r, 2)
+    numer = get_attributes(result, 1)
+    denom = get_attributes(result, 2)
 
-    w = get_weight(r, w_type, num_ngbrs)
+    weight = get_weight(result, w_type, num_ngbrs)
 
     # calculate LISA values
-    lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, w, permutations=permutations)
+    lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, weight,
+                                          permutations=permutations)
 
     # find units of significance
-    quads =  quad_position(lisa.q)
+    quads = quad_position(lisa.q)
 
-    plpy.notice('** Finished calculations')
+    return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
 
-    return zip(lisa.Is, quads, lisa.p_sim, w.id_order, lisa.y)
-
-def moran_local_bv(subquery, attr1, attr2, permutations, geom_col, id_col, w_type, num_ngbrs):
+def moran_local_bv(subquery, attr1, attr2,
+                   permutations, geom_col, id_col, w_type, num_ngbrs):
+    """
+        Moran's I (local) Bivariate (untested)
+    """
     plpy.notice('** Constructing query')
 
     qvals = {"num_ngbrs": num_ngbrs,
@@ -201,27 +190,28 @@ def moran_local_bv(subquery, attr1, attr2, permutations, geom_col, id_col, w_typ
              "geom_col": geom_col,
              "id_col": id_col}
 
-    q = get_query(w_type, qvals)
+    query = construct_neighbor_query(w_type, qvals)
 
     try:
-        r = plpy.execute(q)
-        plpy.notice('** Query returned with %d rows' % len(r))
+        result = plpy.execute(query)
+        plpy.notice('** Query returned with %d rows' % len(result))
+        if len(result) == 0:
+            return zip([None], [None], [None], [None])
     except plpy.SPIError:
         plpy.error('Error: areas of interest query failed, check input parameters')
-        plpy.notice('** Query failed: "%s"' % q)
-        plpy.notice('** Error: %s' % plpy.SPIError)
-        plpy.notice('** Exiting function')
+        plpy.notice('** Query failed: "%s"' % query)
         return zip([None], [None], [None], [None])
 
     ## collect attributes
-    attr1_vals = get_attributes(r, 1)
-    attr2_vals = get_attributes(r, 2)
+    attr1_vals = get_attributes(result, 1)
+    attr2_vals = get_attributes(result, 2)
 
     # create weights
-    w = get_weight(r, w_type, num_ngbrs)
+    weight = get_weight(result, w_type, num_ngbrs)
 
     # calculate LISA values
-    lisa = ps.esda.moran.Moran_Local_BV(attr1_vals, attr2_vals, w)
+    lisa = ps.esda.moran.Moran_Local_BV(attr1_vals, attr2_vals, weight,
+                                        permutations=permutations)
 
     plpy.notice("len of Is: %d" % len(lisa.Is))
 
@@ -230,7 +220,7 @@ def moran_local_bv(subquery, attr1, attr2, permutations, geom_col, id_col, w_typ
 
     plpy.notice('** Finished calculations')
 
-    return zip(lisa.Is, lisa_sig, lisa.p_sim, w.id_order)
+    return zip(lisa.Is, lisa_sig, lisa.p_sim, weight.id_order)
 
 
 # Low level functions ----------------------------------------
@@ -240,7 +230,7 @@ def map_quads(coord):
         Map a quadrant number to Moran's I designation
         HH=1, LH=2, LL=3, HL=4
         Input:
-        :param coord (int): quadrant of a specific measurement
+        @param coord (int): quadrant of a specific measurement
     """
     if coord == 1:
         return 'HH'
@@ -256,7 +246,7 @@ def map_quads(coord):
 def query_attr_select(params):
     """
         Create portion of SELECT statement for attributes inolved in query.
-        :param params: dict of information used in query (column names,
+        @param params: dict of information used in query (column names,
                        table name, etc.)
     """
 
@@ -293,7 +283,7 @@ def query_attr_where(params):
 
 def knn(params):
     """SQL query for k-nearest neighbors.
-        :param vars: dict of values to fill template
+        @param vars: dict of values to fill template
     """
 
     attr_select = query_attr_select(params)
@@ -322,7 +312,7 @@ def knn(params):
 ## SQL query for finding queens neighbors (all contiguous polygons)
 def queen(params):
     """SQL query for queen neighbors.
-        :param params: dict of information to fill query
+        @param params dict: information to fill query
     """
     attr_select = query_attr_select(params)
     attr_where = query_attr_where(params)
@@ -348,10 +338,10 @@ def queen(params):
 
 ## to add more weight methods open a ticket or pull request
 
-def get_query(w_type, query_vals):
+def construct_neighbor_query(w_type, query_vals):
     """Return requested query.
-        :param w_type: type of neighbors to calculate (knn or queen)
-        :param query_vals: values used to construct the query
+        @param w_type text: type of neighbors to calculate ('knn' or 'queen')
+        @param query_vals dict: values used to construct the query
     """
 
     if w_type == 'knn':
@@ -359,10 +349,10 @@ def get_query(w_type, query_vals):
     else:
         return queen(query_vals)
 
-def get_attributes(query_res, attr_num):
+def get_attributes(query_res, attr_num=1):
     """
-        :param query_res: query results with attributes and neighbors
-        :param attr_num: attribute number (1, 2, ...)
+        @param query_res: query results with attributes and neighbors
+        @param attr_num: attribute number (1, 2, ...)
     """
     return np.array([x['attr' + str(attr_num)] for x in query_res], dtype=np.float)
 
@@ -370,15 +360,15 @@ def get_attributes(query_res, attr_num):
 def get_weight(query_res, w_type='queen', num_ngbrs=5):
     """
         Construct PySAL weight from return value of query
-        :param query_res: query results with attributes and neighbors
+        @param query_res: query results with attributes and neighbors
     """
     if w_type == 'knn':
         row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
         weights = {x['id']: row_normed_weights for x in query_res}
     else:
         weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
-                             if len(x['neighbors']) > 0
-                             else [] for x in query_res}
+                            if len(x['neighbors']) > 0
+                            else [] for x in query_res}
 
     neighbors = {x['id']: x['neighbors'] for x in query_res}
 
@@ -387,6 +377,11 @@ def get_weight(query_res, w_type='queen', num_ngbrs=5):
 def quad_position(quads):
     """
         Produce Moran's I classification based of n
+        Input:
+        @param quads ndarray: an array of quads classified by
+          1-4 (PySAL default)
+        Output:
+        @param ndarray: an array of quads classied by 'HH', 'LL', etc.
     """
 
     lisa_sig = np.array([map_quads(q) for q in quads])

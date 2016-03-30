@@ -56,7 +56,7 @@ class MoranTest(unittest.TestCase):
         self.assertEqual(cc.query_attr_where(self.params), ans)
 
     def test_knn(self):
-        """Test knn function."""
+        """Test knn neighbors constructor"""
 
         ans = "SELECT i.\"cartodb_id\" As id, i.\"andy\"::numeric As attr1, " \
               "i.\"jay_z\"::numeric As attr2, (SELECT ARRAY(SELECT j.\"cartodb_id\" " \
@@ -70,7 +70,7 @@ class MoranTest(unittest.TestCase):
         self.assertEqual(cc.knn(self.params), ans)
 
     def test_queen(self):
-        """Test queen neighbors function."""
+        """Test queen neighbors constructor"""
 
         ans = "SELECT i.\"cartodb_id\" As id, i.\"andy\"::numeric As attr1, " \
               "i.\"jay_z\"::numeric As attr2, (SELECT ARRAY(SELECT " \
@@ -83,19 +83,20 @@ class MoranTest(unittest.TestCase):
 
         self.assertEqual(cc.queen(self.params), ans)
 
-    def test_get_query(self):
-        """Test get_query."""
+    def test_construct_neighbor_query(self):
+        """Test construct_neighbor_query"""
 
         ans = "SELECT i.\"cartodb_id\" As id, i.\"andy\"::numeric As attr1, " \
               "i.\"jay_z\"::numeric As attr2, (SELECT ARRAY(SELECT " \
               "j.\"cartodb_id\" FROM (SELECT * FROM a_list) As j WHERE j.\"andy\" IS " \
               "NOT NULL AND j.\"jay_z\" IS NOT NULL AND j.\"jay_z\" <> 0 " \
               "ORDER BY j.\"the_geom\" <-> i.\"the_geom\" ASC LIMIT 321 " \
-              "OFFSET 1 ) ) As neighbors FROM (SELECT * FROM a_list) As i WHERE " \
-              "i.\"andy\" IS NOT NULL AND i.\"jay_z\" IS NOT NULL AND " \
-              "i.\"jay_z\" <> 0 ORDER BY i.\"cartodb_id\" ASC;"
+              "OFFSET 1 ) ) As neighbors FROM (SELECT * FROM a_list) As i " \
+              "WHERE i.\"andy\" IS NOT NULL AND i.\"jay_z\" IS NOT NULL AND " \
+              "i.\"jay_z\" <> 0 " \
+              "ORDER BY i.\"cartodb_id\" ASC;"
 
-        self.assertEqual(cc.get_query('knn', self.params), ans)
+        self.assertEqual(cc.construct_neighbor_query('knn', self.params), ans)
 
     def test_get_attributes(self):
         """Test get_attributes."""
