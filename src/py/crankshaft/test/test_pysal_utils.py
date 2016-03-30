@@ -40,12 +40,13 @@ class PysalUtilsTest(unittest.TestCase):
                      "i.\"jay_z\"::numeric As attr2, " \
                      "(SELECT ARRAY(SELECT j.\"cartodb_id\" " \
                                    "FROM (SELECT * FROM a_list) As j " \
-                                   "WHERE j.\"andy\" IS NOT NULL AND " \
-                                         "j.\"jay_z\" IS NOT NULL AND " \
-                                         "j.\"jay_z\" <> 0 AND " \
-                                         "i.\"cartodb_id\" <> j.\"cartodb_id\" " \
+                                   "WHERE " \
+                                    "i.\"cartodb_id\" <> j.\"cartodb_id\" AND " \
+                                    "j.\"andy\" IS NOT NULL AND " \
+                                    "j.\"jay_z\" IS NOT NULL AND " \
+                                    "j.\"jay_z\" <> 0 " \
                                    "ORDER BY " \
-                                     "j.\"the_geom\" <-> i.\"the_geom\" ASC " \
+                                    "j.\"the_geom\" <-> i.\"the_geom\" ASC " \
                       "LIMIT 321)) As neighbors " \
               "FROM (SELECT * FROM a_list) As i " \
               "WHERE i.\"andy\" IS NOT NULL AND " \
@@ -63,11 +64,13 @@ class PysalUtilsTest(unittest.TestCase):
                      "i.\"jay_z\"::numeric As attr2, " \
                      "(SELECT ARRAY(SELECT j.\"cartodb_id\" " \
                                    "FROM (SELECT * FROM a_list) As j " \
-                                   "WHERE ST_Touches(i.\"the_geom\", " \
-                                                    "j.\"the_geom\") AND " \
-                                         "j.\"andy\" IS NOT NULL AND " \
-                                         "j.\"jay_z\" IS NOT NULL AND " \
-                                         "j.\"jay_z\" <> 0)" \
+                                   "WHERE " \
+                                   "i.\"cartodb_id\" <> j.\"cartodb_id\" AND " \
+                                   "ST_Touches(i.\"the_geom\", " \
+                                              "j.\"the_geom\") AND " \
+                                   "j.\"andy\" IS NOT NULL AND " \
+                                   "j.\"jay_z\" IS NOT NULL AND " \
+                                   "j.\"jay_z\" <> 0)" \
                                   ") As neighbors " \
               "FROM (SELECT * FROM a_list) As i " \
               "WHERE i.\"andy\" IS NOT NULL AND " \
