@@ -25,6 +25,11 @@ class MoranTest(unittest.TestCase):
                        "subquery": "SELECT * FROM a_list",
                        "geom_col": "the_geom",
                        "num_ngbrs": 321}
+        self.params_markov = {"id_col": "cartodb_id",
+                              "time_cols": ["_2013_dec", "_2014_jan", "_2014_feb"],
+                              "subquery": "SELECT * FROM a_list",
+                              "geom_col": "the_geom",
+                              "num_ngbrs": 321}
         self.neighbors_data = json.loads(open(fixture_file('neighbors.json')).read())
         self.moran_data = json.loads(open(fixture_file('moran.json')).read())
 
