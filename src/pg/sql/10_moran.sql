@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id',
       w_type TEXT DEFAULT 'knn',
       num_ngbrs INT DEFAULT 5)
-RETURNS TABLE (moran FLOAT, quads TEXT, significance FLOAT, ids INT)
+RETURNS TABLE (moran NUMERIC, significance NUMERIC)
 AS $$
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
@@ -43,7 +43,7 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id',
       w_type TEXT DEFAULT 'knn',
       num_ngbrs INT DEFAULT 5)
-RETURNS TABLE (moran FLOAT, quads TEXT, significance FLOAT, ids INT)
+RETURNS TABLE (moran FLOAT, significance FLOAT)
 AS $$
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
