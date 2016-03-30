@@ -92,7 +92,7 @@ def knn(params):
                               "WHERE %(attr_where_j)s AND " \
                                     "i.\"{id_col}\" <> j.\"{id_col}\" " \
                               "ORDER BY j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
-                              "LIMIT {num_ngbrs}) " \
+                              "LIMIT {num_ngbrs})" \
                 ") As neighbors " \
             "FROM ({subquery}) As i " \
             "WHERE " \
