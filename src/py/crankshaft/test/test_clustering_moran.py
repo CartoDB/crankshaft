@@ -12,6 +12,7 @@ import unittest
 from helper import plpy, fixture_file
 
 import crankshaft.clustering as cc
+import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
 import json
 
@@ -44,16 +45,16 @@ class MoranTest(unittest.TestCase):
         ans = "i.\"{attr1}\"::numeric As attr1, " \
               "i.\"{attr2}\"::numeric As attr2, "
 
-        self.assertEqual(cc.query_attr_select(self.params), ans)
+        self.assertEqual(pu.query_attr_select(self.params), ans)
 
     def test_query_attr_where(self):
-        """Test query_attr_where"""
+        """Test pu.query_attr_where"""
 
         ans = "idx_replace.\"{attr1}\" IS NOT NULL AND " \
               "idx_replace.\"{attr2}\" IS NOT NULL AND " \
               "idx_replace.\"{attr2}\" <> 0"
 
-        self.assertEqual(cc.query_attr_where(self.params), ans)
+        self.assertEqual(pu.query_attr_where(self.params), ans)
 
     def test_knn(self):
         """Test knn neighbors constructor"""
@@ -76,7 +77,7 @@ class MoranTest(unittest.TestCase):
                     "i.\"jay_z\" <> 0 " \
               "ORDER BY i.\"cartodb_id\" ASC;"
 
-        self.assertEqual(cc.knn(self.params), ans)
+        self.assertEqual(pu.knn(self.params), ans)
 
     def test_queen(self):
         """Test queen neighbors constructor"""
@@ -90,7 +91,7 @@ class MoranTest(unittest.TestCase):
                                                     "j.\"the_geom\") AND " \
                                          "j.\"andy\" IS NOT NULL AND " \
                                          "j.\"jay_z\" IS NOT NULL AND " \
-                                         "j.\"jay_z\" <> 0)
+                                         "j.\"jay_z\" <> 0)" \
                                   ") As neighbors " \
               "FROM (SELECT * FROM a_list) As i " \
               "WHERE i.\"andy\" IS NOT NULL AND " \
@@ -98,14 +99,14 @@ class MoranTest(unittest.TestCase):
                     "i.\"jay_z\" <> 0 " \
               "ORDER BY i.\"cartodb_id\" ASC;"
 
-        self.assertEqual(cc.queen(self.params), ans)
+        self.assertEqual(pu.queen(self.params), ans)
 
     def test_construct_neighbor_query(self):
         """Test construct_neighbor_query"""
 
         # Compare to raw knn query
-        self.assertEqual(cc.construct_neighbor_query('knn', self.params),
-                         cc.knn(self.params))
+        self.assertEqual(pu.construct_neighbor_query('knn', self.params),
+                         pu.knn(self.params))
 
     def test_get_attributes(self):
         """Test get_attributes"""
@@ -123,8 +124,8 @@ class MoranTest(unittest.TestCase):
         """Test empty_zipped_array"""
         ans2 = [(None, None)]
         ans4 = [(None, None, None, None)]
-        self.assertEqual(cc.empty_zipped_array(2), ans2)
-        self.assertEqual(cc.empty_zipped_array(4), ans4)
+        self.assertEqual(pu.empty_zipped_array(2), ans2)
+        self.assertEqual(pu.empty_zipped_array(4), ans4)
 
     def test_quad_position(self):
         """Test lisa_sig_vals"""
