@@ -124,12 +124,6 @@ SELECT ppoints.code, m.quads
   JOIN cdb_crankshaft.CDB_AreasOfInterest_Local('SELECT * FROM ppoints', 'value') m
     ON ppoints.cartodb_id = m.ids
   ORDER BY ppoints.code;
-NOTICE:  ** Constructing query
-CONTEXT:  PL/Python function "cdb_areasofinterest_local"
-NOTICE:  ** Query returned with 52 rows
-CONTEXT:  PL/Python function "cdb_areasofinterest_local"
-NOTICE:  ** Finished calculations
-CONTEXT:  PL/Python function "cdb_areasofinterest_local"
  code | quads 
 ------+-------
  01   | HH
@@ -197,12 +191,6 @@ SELECT ppoints2.code, m.quads
   JOIN cdb_crankshaft.CDB_AreasOfInterest_Local_Rate('SELECT * FROM ppoints2', 'numerator', 'denominator') m
     ON ppoints2.cartodb_id = m.ids
   ORDER BY ppoints2.code;
-NOTICE:  ** Constructing query
-CONTEXT:  PL/Python function "cdb_areasofinterest_local_rate"
-NOTICE:  ** Query returned with 51 rows
-CONTEXT:  PL/Python function "cdb_areasofinterest_local_rate"
-NOTICE:  ** Finished calculations
-CONTEXT:  PL/Python function "cdb_areasofinterest_local_rate"
  code | quads 
 ------+-------
  01   | LL
