@@ -31,7 +31,7 @@ class SpaceTimeTests(unittest.TestCase):
 
         self.time_data = np.array([i * np.ones(10, dtype=float) for i in range(10)]).T
 
-        self.transition_matrix = p = np.array([
+        self.transition_matrix = np.array([
                 [[ 0.96341463, 0.0304878 , 0.00609756, 0.        , 0.        ],
                  [ 0.06040268, 0.83221477, 0.10738255, 0.        , 0.        ],
                  [ 0.        , 0.14      , 0.74      , 0.12      , 0.        ],
@@ -108,6 +108,7 @@ class SpaceTimeTests(unittest.TestCase):
         ans_odd  = np.array([i * np.ones(10, dtype=float)
                              for i in (1, 4, 7, 9)]).T
         self.assertTrue(np.array_equal(std.rebin_data(self.time_data, 3), ans_odd))
+
     def test_get_prob_dist(self):
         """Test get_prob_dist"""
         lag_indices = np.array([1, 2, 3, 4])
