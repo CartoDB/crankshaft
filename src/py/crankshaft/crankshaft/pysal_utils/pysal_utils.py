@@ -41,32 +41,62 @@ def query_attr_select(params):
                        table name, etc.)
     """
 
-    attrs = [k for k in params
-             if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs')]
-
-    template = "i.\"{%(col)s}\"::numeric As attr%(alias_num)s, "
-
     attr_string = ""
+    template = "i.\"%(col)s\"::numeric As attr%(alias_num)s, "
 
-    for idx, val in enumerate(sorted(attrs)):
-        attr_string += template % {"col": val, "alias_num": idx + 1}
+    if 'time_cols' in params:
+        ## if markov analysis
+        attrs = params['time_cols']
+
+        for idx, val in enumerate(attrs):
+            attr_string += template % {"col": val, "alias_num": idx + 1}
+    else:
+        ## if moran's analysis
+        attrs = [k for k in params
+                 if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')]
+
+        for idx, val in enumerate(sorted(attrs)):
+            attr_string += template % {"col": params[val], "alias_num": idx + 1}
 
     return attr_string
 
 def query_attr_where(params):
     """
+      Construct where conditions when building neighbors query
         Create portion of WHERE clauses for weeding out NULL-valued geometries
+        Input: dict of params:
+            {'subquery': ...,
+             'numerator': 'data1',
+             'denominator': 'data2',
+             '': ...}
+        Output: 'idx_replace."data1" IS NOT NULL AND idx_replace."data2" IS NOT NULL'
+        Input:
+        {'subquery': ...,
+         'time_cols': ['time1', 'time2', 'time3'],
+         'etc': ...}
+        Output: 'idx_replace."time1" IS NOT NULL AND idx_replace."time2" IS NOT NULL AND idx_replace."time3" IS NOT NULL'
     """
-    attrs = sorted([k for k in params
-                    if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs')])
-
     attr_string = []
+    template = "idx_replace.\"%s\" IS NOT NULL"
 
-    for attr in attrs:
-        attr_string.append("idx_replace.\"{%s}\" IS NOT NULL" % attr)
+    if 'time_cols' in params:
+        ## markov where clauses
+        attrs = params['time_cols']
+        # add values to template
+        for attr in attrs:
+            attr_string.append(template % attr)
+    else:
+        ## moran where clauses
 
-    if len(attrs) == 2:
-        attr_string.append("idx_replace.\"{%s}\" <> 0" % attrs[1])
+        # get keys
+        attrs = sorted([k for k in params
+                        if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')])
+        # add values to template
+        for attr in attrs:
+            attr_string.append(template % params[attr])
+
+        if len(attrs) == 2:
+            attr_string.append("idx_replace.\"%s\" <> 0" % params[attrs[1]])
 
     out = " AND ".join(attr_string)
 
