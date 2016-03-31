@@ -47,8 +47,8 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
 
     try:
         query_result = plpy.execute(query)
-    except:
-        plpy.notice('** Query failed: %s' % query)
+    except plpy.SPIError, err:
+        plpy.notice('** Query failed with exception %s: %s' % (err, query))
         plpy.error('Spatial Markov failed: check the input parameters')
         return zip([None], [None], [None], [None], [None])
 
@@ -75,19 +75,12 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
     prob_dist = get_prob_dist(sp_markov_result.P, lag_classes, sp_markov_result.classes[:, -1])
 
     ## find the ups and down and overall distribution of each cell
-    trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist, sp_markov_result.classes[:, -1])
+    trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist,
+                                                             sp_markov_result.classes[:, -1])
 
     ## output the results
 
     return zip(trend, trend_up, trend_down, volatility, weights.id_order)
-
-def spatial_markov_predict(subquery, time_cols, num_time_per_bin,
-                           permutations, geom_col, id_col, w_type, num_ngbrs):
-    """
-        Filler for this future function
-    """
-
-    return None
 
 def get_time_data(markov_data, time_cols):
     """
@@ -131,7 +124,7 @@ def rebin_data(time_data, num_time_per_bin):
         n_max = time_data.shape[1] / num_time_per_bin + 1
 
     return np.array([time_data[:, num_time_per_bin * i:num_time_per_bin * (i+1)].mean(axis=1)
-             for i in range(n_max)]).T
+                     for i in range(n_max)]).T
 def get_prob_dist(transition_matrix, lag_indices, unit_indices):
     """
         Given an array of transition matrices, look up the probability
