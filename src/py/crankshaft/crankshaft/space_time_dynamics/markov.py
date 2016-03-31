@@ -6,7 +6,7 @@ Spatial dynamics measurements using Spatial Markov
 import numpy as np
 import pysal as ps
 import plpy
-from crankshaft.clustering import get_query, get_weight
+import crankshaft.pysal_utils as pu
 
 def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
                          permutations, geom_col, id_col, w_type, num_ngbrs):
@@ -43,7 +43,7 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
              "subquery": subquery,
              "num_ngbrs": num_ngbrs}
 
-    query = get_query(w_type, qvals)
+    query = pu.construct_neighbor_query(w_type, qvals)
 
     try:
         query_result = plpy.execute(query)
@@ -53,7 +53,7 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
         return zip([None], [None], [None], [None], [None])
 
     ## build weight
-    weights = get_weight(query_result, w_type)
+    weights = pu.get_weight(query_result, w_type)
 
     ## prep time data
     t_data = get_time_data(query_result, time_cols)
@@ -81,6 +81,14 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
 
     return zip(trend, trend_up, trend_down, volatility, weights.id_order)
 
+def spatial_markov_predict(subquery, time_cols, num_time_per_bin,
+                           permutations, geom_col, id_col, w_type, num_ngbrs):
+    """
+        Filler for this future function
+    """
+
+    return None
+
 def get_time_data(markov_data, time_cols):
     """
         Extract the time columns and bin appropriately
@@ -98,13 +106,13 @@ def rebin_data(time_data, num_time_per_bin):
           9 8 7 6    8.5 6.5
           5 4 3 2    4.5 2.5
 
-          if m = 2
+          if m = 2, the 4 x 4 matrix is transformed to a 2 x 4 matrix.
 
         This process effectively resamples the data at a longer time span n
          units longer than the input data.
         For cases when there is a remainder (remainder(5/3) = 2), the remaining
          two columns are binned together as the last time period, while the
-         first three are binned together.
+         first three are binned together for the first period.
 
         Input:
           @param time_data n x l  ndarray: measurements of an attribute at
