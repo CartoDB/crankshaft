@@ -14,6 +14,18 @@ AS $$
 $$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION
+  cdb_correlated_variables(
+    query text,
+    geoid_column text DEFAULT 'geoid',
+    census_table text DEFAULT 'ml_learning_block_groups_clipped'
+  )
+RETURNS TABLE(feature text, importance NUMERIC, std NUMERIC)
+AS $$
+  from crankshaft.segmentation import correlated_variables
+  return correlated_variables(query,geoid_column,census_table)
+$$ LANGUAGE plpythonu;
+
+CREATE OR REPLACE FUNCTION
   cdb_predict_segment (
       segment_name TEXT,
       geoid_column TEXT DEFAULT 'geoid',

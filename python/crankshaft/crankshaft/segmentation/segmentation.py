@@ -30,6 +30,20 @@ def create_segment(segment_name,table_name,column_name,geoid_column,census_table
     # predict_segment
     return accuracy
 
+def correlated_variables(query,geoid_column,census_table):
+    """
+    returns the columns which are importaint for the random forrest model
+    """
+    data     = pd.DataFrame(join_with_census(query,geoid_column, census_table))
+    features = data[data.columns.difference(['target', 'the_geom_webmercator', 'geoid','the_geom'])]
+    target, mean, std = normalize(data['target'])
+    model, accuracy, used_features = train_model(target,features, test_split=0.2)
+    std = np.std([tree.feature_importances_ for tree in model.estimators_],
+             axis=0)
+    importances = model.feature_importances_
+    return zip(features,importances,std)
+
+
 def create_and_predict_segment(segment_name,query,geoid_column,census_table,target_table,method):
     """
     generate a segment with machine learning
@@ -98,15 +112,6 @@ def join_with_census(query, geoid_column, census_table):
 def query_to_dictionary(result):
     return [ dict(zip(r.keys(), r.values())) for r in result ]
 
-def query_in_batches(query,batch_size):
-    cursor = plpy.cursor(query)
-    while True:
-        rows = cursor.fetch(batch_size)
-        if not rows:
-            break
-        else:
-            yield query_to_dictionary(rows)
-
 def predict_segment(model,features,geoid_column,census_table):
     """
     predict a segment with machine learning
@@ -117,21 +122,22 @@ def predict_segment(model,features,geoid_column,census_table):
     # features = ",".join(features)
 
     joined_features  = ','.join(['\"'+a+'\"::numeric' for a in features])
-    targets  = pd.DataFrame(query_to_dictionary(plpy.execute('select {joined_features} from {census_table}'.format(**locals()))))
+      = plpy.execute()
+    cursor = plpy.cursor('select {joined_features} from {census_table}'.format(**locals()))
+    results = []
+    while True:
+        rows  = cursor.fetch(batch_size)
 
-    predition = []
-    for batch in query_in_batches('select {joined_features} from {census_table}'.format(**locals()),2000):
-        targets = pd.DataFrame(batch)
-        plpy.notice('predicting:' + str(len(features)) + ' '+str(np.shape(targets)))
-        plpy.notice(joined_features)
-        targets = targets.dropna(axis =1, how='all').fillna(0)
-        plpy.notice('predicting:' + str(len(features)) + ' '+str(np.shape(targets)))
-        batch_prediction   = model.predict(targets)
-        prediciton.append(batch_prediction.to_maxtrix)
+        if not rows:
+            break
 
-    geo_ids  = plpy.execute('select geoid from {census_table}'.format(**locals()))
+        batch = pd.DataFrame(query_to_dictionary(rows))
+        batch_features = batch.dropna(axis =1, how='all').fillna(0)
+        prediction   = model.predict(batch_features)
+        results.append(prediction)
+        plpy.notice('predicting: predicted')
 
-    return  [[a['geoid'] for a in geo_ids],prediction]
+    return  [a['the_geom'] for a in geoms], [a['geoid'] for a in geo_ids],prediction
 
 
 def fetch_model(model_name):
