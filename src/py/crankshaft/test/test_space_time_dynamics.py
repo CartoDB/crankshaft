@@ -12,7 +12,6 @@ import unittest
 from helper import plpy, fixture_file
 
 import crankshaft.space_time_dynamics as std
-import crankshaft.clustering as cc
 from crankshaft import random_seeds
 import json
 
@@ -26,8 +25,8 @@ class SpaceTimeTests(unittest.TestCase):
                        "subquery": "SELECT * FROM a_list",
                        "geom_col": "the_geom",
                        "num_ngbrs": 321}
-        self.neighbors_data = json.loads(open(fixture_file('neighbors.json')).read())
-        self.moran_data = json.loads(open(fixture_file('moran.json')).read())
+        self.neighbors_data = json.loads(open(fixture_file('neighbors_markov.json')).read())
+        # self.moran_data = json.loads(open(fixture_file('markov.json')).read())
 
         self.time_data = np.array([i * np.ones(10, dtype=float) for i in range(10)]).T
 
@@ -59,38 +58,28 @@ class SpaceTimeTests(unittest.TestCase):
                  [ 0.        , 0.        , 0.        , 0.02352941, 0.97647059]]]
                  )
 
-    # def test_spatial_markov(self):
-    #     """Test Spatial Markov."""
-    #
-    #     ans = "SELECT i.\"cartodb_id\" As id, " \
-    #                  "i.\"dec_2013\"::numeric As attr1, " \
-    #                  "i.\"jan_2014\"::numeric As attr2, " \
-    #                  "i.\"feb_2014\"::numeric As attr3, " \
-    #                  "(SELECT ARRAY(SELECT j.\"cartodb_id\" " \
-    #                                "FROM (SELECT * FROM a_list) As j " \
-    #                                "WHERE j.\"dec_2013\" IS NOT NULL AND " \
-    #                                      "j.\"jan_2014\" IS NOT NULL AND " \
-    #                                      "j.\"feb_2014\" IS NOT NULL " \
-    #                                "ORDER BY " \
-    #                                  "j.\"the_geom\" <-> i.\"the_geom\" ASC " \
-    #                                "LIMIT 321 OFFSET 1 ) ) " \
-    #                    "As neighbors " \
-    #          "FROM (SELECT * FROM a_list) As i " \
-    #          "WHERE i.\"dec_2013\" IS NOT NULL AND " \
-    #                "i.\"jan_2014\" IS NOT NULL AND " \
-    #                "i.\"feb_2014\" IS NOT NULL " \
-    #          "ORDER BY i.\"cartodb_id\" ASC;"
-    #
-    #     subquery = self.params['subquery']
-    #     time_cols = self.params['time_cols']
-    #     num_time_per_bin = 1
-    #     permutations = 99
-    #     geom_col = self.params['geom_col']
-    #     id_col = self.params['id_col']
-    #     w_type = 'knn'
-    #     num_ngbrs = self.params['num_ngbrs']
-    #
-    #     self.assertEqual(std.spatial_markov(subquery, time_cols, num_time_per_bin, permutations, geom_col, id_col, w_type, num_ngbrs), ans)
+    def test_spatial_markov(self):
+        """Test Spatial Markov."""
+        data = [ { 'id': d['id'],
+                   'attr1': d['y1929'],
+                   'attr2': d['y1930'],
+                   'attr3': d['y1931'],
+                   'neighbors': d['neighbors'] } for d in self.neighbors_data]
+
+        plpy._define_result('select', data)
+        random_seeds.set_random_seeds(1234)
+
+        result = std.spatial_markov_trend('subquery', ['y1929', 'y1930', 'y1931', 'y1932', 'y1933', 'y1934', 'y1935', 'y1936', 'y1937', 'y1938', 'y1939'], 1, 99, 'the_geom', 'cartodb_id', 'knn', 5)
+
+        print 'result == None? ', result == None
+        result = [(row[0], row[1]) for row in result]
+        print result[0]
+        assertTrue(result[0] == None)
+        # expected = self.moran_data
+        # for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
+        #     self.assertAlmostEqual(res_val, exp_val)
+
+
 
     def test_rebin_data(self):
         """Test rebin_data"""
