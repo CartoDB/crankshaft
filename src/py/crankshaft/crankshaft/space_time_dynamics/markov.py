@@ -62,6 +62,11 @@ def spatial_markov_trend(subquery, time_cols, num_time_per_bin,
         ## rebin
         t_data = rebin_data(t_data, int(num_time_per_bin))
 
+    print 'shape of t_data %d, %d' % t_data.shape
+    print 'number of weight objects: %d, %d' % (weights.sparse).shape
+    print 'first num elements: %f' % t_data[0, 0]
+    # ls = ps.lag_spatial(weights, t_data)
+
     sp_markov_result = ps.Spatial_Markov(t_data,
                                          weights,
                                          k=7,
@@ -88,7 +93,7 @@ def get_time_data(markov_data, time_cols):
     """
     num_attrs = len(time_cols)
     return np.array([[x['attr' + str(i)] for x in markov_data]
-                     for i in range(1, num_attrs+1)], dtype=float).T
+                     for i in range(1, num_attrs+1)], dtype=float).transpose()
 
 def rebin_data(time_data, num_time_per_bin):
     """
