@@ -42,7 +42,7 @@ setup(
     # provisioned in the production servers.
     install_requires=['pysal==1.9.1'],
 
-    requires=['pysal', 'numpy' ],
+    requires=['pysal', 'numpy', 'sklearn', 'scikit-image'],
 
     test_suite='test'
 )
