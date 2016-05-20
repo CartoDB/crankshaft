@@ -16,6 +16,35 @@ SELECT ppoints.code, m.quads
 
 SELECT cdb_crankshaft._cdb_random_seeds(1234);
 
+-- Spatial Hotspots
+SELECT ppoints.code, m.quads
+  FROM ppoints
+  JOIN cdb_crankshaft.CDB_GetSpatialHotspots('SELECT * FROM ppoints', 'value') m
+    ON ppoints.cartodb_id = m.ids
+  ORDER BY ppoints.code;
+
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+
+-- Spatial Coldspots
+SELECT ppoints.code, m.quads
+  FROM ppoints
+  JOIN cdb_crankshaft.CDB_GetSpatialColdspots('SELECT * FROM ppoints', 'value') m
+    ON ppoints.cartodb_id = m.ids
+  ORDER BY ppoints.code;
+
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+
+  -- Spatial Outliers
+SELECT ppoints.code, m.quads
+  FROM ppoints
+  JOIN cdb_crankshaft.CDB_GetSpatialOutliers('SELECT * FROM ppoints', 'value') m
+    ON ppoints.cartodb_id = m.ids
+  ORDER BY ppoints.code;
+
+
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+
+-- Areas of Interest (rate)
 SELECT ppoints2.code, m.quads
   FROM ppoints2
   JOIN cdb_crankshaft.CDB_AreasOfInterest_Local_Rate('SELECT * FROM ppoints2', 'numerator', 'denominator') m

@@ -64,6 +64,85 @@ _cdb_random_seeds
 
 (1 row)
 code|quads
+01|HH
+02|HL
+07|HH
+08|HH
+09|HH
+13|HL
+16|HH
+17|HH
+19|HH
+20|HH
+22|HH
+25|HH
+26|HH
+28|HH
+31|HH
+33|HL
+37|HL
+38|HL
+39|HH
+40|HH
+41|HL
+48|HH
+50|HH
+(23 rows)
+_cdb_random_seeds
+
+(1 row)
+code|quads
+03|LL
+04|LL
+05|LH
+06|LL
+10|LL
+11|LL
+12|LL
+14|LL
+15|LL
+18|LL
+21|LL
+23|LL
+24|LL
+27|LL
+29|LL
+30|LL
+32|LL
+34|LH
+35|LL
+36|LL
+42|LH
+43|LH
+44|LL
+45|LH
+46|LL
+47|LL
+49|LH
+51|LL
+52|LL
+(29 rows)
+_cdb_random_seeds
+
+(1 row)
+code|quads
+02|HL
+05|LH
+13|HL
+33|HL
+34|LH
+37|HL
+38|HL
+41|HL
+42|LH
+43|LH
+45|LH
+49|LH
+(12 rows)
+_cdb_random_seeds
+
+(1 row)
+code|quads
 01|LL
 02|LH
 03|HH
