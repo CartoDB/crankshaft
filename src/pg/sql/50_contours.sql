@@ -21,10 +21,12 @@ CREATE OR REPLACE FUNCTION
     bandwidth NUMERIC DEFAULT 0.0001,
     levels NUMERIC[] DEFAULT null
     )
-RETURNS table (level Numeric, geom text )
+RETURNS table (level Numeric, geom geometry )
 AS $$
 BEGIN
+
   RETURN QUERY
-    select l as level, ST_GeomFromText(geom_text, 4326) as geom from _CDB_Contours(subquery,grid_size,bandwidth,levels);
+    select cont.level as level, ST_GeomFromText(cont.geom_text, 4326)::geometry as geom from _CDB_Contours(subquery,grid_size,bandwidth,levels) as cont;
 END;
 $$ LANGUAGE plpgsql;
+
