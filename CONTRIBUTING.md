@@ -45,8 +45,8 @@ source envs/dev/bin/activate
 
 Update extension in a working database with:
 
-* `ALTER EXTENSION crankshaft VERSION TO 'current';`
-  `ALTER EXTENSION crankshaft VERSION TO 'dev';`
+* `ALTER EXTENSION crankshaft UPDATE TO 'current';`
+  `ALTER EXTENSION crankshaft UPDATE TO 'dev';`
 
 Note: we keep the current development version install as 'dev' always;
 we update through the 'current' alias to allow changing the extension
@@ -58,7 +58,10 @@ should be dropped manually before the update.
 If the extension has not previously been installed in a database,
 it can be installed directly with:
 
-* `CREATE EXTENSION crankshaft WITH VERSION 'dev';`
+* `CREATE EXTENSION IF NOT EXISTS plpythonu;`
+  `CREATE EXTENSION IF NOT EXISTS postgis;`
+  `CREATE EXTENSION IF NOT EXISTS cartodb;`
+  `CREATE EXTENSION crankshaft WITH VERSION 'dev';`
 
 Note: the development extension uses the development python virtual
 environment automatically.
