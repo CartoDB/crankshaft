@@ -1,3 +1,5 @@
+\pset format unaligned
+\set ECHO all
 \i test/fixtures/ppoints.sql
 \i test/fixtures/ppoints2.sql
 
@@ -17,5 +19,32 @@ SELECT cdb_crankshaft._cdb_random_seeds(1234);
 SELECT ppoints2.code, m.quads
   FROM ppoints2
   JOIN cdb_crankshaft.CDB_AreasOfInterest_Local_Rate('SELECT * FROM ppoints2', 'numerator', 'denominator') m
+    ON ppoints2.cartodb_id = m.ids
+  ORDER BY ppoints2.code;
+    
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+
+-- Spatial Hotspots (rate)
+SELECT ppoints2.code, m.quads
+  FROM ppoints2
+  JOIN cdb_crankshaft.CDB_GetSpatialHotspots_Rate('SELECT * FROM ppoints2', 'numerator', 'denominator') m
+    ON ppoints2.cartodb_id = m.ids
+  ORDER BY ppoints2.code;
+
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+
+-- Spatial Coldspots (rate)
+SELECT ppoints2.code, m.quads
+  FROM ppoints2
+  JOIN cdb_crankshaft.CDB_GetSpatialColdspots_Rate('SELECT * FROM ppoints2', 'numerator', 'denominator') m
+    ON ppoints2.cartodb_id = m.ids
+  ORDER BY ppoints2.code;
+
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+
+-- Spatial Outliers (rate)
+SELECT ppoints2.code, m.quads
+  FROM ppoints2
+  JOIN cdb_crankshaft.CDB_GetSpatialOutliers_Rate('SELECT * FROM ppoints2', 'numerator', 'denominator') m
     ON ppoints2.cartodb_id = m.ids
   ORDER BY ppoints2.code;
