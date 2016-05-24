@@ -1,6 +1,6 @@
--- Moran's I (global)
+-- Moran's I Global Measure (public-facing)
 CREATE OR REPLACE FUNCTION
-  CDB_AreasOfInterest_Global (
+  CDB_AreasOfInterestGlobal (
       subquery TEXT,
       attr_name TEXT,
       permutations INT DEFAULT 99,
@@ -16,9 +16,9 @@ AS $$
   return moran(subquery, attr, num_ngbrs, permutations, geom_col, id_col, w_type)
 $$ LANGUAGE plpythonu;
 
--- Moran's I Local
+-- Moran's I Local (internal function)
 CREATE OR REPLACE FUNCTION
-  _CDB_AreasOfInterest_Local(
+  _CDB_AreasOfInterestLocal(
       subquery TEXT,
       attr TEXT,
       permutations INT,
@@ -34,8 +34,9 @@ AS $$
   return moran_local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs)
 $$ LANGUAGE plpythonu;
 
+-- Moran's I Local (public-facing function)
 CREATE OR REPLACE FUNCTION
-  CDB_AreasOfInterest_Local(
+  CDB_AreasOfInterestLocal(
     subquery TEXT,
     attr TEXT,
     permutations INT DEFAULT 99,
@@ -51,6 +52,7 @@ AS $$
 
 $$ LANGUAGE SQL;
 
+-- Moran's I only for HH and HL (public-facing function)
 CREATE OR REPLACE FUNCTION
   CDB_GetSpatialHotspots(
     subquery TEXT,
@@ -69,6 +71,7 @@ AS $$
 
 $$ LANGUAGE SQL;
 
+-- Moran's I only for LL and LH (public-facing function)
 CREATE OR REPLACE FUNCTION
   CDB_GetSpatialColdspots(
     subquery TEXT,
@@ -87,6 +90,7 @@ AS $$
 
 $$ LANGUAGE SQL;
 
+-- Moran's I only for LH and HL (public-facing function)
 CREATE OR REPLACE FUNCTION
   CDB_GetSpatialOutliers(
     subquery TEXT,
@@ -105,9 +109,9 @@ AS $$
 
 $$ LANGUAGE SQL;
 
--- Moran's I Rate (global)
+-- Moran's I Global Rate (public-facing function)
 CREATE OR REPLACE FUNCTION
-  CDB_AreasOfInterest_Global_Rate(
+  CDB_AreasOfInterestGlobalRate(
       subquery TEXT,
       numerator TEXT,
       denominator TEXT,
@@ -125,9 +129,9 @@ AS $$
 $$ LANGUAGE plpythonu;
 
 
--- Moran's I Local Rate
+-- Moran's I Local Rate (internal function)
 CREATE OR REPLACE FUNCTION
-  _CDB_AreasOfInterest_Local_Rate(
+  _CDB_AreasOfInterestLocalRate(
       subquery TEXT,
       numerator TEXT,
       denominator TEXT,
@@ -145,8 +149,9 @@ AS $$
   return moran_local_rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs)
 $$ LANGUAGE plpythonu;
 
+-- Moran's I Local Rate (public-facing function)
 CREATE OR REPLACE FUNCTION
-  CDB_AreasOfInterest_Local_Rate(
+  CDB_AreasOfInterestLocalRate(
       subquery TEXT,
       numerator TEXT,
       denominator TEXT,
@@ -164,8 +169,9 @@ AS $$
 
 $$ LANGUAGE SQL;
 
+-- Moran's I Local Rate only for HH and HL (public-facing function)
 CREATE OR REPLACE FUNCTION
-  CDB_GetSpatialHotspots_Rate(
+  CDB_GetSpatialHotspotsRate(
       subquery TEXT,
       numerator TEXT,
       denominator TEXT,
@@ -184,8 +190,9 @@ AS $$
 
 $$ LANGUAGE SQL;
 
+-- Moran's I Local Rate only for LL and LH (public-facing function)
 CREATE OR REPLACE FUNCTION
-  CDB_GetSpatialColdspots_Rate(
+  CDB_GetSpatialColdspotsRate(
       subquery TEXT,
       numerator TEXT,
       denominator TEXT,
@@ -204,8 +211,9 @@ AS $$
 
 $$ LANGUAGE SQL;
 
+-- Moran's I Local Rate only for LH and HL (public-facing function)
 CREATE OR REPLACE FUNCTION
-  CDB_GetSpatialOutliers_Rate(
+  CDB_GetSpatialOutliersRate(
       subquery TEXT,
       numerator TEXT,
       denominator TEXT,
@@ -223,21 +231,3 @@ AS $$
   WHERE quads IN ('HL', 'LH');
 
 $$ LANGUAGE SQL;
-
--- -- Moran's I Local Bivariate
--- CREATE OR REPLACE FUNCTION
---   cdb_moran_local_bv(
---       subquery TEXT,
---       attr1 TEXT,
---       attr2 TEXT,
---       permutations INT DEFAULT 99,
---       geom_col TEXT DEFAULT 'the_geom',
---       id_col TEXT DEFAULT 'cartodb_id',
---       w_type TEXT DEFAULT 'knn',
---       num_ngbrs INT DEFAULT 5)
--- RETURNS TABLE(moran FLOAT, quads TEXT, significance FLOAT, ids INT, y numeric)
--- AS $$
---   from crankshaft.clustering import moran_local_bv
---   # TODO: use named parameters or a dictionary
---   return moran_local_bv(t, attr1, attr2, permutations, geom_col, id_col, w_type, num_ngbrs)
--- $$ LANGUAGE plpythonu;
