@@ -6,21 +6,21 @@
 --  2 | Pt2  | 11.0   | 13.2   | 12.5
 --  ...
 -- Sample Function call:
--- SELECT cdb_spatial_markov('SELECT * FROM real_estate',
---                           Array['date_1', 'date_2', 'date_3'])
+-- SELECT CDB_SpatialMarkov('SELECT * FROM real_estate',
+--                          Array['date_1', 'date_2', 'date_3'])
 
 
 CREATE OR REPLACE FUNCTION
-  cdb_spatial_markov (
+  CDB_SpatialMarkov (
       subquery TEXT,
-      time_cols text[],
-      num_time_per_bin int DEFAULT 1,
+      time_cols TEXT[],
+      num_classes INT DEFAULT 7,
+      w_type TEXT DEFAULT 'knn',
+      num_ngbrs INT DEFAULT 5,
   	  permutations INT DEFAULT 99,
   	  geom_col TEXT DEFAULT 'the_geom',
-  	  id_col TEXT DEFAULT 'cartodb_id',
-      w_type TEXT DEFAULT 'knn',
-      num_ngbrs int DEFAULT 5)
-RETURNS TABLE (trend numeric, trend_up numeric, trend_down numeric, volatility numeric, ids int)
+  	  id_col TEXT DEFAULT 'cartodb_id')
+RETURNS TABLE (trend NUMERIC, trend_up NUMERIC, trend_down NUMERIC, volatility NUMERIC, ids INT)
 AS $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
 
@@ -28,7 +28,7 @@ AS $$
 
   ## TODO: use named parameters or a dictionary
 
-  return spatial_markov_trend(subquery, time_cols, num_time_per_bin, permutations, geom_col, id_col, w_type, num_ngbrs)
+  return spatial_markov_trend(subquery, time_cols, permutations, geom_col, id_col, w_type, num_ngbrs)
 $$ LANGUAGE plpythonu;
 
 -- input table format: identical to above but in a predictable format
