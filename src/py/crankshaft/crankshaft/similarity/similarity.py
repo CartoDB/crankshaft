@@ -2,13 +2,17 @@ from sklearn.neighbors import BallTree
 import numpy as np
 import plpy
 
+def query_to_dictionary(result):
+    return [ dict(zip(r.keys(), r.values())) for r in result ]
+
 def similarity_rank(target_cartodb_id, query):
-    data = plpy.execute(query)    
+    data = query_to_dictionary(plpy.execute(query))  
     features, target = extract_features_target(data,target_cartodb_id)
-    tree = train(features)
-    dist, ind  = tree.query(target, k=len(data))
-    cartodb_ids  = [ dist[ind]['cartodb_id'] for index in ind ]
-    return cartodb_ids, dist
+    normed_features, normed_target  = normalize_features(features,target)
+    tree = train(normed_features)
+    dist, ind  = tree.query(normed_target, k=len(features))
+    cartodb_ids  = [ data[index]['cartodb_id'] for index in ind[0]]
+    return zip(cartodb_ids, dist[0])
 
 def most_similar(matches,query):
     data = plpy.execute(query)    
@@ -23,21 +27,22 @@ def most_similar(matches,query):
     return cartodb_ids, results
     
 def train(features):
-    normed_features  = normalize_features(featuers)
-    normed_target    = normalize_features([target])
-    tree = BallTree(normed_features, leaf_size=2)
+    tree = BallTree(features, leaf_size=2)
     return tree
     
-def normalize_features(features):
+def normalize_features(features, target):
     maxes = features.max(axis=0)
     mins  = features.min(axis=0)
-    return (features - mins)/(maxes-mins)
+    return (features - mins)/(maxes-mins), (target-mins)/(maxes-mins)
     
-def extract_features_target:(data, target_cartodb_id=None):
+def extract_features_target(data, target_cartodb_id=None):
     target = None
+    features = []
     for row in data:
-        data.keys().difference(['the_geom', 'the_geom_webmercator','cartodb_id'])
-        if data['cartodb_id'] == target_cartodb_id
-            target = data.values()
-    return np.array(data), np.array(target)
+        values = [ val for key, val in row.iteritems() if key not in ['the_geom', 'the_geom_webmercator','cartodb_id']]
+        if row['cartodb_id'] == target_cartodb_id:
+            target = values
+        features.append(values)
+
+    return np.array(features, dtype=float), np.array(target, dtype=float)
     
