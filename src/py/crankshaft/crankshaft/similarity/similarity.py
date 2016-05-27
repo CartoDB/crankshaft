@@ -1,13 +1,29 @@
 from sklearn.neighbors import BallTree
+import  scipy.stats as stats
 import numpy as np
 import plpy
 
 def query_to_dictionary(result):
     return [ dict(zip(r.keys(), r.values())) for r in result ]
 
+def drop_all_nan_columns(data):
+    reutrn data[~np.isnan(data).all(axis=0)]
+    
+def fill_missing_na(data,val=None):
+    inds = np.where(np.isnan(data))
+    if val==None:
+        col_mean = stats.nanmean(data,axis=0)
+        data[inds]=np.take(col_mean,inds[1])
+    else:
+        data[inds]=np.take(val, inds[1])
+    return data
+    
 def similarity_rank(target_cartodb_id, query):
     data = query_to_dictionary(plpy.execute(query))  
+    
     features, target = extract_features_target(data,target_cartodb_id)
+    features = fill_missing_na(drop_all_nan_columns(features))
+    
     normed_features, normed_target  = normalize_features(features,target)
     tree = train(normed_features)
     dist, ind  = tree.query(normed_target, k=len(features))
@@ -25,6 +41,7 @@ def most_similar(matches,query):
         cartodb_ids  = [ dist[ind]['cartodb_id'] for index in ind ]
         results.append(cartodb_ids)
     return cartodb_ids, results
+    
     
 def train(features):
     tree = BallTree(features, leaf_size=2)
