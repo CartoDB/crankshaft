@@ -4,7 +4,7 @@ as $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.similarity import similarity_rank
   return similarity_rank(cartodb_id, query)
-$$ LANGUAGE plpythonu
+$$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION cdb_MostSimilar(cartodb_id numeric, query text ,matches numeric)
 returns TABLE (cartodb_id NUMERIC, similarity NUMERIC)
@@ -12,4 +12,4 @@ as $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.similarity import most_similar
   return most_similar(matches, query)
-$$ LANGUAGE plpythonu
+$$ LANGUAGE plpythonu;
