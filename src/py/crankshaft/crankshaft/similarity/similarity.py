@@ -7,7 +7,7 @@ def query_to_dictionary(result):
     return [ dict(zip(r.keys(), r.values())) for r in result ]
 
 def drop_all_nan_columns(data):
-    reutrn data[~np.isnan(data).all(axis=0)]
+    return data[ ~np.isnan(data).all(axis=0)]
     
 def fill_missing_na(data,val=None):
     inds = np.where(np.isnan(data))
@@ -27,7 +27,7 @@ def similarity_rank(target_cartodb_id, query):
     normed_features, normed_target  = normalize_features(features,target)
     tree = train(normed_features)
     dist, ind  = tree.query(normed_target, k=len(features))
-    cartodb_ids  = [ data[index]['cartodb_id'] for index in ind[0]]
+    cartodb_ids  = [data[index]['cartodb_id'] for index in ind[0]]
     return zip(cartodb_ids, dist[0])
 
 def most_similar(matches,query):
