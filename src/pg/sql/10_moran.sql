@@ -1,6 +1,6 @@
 -- Moran's I Global Measure (public-facing)
 CREATE OR REPLACE FUNCTION
-  CDB_AreasOfInterestGlobal (
+  CDB_AreasOfInterestGlobal(
       subquery TEXT,
       attr_name TEXT,
       permutations INT DEFAULT 99,
@@ -48,7 +48,7 @@ RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMER
 AS $$
 
   SELECT moran, quads, significance, ids, y
-  FROM cdb_crankshaft._CDB_AreasOfInterest_Local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs);
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs);
 
 $$ LANGUAGE SQL;
 
@@ -66,7 +66,7 @@ CREATE OR REPLACE FUNCTION
 AS $$
 
   SELECT moran, quads, significance, ids, y
-  FROM cdb_crankshaft._CDB_AreasOfInterest_Local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs)
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs)
   WHERE quads IN ('HH', 'HL');
 
 $$ LANGUAGE SQL;
@@ -85,7 +85,7 @@ CREATE OR REPLACE FUNCTION
 AS $$
 
   SELECT moran, quads, significance, ids, y
-  FROM cdb_crankshaft._CDB_AreasOfInterest_Local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs)
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs)
   WHERE quads IN ('LL', 'LH');
 
 $$ LANGUAGE SQL;
@@ -104,7 +104,7 @@ CREATE OR REPLACE FUNCTION
 AS $$
 
   SELECT moran, quads, significance, ids, y
-  FROM cdb_crankshaft._CDB_AreasOfInterest_Local(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs)
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, permutations, geom_col, id_col, w_type, num_ngbrs)
   WHERE quads IN ('HL', 'LH');
 
 $$ LANGUAGE SQL;
@@ -165,7 +165,7 @@ TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
 AS $$
 
   SELECT moran, quads, significance, ids, y
-  FROM cdb_crankshaft._CDB_AreasOfInterest_Local_Rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs);
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs);
 
 $$ LANGUAGE SQL;
 
@@ -185,7 +185,7 @@ TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
 AS $$
 
   SELECT moran, quads, significance, ids, y
-  FROM cdb_crankshaft._CDB_AreasOfInterest_Local_Rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs)
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs)
   WHERE quads IN ('HH', 'HL');
 
 $$ LANGUAGE SQL;
@@ -206,7 +206,7 @@ TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
 AS $$
 
   SELECT moran, quads, significance, ids, y
-  FROM cdb_crankshaft._CDB_AreasOfInterest_Local_Rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs)
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs)
   WHERE quads IN ('LL', 'LH');
 
 $$ LANGUAGE SQL;
@@ -227,7 +227,7 @@ TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
 AS $$
 
   SELECT moran, quads, significance, ids, y
-  FROM cdb_crankshaft._CDB_AreasOfInterest_Local_Rate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs)
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, permutations, geom_col, id_col, w_type, num_ngbrs)
   WHERE quads IN ('HL', 'LH');
 
 $$ LANGUAGE SQL;
