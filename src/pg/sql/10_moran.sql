@@ -26,7 +26,7 @@ CREATE OR REPLACE FUNCTION
       permutations INT,
       geom_col TEXT,
       id_col TEXT)
-RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local
@@ -44,10 +44,10 @@ CREATE OR REPLACE FUNCTION
     permutations INT DEFAULT 99,
     geom_col TEXT DEFAULT 'the_geom',
     id_col TEXT DEFAULT 'cartodb_id')
-RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
 
-  SELECT moran, quads, significance, ids, y
+  SELECT moran, quads, significance, rowid, y
   FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, w_type, num_ngbrs, permutations, geom_col, id_col);
 
 $$ LANGUAGE SQL;
@@ -62,10 +62,10 @@ CREATE OR REPLACE FUNCTION
     permutations INT DEFAULT 99,
     geom_col TEXT DEFAULT 'the_geom',
     id_col TEXT DEFAULT 'cartodb_id')
-    RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+    RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
 
-  SELECT moran, quads, significance, ids, y
+  SELECT moran, quads, significance, rowid, y
   FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, w_type, num_ngbrs, permutations, geom_col, id_col)
   WHERE quads IN ('HH', 'HL');
 
@@ -81,10 +81,10 @@ CREATE OR REPLACE FUNCTION
     permutations INT DEFAULT 99,
     geom_col TEXT DEFAULT 'the_geom',
     id_col TEXT DEFAULT 'cartodb_id')
-    RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+    RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
 
-  SELECT moran, quads, significance, ids, y
+  SELECT moran, quads, significance, rowid, y
   FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, w_type, num_ngbrs, permutations, geom_col, id_col)
   WHERE quads IN ('LL', 'LH');
 
@@ -100,10 +100,10 @@ CREATE OR REPLACE FUNCTION
     permutations INT DEFAULT 99,
     geom_col TEXT DEFAULT 'the_geom',
     id_col TEXT DEFAULT 'cartodb_id')
-    RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+    RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
 
-  SELECT moran, quads, significance, ids, y
+  SELECT moran, quads, significance, rowid, y
   FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, w_type, num_ngbrs, permutations, geom_col, id_col)
   WHERE quads IN ('HL', 'LH');
 
@@ -141,7 +141,7 @@ CREATE OR REPLACE FUNCTION
       geom_col TEXT,
       id_col TEXT)
 RETURNS
-TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local_rate
@@ -161,10 +161,10 @@ CREATE OR REPLACE FUNCTION
       geom_col TEXT DEFAULT 'the_geom',
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS
-TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
 
-  SELECT moran, quads, significance, ids, y
+  SELECT moran, quads, significance, rowid, y
   FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col);
 
 $$ LANGUAGE SQL;
@@ -181,10 +181,10 @@ CREATE OR REPLACE FUNCTION
       geom_col TEXT DEFAULT 'the_geom',
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS
-TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
 
-  SELECT moran, quads, significance, ids, y
+  SELECT moran, quads, significance, rowid, y
   FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
   WHERE quads IN ('HH', 'HL');
 
@@ -202,10 +202,10 @@ CREATE OR REPLACE FUNCTION
       geom_col TEXT DEFAULT 'the_geom',
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS
-TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
 
-  SELECT moran, quads, significance, ids, y
+  SELECT moran, quads, significance, rowid, y
   FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
   WHERE quads IN ('LL', 'LH');
 
@@ -223,10 +223,10 @@ CREATE OR REPLACE FUNCTION
       geom_col TEXT DEFAULT 'the_geom',
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS
-TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, ids INT, y NUMERIC)
+TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, y NUMERIC)
 AS $$
 
-  SELECT moran, quads, significance, ids, y
+  SELECT moran, quads, significance, rowid, y
   FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
   WHERE quads IN ('HL', 'LH');
 
