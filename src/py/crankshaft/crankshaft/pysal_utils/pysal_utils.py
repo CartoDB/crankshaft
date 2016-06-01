@@ -11,7 +11,7 @@ def construct_neighbor_query(w_type, query_vals):
         @param query_vals dict: values used to construct the query
     """
 
-    if w_type == 'knn':
+    if w_type.lower() == 'knn':
         return knn(query_vals)
     else:
         return queen(query_vals)
@@ -22,7 +22,7 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
         Construct PySAL weight from return value of query
         @param query_res: query results with attributes and neighbors
     """
-    if w_type == 'knn':
+    if w_type.lower() == 'knn':
         row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
         weights = {x['id']: row_normed_weights for x in query_res}
     else:
