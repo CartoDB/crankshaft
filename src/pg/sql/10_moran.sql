@@ -2,7 +2,7 @@
 CREATE OR REPLACE FUNCTION
   CDB_AreasOfInterestGlobal(
       subquery TEXT,
-      attr_name TEXT,
+      column_name TEXT,
       w_type TEXT DEFAULT 'knn',
       num_ngbrs INT DEFAULT 5,
       permutations INT DEFAULT 99,
@@ -13,14 +13,14 @@ AS $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
-  return moran(subquery, attr, w_type, num_ngbrs, permutations, geom_col, id_col)
+  return moran(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;
 
 -- Moran's I Local (internal function)
 CREATE OR REPLACE FUNCTION
   _CDB_AreasOfInterestLocal(
       subquery TEXT,
-      attr TEXT,
+      column_name TEXT,
       w_type TEXT,
       num_ngbrs INT,
       permutations INT,
@@ -31,14 +31,14 @@ AS $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
-  return moran_local(subquery, attr, w_type, num_ngbrs, permutations, geom_col, id_col)
+  return moran_local(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;
 
 -- Moran's I Local (public-facing function)
 CREATE OR REPLACE FUNCTION
   CDB_AreasOfInterestLocal(
     subquery TEXT,
-    attr TEXT,
+    column_name TEXT,
     w_type TEXT DEFAULT 'knn',
     num_ngbrs INT DEFAULT 5,
     permutations INT DEFAULT 99,
@@ -48,7 +48,7 @@ RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, vals 
 AS $$
 
   SELECT moran, quads, significance, rowid, vals
-  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, w_type, num_ngbrs, permutations, geom_col, id_col);
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col);
 
 $$ LANGUAGE SQL;
 
@@ -56,7 +56,7 @@ $$ LANGUAGE SQL;
 CREATE OR REPLACE FUNCTION
   CDB_GetSpatialHotspots(
     subquery TEXT,
-    attr TEXT,
+    column_name TEXT,
     w_type TEXT DEFAULT 'knn',
     num_ngbrs INT DEFAULT 5,
     permutations INT DEFAULT 99,
@@ -66,7 +66,7 @@ CREATE OR REPLACE FUNCTION
 AS $$
 
   SELECT moran, quads, significance, rowid, vals
-  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, attr, w_type, num_ngbrs, permutations, geom_col, id_col)
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
   WHERE quads IN ('HH', 'HL');
 
 $$ LANGUAGE SQL;
