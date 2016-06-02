@@ -57,7 +57,7 @@ class MoranTest(unittest.TestCase):
         data = [ { 'id': d['id'], 'attr1': d['value'], 'neighbors': d['neighbors'] } for d in self.neighbors_data]
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local('subquery', 'value', 99, 'the_geom', 'cartodb_id', 'knn', 5)
+        result = cc.moran_local('subquery', 'value', 'knn', 5, 99, 'the_geom', 'cartodb_id')
         result = [(row[0], row[1]) for row in result]
         expected = self.moran_data
         for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
@@ -69,7 +69,7 @@ class MoranTest(unittest.TestCase):
         data = [ { 'id': d['id'], 'attr1': d['value'], 'attr2': 1, 'neighbors': d['neighbors'] } for d in self.neighbors_data]
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local_rate('subquery', 'numerator', 'denominator', 99, 'the_geom', 'cartodb_id', 'knn', 5)
+        result = cc.moran_local_rate('subquery', 'numerator', 'denominator', 'knn', 5, 99, 'the_geom', 'cartodb_id')
         print 'result == None? ', result == None
         result = [(row[0], row[1]) for row in result]
         expected = self.moran_data
@@ -81,7 +81,7 @@ class MoranTest(unittest.TestCase):
         data = [{ 'id': d['id'], 'attr1': d['value'], 'neighbors': d['neighbors'] } for d in self.neighbors_data]
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1235)
-        result = cc.moran('subquery', 'value', 99, 'the_geom', 'cartodb_id', 'knn', 5)
+        result = cc.moran('table', 'value', 'knn', 5, 99, 'the_geom', 'cartodb_id')
         print 'result == None?', result == None
         result_moran = result[0][0]
         expected_moran = np.array([row[0] for row in self.moran_data]).mean()

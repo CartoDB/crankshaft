@@ -1,3 +1,5 @@
+SET client_min_messages TO WARNING;
+\set ECHO none
 -- test table (spanish province centroids with some invented values)
 CREATE TABLE ppoints (cartodb_id integer, the_geom geometry, the_geom_webmercator geometry, code text, region_code text, value float);
 INSERT INTO ppoints VALUES

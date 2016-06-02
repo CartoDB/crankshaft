@@ -14,7 +14,7 @@ import crankshaft.pysal_utils as pu
 # High level interface ---------------------------------------
 
 def moran(subquery, attr_name,
-          permutations, geom_col, id_col, w_type, num_ngbrs):
+          w_type, num_ngbrs, permutations, geom_col, id_col):
     """
     Moran's I (global)
     Implementation building neighbors with a PostGIS database and Moran's I
@@ -56,7 +56,7 @@ def moran(subquery, attr_name,
     return zip([moran_global.I], [moran_global.EI])
 
 def moran_local(subquery, attr,
-                permutations, geom_col, id_col, w_type, num_ngbrs):
+                w_type, num_ngbrs, permutations, geom_col, id_col):
     """
     Moran's I implementation for PL/Python
     Andy Eschbacher
@@ -96,7 +96,7 @@ def moran_local(subquery, attr,
     return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
 
 def moran_rate(subquery, numerator, denominator,
-               permutations, geom_col, id_col, w_type, num_ngbrs):
+               w_type, num_ngbrs, permutations, geom_col, id_col):
     """
     Moran's I Rate (global)
     Andy Eschbacher
@@ -137,7 +137,7 @@ def moran_rate(subquery, numerator, denominator,
     return zip([lisa_rate.I], [lisa_rate.EI])
 
 def moran_local_rate(subquery, numerator, denominator,
-                     permutations, geom_col, id_col, w_type, num_ngbrs):
+                     w_type, num_ngbrs, permutations, geom_col, id_col):
     """
         Moran's I Local Rate
         Andy Eschbacher
