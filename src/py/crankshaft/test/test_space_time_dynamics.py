@@ -58,39 +58,39 @@ class SpaceTimeTests(unittest.TestCase):
                  [ 0.        , 0.        , 0.        , 0.02352941, 0.97647059]]]
                  )
 
-    # def test_spatial_markov(self):
-    #     """Test Spatial Markov."""
-    #     data = [ { 'id': d['id'],
-    #                'attr1': d['y1995'],
-    #                'attr2': d['y1996'],
-    #                'attr3': d['y1997'],
-    #                'attr4': d['y1998'],
-    #                'attr5': d['y1999'],
-    #                'attr6': d['y2000'],
-    #                'attr7': d['y2001'],
-    #                'attr8': d['y2002'],
-    #                'attr9': d['y2003'],
-    #                'attr10': d['y2004'],
-    #                'attr11': d['y2005'],
-    #                'attr12': d['y2006'],
-    #                'attr13': d['y2007'],
-    #                'attr14': d['y2008'],
-    #                'attr15': d['y2009'],
-    #                'neighbors': d['neighbors'] } for d in self.neighbors_data]
-    #     print(str(data[0]))
-    #     plpy._define_result('select', data)
-    #     random_seeds.set_random_seeds(1234)
-    #
-    #     result = std.spatial_markov_trend('subquery', ['y1995', 'y1996', 'y1997', 'y1998', 'y1999', 'y2000', 'y2001', 'y2002', 'y2003', 'y2004', 'y2005', 'y2006', 'y2007', 'y2008', 'y2009'], 7, 'knn', 5, 99, 'the_geom', 'cartodb_id')
-    #
-    #     print 'result == None? ', result == None
-    #     result = [(row[0], row[1], row[2], row[3], row[4]) for row in result]
-    #     print result[0]
-    #     expected = self.markov_data
-    #     for ([res_trend, res_up, res_down, res_vol, res_id],
-    #          [exp_trend, exp_up, exp_down, exp_vol, exp_id]
-    #          ) in zip(result, expected):
-    #         self.assertAlmostEqual(res_trend, exp_trend)
+    def test_spatial_markov(self):
+        """Test Spatial Markov."""
+        data = [ { 'id': d['id'],
+                   'attr1': d['y1995'],
+                   'attr2': d['y1996'],
+                   'attr3': d['y1997'],
+                   'attr4': d['y1998'],
+                   'attr5': d['y1999'],
+                   'attr6': d['y2000'],
+                   'attr7': d['y2001'],
+                   'attr8': d['y2002'],
+                   'attr9': d['y2003'],
+                   'attr10': d['y2004'],
+                   'attr11': d['y2005'],
+                   'attr12': d['y2006'],
+                   'attr13': d['y2007'],
+                   'attr14': d['y2008'],
+                   'attr15': d['y2009'],
+                   'neighbors': d['neighbors'] } for d in self.neighbors_data]
+        print(str(data[0]))
+        plpy._define_result('select', data)
+        random_seeds.set_random_seeds(1234)
+
+        result = std.spatial_markov_trend('subquery', ['y1995', 'y1996', 'y1997', 'y1998', 'y1999', 'y2000', 'y2001', 'y2002', 'y2003', 'y2004', 'y2005', 'y2006', 'y2007', 'y2008', 'y2009'], 5, 'knn', 5, 0, 'the_geom', 'cartodb_id')
+
+        self.assertTrue(result != None)
+        result = [(row[0], row[1], row[2], row[3], row[4]) for row in result]
+        print result[0]
+        expected = self.markov_data
+        for ([res_trend, res_up, res_down, res_vol, res_id],
+             [exp_trend, exp_up, exp_down, exp_vol, exp_id]
+             ) in zip(result, expected):
+            self.assertAlmostEqual(res_trend, exp_trend)
 
     def test_get_time_data(self):
         """Test get_time_data"""
@@ -240,7 +240,7 @@ class SpaceTimeTests(unittest.TestCase):
          [ 0.95861858, 0.95774543, 0.98254811, 0.98919472, 0.98684824, 0.98882205
         ,  0.97662234, 0.95601578, 0.94905385, 0.94934888, 0.97152609, 0.97163004
         ,  0.9700702,  0.97158948, 0.95884908],
-         [ 0.83980439, 0.84726737, 0.85747, 0.85467221, 0.8556751,  0.84818516
+         [ 0.83980439, 0.84726737, 0.85747,  0.85467221, 0.8556751,  0.84818516
         ,  0.85265681, 0.84502402, 0.82645665, 0.81743586, 0.83550406, 0.83338919
         ,  0.83511679, 0.82136617, 0.80921874],
          [ 0.95118156, 0.9466212,  0.94688098, 0.9508583,  0.9512441,  0.95440787
@@ -263,6 +263,8 @@ class SpaceTimeTests(unittest.TestCase):
         ,  1.17025154, 1.18730553, 1.14242645]])
 
         self.assertTrue(np.allclose(result, expected))
+        self.assertTrue(type(result) == type(expected))
+        self.assertTrue(result.shape == expected.shape)
 
     def test_rebin_data(self):
         """Test rebin_data"""

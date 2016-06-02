@@ -9,7 +9,7 @@ import plpy
 import crankshaft.pysal_utils as pu
 
 def spatial_markov_trend(subquery, time_cols, num_classes = 7,
-                         w_type = 'knn', num_ngbrs = 5, permutations = 999,
+                         w_type = 'knn', num_ngbrs = 5, permutations = 0,
                          geom_col = 'the_geom', id_col = 'cartodb_id'):
     """
         Predict the trends of a unit based on:
@@ -55,6 +55,7 @@ def spatial_markov_trend(subquery, time_cols, num_classes = 7,
 
     ## build weight
     weights = pu.get_weight(query_result, w_type)
+    weights.transform = 'r'
 
     ## prep time data
     t_data = get_time_data(query_result, time_cols)
@@ -62,7 +63,6 @@ def spatial_markov_trend(subquery, time_cols, num_classes = 7,
     plpy.debug('shape of t_data %d, %d' % t_data.shape)
     plpy.debug('number of weight objects: %d, %d' % (weights.sparse).shape)
     plpy.debug('first num elements: %f' % t_data[0, 0])
-    # ls = ps.lag_spatial(weights, t_data)
 
     sp_markov_result = ps.Spatial_Markov(t_data,
                                          weights,
@@ -156,7 +156,7 @@ def get_prob_stats(prob_dist, unit_indices):
         Outputs:
             @param trend_up ndarray(float): sum of probabilities for upward
                movement (relative to the unit index of that prob)
-            @param trend_down ndarray(float): sum of probabilities for downard
+            @param trend_down ndarray(float): sum of probabilities for downward
                movement (relative to the unit index of that prob)
             @param trend ndarray(float): difference of upward and downward
                movements
