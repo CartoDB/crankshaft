@@ -19,7 +19,7 @@ CREATE OR REPLACE FUNCTION
   	  permutations INT DEFAULT 99,
   	  geom_col TEXT DEFAULT 'the_geom',
   	  id_col TEXT DEFAULT 'cartodb_id')
-RETURNS TABLE (trend NUMERIC, trend_up NUMERIC, trend_down NUMERIC, volatility NUMERIC, ids INT)
+RETURNS TABLE (trend NUMERIC, trend_up NUMERIC, trend_down NUMERIC, volatility NUMERIC, rowid INT)
 AS $$
   plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
 
