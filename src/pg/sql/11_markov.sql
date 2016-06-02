@@ -9,7 +9,6 @@
 -- SELECT CDB_SpatialMarkov('SELECT * FROM real_estate',
 --                          Array['date_1', 'date_2', 'date_3'])
 
-
 CREATE OR REPLACE FUNCTION
   CDB_SpatialMarkov (
       subquery TEXT,
@@ -27,8 +26,7 @@ AS $$
   from crankshaft.space_time_dynamics import spatial_markov_trend
 
   ## TODO: use named parameters or a dictionary
-
-  return spatial_markov_trend(subquery, time_cols, permutations, geom_col, id_col, w_type, num_ngbrs)
+  return spatial_markov_trend(subquery, time_cols, num_classes, w_type, num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;
 
 -- input table format: identical to above but in a predictable format
