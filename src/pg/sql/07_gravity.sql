@@ -1,4 +1,35 @@
 CREATE OR REPLACE FUNCTION CDB_Gravity(
+    IN target_query text,
+    IN weight_column text,
+    IN source_query text,
+    IN pop_column text,
+    IN target bigint,
+    IN radius integer,
+    IN minval numeric DEFAULT -10e307
+    )
+RETURNS TABLE(
+    the_geom geometry,
+    source_id bigint,
+    target_id bigint,
+    dist numeric,
+    h numeric,
+    hpop numeric)  AS $$
+DECLARE
+    t_id bigint[];
+    t_geom geometry[];
+    t_weight numeric[];
+    s_id bigint[];
+    s_geom geometry[];
+    s_pop numeric[];
+BEGIN
+    EXECUTE 'WITH foo as('+target_query+') SELECT array_agg(cartodb_id), array_agg(the_geom), array_agg(' || weight_column || ') FROM foo' INTO t_id, t_geom, t_weight;
+    EXECUTE 'WITH foo as('+source_query+') SELECT array_agg(cartodb_id), array_agg(the_geom), array_agg(' || pop_column || ') FROM foo' INTO s_id, s_geom, s_pop;
+    RETURN QUERY
+    SELECT g.* FROM t, s, CDB_Gravity(t_id, t_geom, t_weight, s_id, s_geom, s_pop, target, radius, minval) g;
+END;
+$$ language plpgsql;
+
+CREATE OR REPLACE FUNCTION CDB_Gravity(
     IN t_id bigint[],
     IN t_geom geometry[],
     IN t_weight numeric[],

@@ -1,10 +1,10 @@
 ## Gravity Model
 
-### CDB_Gravity(t_id bigint[], t_geom geometry[], t_weight numeric[], s_id bigint[], s_geom geometry[], s_pop numeric[], target bigint, radius integer, minval numeric DEFAULT -10e307)
-
 Gravity Models are derived from Newton's Law of Gravity and are used to predict the interaction between a group of populated areas (sources) and a specific target among a group of potential targets, in terms of an attraction factor (weight)
 
 **CDB_Gravity** is based on the model defined in *Huff's Law of Shopper attraction (1963)*
+
+### CDB_Gravity(t_id bigint[], t_geom geometry[], t_weight numeric[], s_id bigint[], s_geom geometry[], s_pop numeric[], target bigint, radius integer, minval numeric DEFAULT -10e307)
 
 #### Arguments
 
@@ -20,8 +20,22 @@ Gravity Models are derived from Newton's Law of Gravity and are used to predict 
 | radius   | integer     | Radius in meters around the target under study that will be taken into account|
 | minval (optional)   | numeric     | Lowest accepted value of weight, defaults to numeric min_value |
 
+### CDB_Gravity( target_query text, weight_column text, source_query text, pop_column text, target bigint, radius integer, minval numeric DEFAULT -10e307)
 
-#### Returns
+#### Arguments
+
+| Name | Type | Description |
+|------|------|-------------|
+| target_query     | text    | Query that defines targets |
+| weight_column   | text  | Column name of weights |
+| source_query     | text    | Query that defines sources |
+| pop_column   | text  | Column name of population |
+| target   | bigint      | cartodb_id of the target under study |
+| radius   | integer     | Radius in meters around the target under study that will be taken into account|
+| minval (optional)   | numeric     | Lowest accepted value of weight, defaults to numeric min_value |
+
+
+### Returns
 
 | Column Name | Type | Description |
 |-------------|------|-------------|
