@@ -22,13 +22,13 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
         Construct PySAL weight from return value of query
         @param query_res dict-like: query results with attributes and neighbors
     """
-    if w_type.lower() == 'knn':
-        row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
-        weights = {x['id']: row_normed_weights for x in query_res}
-    else:
-        weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
-                            if len(x['neighbors']) > 0
-                            else [] for x in query_res}
+    # if w_type.lower() == 'knn':
+    #     row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
+    #     weights = {x['id']: row_normed_weights for x in query_res}
+    # else:
+    #     weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
+    #                         if len(x['neighbors']) > 0
+    #                         else [] for x in query_res}
 
     neighbors = {x['id']: x['neighbors'] for x in query_res}
     print 'len of neighbors: %d' % len(neighbors)
