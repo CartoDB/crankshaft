@@ -19,6 +19,7 @@ def spatial_markov_trend(subquery, time_cols, num_classes = 7,
         Inputs:
         @param subquery string: e.g., SELECT the_geom, cartodb_id, interesting_time_column FROM table_name
         @param time_cols list of strings: list of strings of column names
+        @param num_classes (optional): number of classes to break distribution of values into. Currently uses quantile bins.
         @param w_type string (optional): weight type ('knn' or 'queen')
         @param num_ngbrs int (optional): number of neighbors (if knn type)
         @param permutations int (optional): number of permutations for test stats
@@ -30,7 +31,6 @@ def spatial_markov_trend(subquery, time_cols, num_classes = 7,
         @param trend_down float: probablity that a geom will move to a lower class
         @param trend float: (trend_up - trend_down) / trend_static
         @param volatility float: a measure of the volatility based on probability stddev(prob array)
-        @param
     """
 
     if len(time_cols) < 2:

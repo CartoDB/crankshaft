@@ -10,7 +10,7 @@
 --                          Array['date_1', 'date_2', 'date_3'])
 
 CREATE OR REPLACE FUNCTION
-  CDB_SpatialMarkov (
+  CDB_SpatialMarkovTrend (
       subquery TEXT,
       time_cols TEXT[],
       num_classes INT DEFAULT 7,
