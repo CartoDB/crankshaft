@@ -8,29 +8,37 @@ import pysal as ps
 import plpy
 import crankshaft.pysal_utils as pu
 
-def spatial_markov_trend(subquery, time_cols, num_classes = 7,
-                         w_type = 'knn', num_ngbrs = 5, permutations = 0,
-                         geom_col = 'the_geom', id_col = 'cartodb_id'):
+def spatial_markov_trend(subquery, time_cols, num_classes=7,
+                         w_type='knn', num_ngbrs=5, permutations=0,
+                         geom_col='the_geom', id_col='cartodb_id'):
     """
         Predict the trends of a unit based on:
         1. history of its transitions to different classes (e.g., 1st quantile -> 2nd quantile)
         2. average class of its neighbors
 
         Inputs:
-        @param subquery string: e.g., SELECT the_geom, cartodb_id, interesting_time_column FROM table_name
+        @param subquery string: e.g., SELECT the_geom, cartodb_id,
+          interesting_time_column FROM table_name
         @param time_cols list of strings: list of strings of column names
-        @param num_classes (optional): number of classes to break distribution of values into. Currently uses quantile bins.
+        @param num_classes (optional): number of classes to break distribution
+          of values into. Currently uses quantile bins.
         @param w_type string (optional): weight type ('knn' or 'queen')
         @param num_ngbrs int (optional): number of neighbors (if knn type)
-        @param permutations int (optional): number of permutations for test stats
-        @param geom_col string (optional): name of column which contains the geometries
-        @param id_col string (optional): name of column which has the ids of the table
+        @param permutations int (optional): number of permutations for test
+          stats
+        @param geom_col string (optional): name of column which contains the
+          geometries
+        @param id_col string (optional): name of column which has the ids of
+          the table
 
         Outputs:
-        @param trend_up float: probablity that a geom will move to a higher class
-        @param trend_down float: probablity that a geom will move to a lower class
+        @param trend_up float: probablity that a geom will move to a higher
+          class
+        @param trend_down float: probablity that a geom will move to a lower
+          class
         @param trend float: (trend_up - trend_down) / trend_static
-        @param volatility float: a measure of the volatility based on probability stddev(prob array)
+        @param volatility float: a measure of the volatility based on
+          probability stddev(prob array)
     """
 
     if len(time_cols) < 2:
@@ -49,7 +57,7 @@ def spatial_markov_trend(subquery, time_cols, num_classes = 7,
         if len(query_result) == 0:
             return zip([None], [None], [None], [None], [None])
     except plpy.SPIError, err:
-        plpy.debug('Query failed with exception %s: %s' % (err, query))
+        plpy.debug('Query failed with exception %s: %s' % (err, pu.construct_neighbor_query(w_type, qvals)))
         plpy.error('Query failed, check the input parameters')
         return zip([None], [None], [None], [None], [None])
 
@@ -72,8 +80,8 @@ def spatial_markov_trend(subquery, time_cols, num_classes = 7,
 
     ## get lag classes
     lag_classes = ps.Quantiles(
-                    ps.lag_spatial(weights, t_data[:, -1]),
-                    k=num_classes).yb
+        ps.lag_spatial(weights, t_data[:, -1]),
+        k=num_classes).yb
 
     ## look up probablity distribution for each unit according to class and lag class
     prob_dist = get_prob_dist(sp_markov_result.P,

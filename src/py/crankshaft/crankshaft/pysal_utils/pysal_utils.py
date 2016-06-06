@@ -1,5 +1,6 @@
 """
-    Utilities module for generic PySAL functionality, mainly centered on translating queries into numpy arrays or PySAL weights objects
+    Utilities module for generic PySAL functionality, mainly centered on
+      translating queries into numpy arrays or PySAL weights objects
 """
 
 import numpy as np
@@ -78,7 +79,8 @@ def query_attr_where(params):
         {'subquery': ...,
          'time_cols': ['time1', 'time2', 'time3'],
          'etc': ...}
-        Output: 'idx_replace."time1" IS NOT NULL AND idx_replace."time2" IS NOT NULL AND idx_replace."time3" IS NOT NULL'
+        Output: 'idx_replace."time1" IS NOT NULL AND idx_replace."time2" IS NOT
+          NULL AND idx_replace."time3" IS NOT NULL'
     """
     attr_string = []
     template = "idx_replace.\"%s\" IS NOT NULL"
