@@ -1,0 +1,10 @@
+\pset format unaligned
+\set ECHO all
+SELECT count(DISTINCT cluster_no) as clusters from cdb_crankshaft.cdb_kmeans('select * from ppoints', 2);
+clusters
+2
+(1 row)
+SELECT count(*) clusters from cdb_crankshaft.cdb_WeightedMean( 'select *, code::INTEGER as cluster from ppoints' , 'value', 'cluster' );
+clusters
+52
+(1 row)
