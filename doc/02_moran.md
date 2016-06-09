@@ -1,71 +1,185 @@
-### Moran's I
+## Areas of Interest Functions
 
-#### What is Moran's I and why is it significant for CartoDB?
+### CDB_AreasOfInterestLocal(subquery text, column_name text)
 
-Moran's I is a geostatistical calculation which gives a measure of the global
-clustering and presence of outliers within the geographies in a map. Here global
-means over all of the geographies in a dataset. Imagine mapping the incidence
-rates of cancer in neighborhoods of a city. If there were areas covering several
-neighborhoods with abnormally low rates of cancer, those areas are positively
-spatially correlated with one another and would be considered a cluster. If
-there was a single neighborhood with a high rate but with all neighbors on
-average having a low rate, it would be considered a spatial outlier.
+This function classifies your data as being part of a cluster, as an outlier, or not part of a pattern based the significance of a classification. The classification happens through an autocorrelation statistic called Local Moran's I.
 
-While Moran's I gives a global snapshot, there are local indicators for
-clustering called Local Indicators of Spatial Autocorrelation. Clustering is a
-process related to autocorrelation -- i.e., a process that compares a
-geography's attribute to the attribute in neighbor geographies.
+#### Arguments
 
-For the example of cancer rates in neighborhoods, since these neighborhoods have
-a high value for rate of cancer, and all of their neighbors do as well, they are
-designated as "High High" or simply **HH**. For areas with multiple neighborhoods
-with low rates of cancer, they are designated as "Low Low" or **LL**. HH and LL
-naturally fit into the concept of clustering and are in the correlated
-variables.
+| Name | Type | Description |
+|------|------|-------------|
+| subquery | TEXT | SQL query that exposes the data to be analyzed (e.g., `SELECT * FROM interesting_table`). This query must have the geometry column name `the_geom` and id column name `cartodb_id` unless otherwise specified in the input arguments |
+| column_name | TEXT | Name of column (e.g., should be `'interesting_value'` instead of `interesting_value` without single quotes) used for the analysis. |
+| weight type (optional) | TEXT | Type of weight to use when finding neighbors. Currently available options are 'knn' (default) and 'queen'. Read more about weight types in [PySAL's weights documentation](https://pysal.readthedocs.io/en/v1.11.0/users/tutorials/weights.html). |
+| num_ngbrs (optional) | INT | Number of neighbors if using k-nearest neighbors weight type. Defaults to 5. |
+| permutations (optional) | INT | Number of permutations to check against a random arrangement of the values in `column_name`. This influences the accuracy of the output field `significance`. Defaults to 99. |
+| geom_col (optional) | TEXT | The column name for the geometries. Defaults to `'the_geom'` |
+| id_col (optional) | TEXT | The column name for the unique ID of each geometry/value pair. Defaults to `'cartodb_id'`. |
 
-"Anticorrelated" geogs are in **LH** and **HL** regions -- that is, regions
-where a geog has a high value and it's neighbors, on average, have a low value
-(or vice versa). An example of this is a "gated community" or placement of a
-city housing project in a rich region. These deliberate developments have
-opposite median income as compared to the neighbors around them. They have a
-high (or low) value while their neighbors have a low (or high) value. They exist
-typically as islands, and in rare circumstances can extend as chains dividing
-**LL** or **HH**.
+#### Returns
 
-Strong policies such as rent stabilization (probably) tend to prevent the
-clustering of high rent areas as they integrate middle class incomes. Luxury
-apartment buildings, which are a kind of gated community, probably tend to skew
-an area's median income upwards while housing projects have the opposite effect.
-What are the nuggets in the analysis?
+A table with the following columns.
 
-Two functions are available to compute Moran I statistics:
+| Column Name | Type | Description |
+|-------------|------|-------------|
+| moran | NUMERIC | Value of Moran's I (spatial autocorrelation measure) for the geometry with id of `rowid` |
+| quads | TEXT | Classification of geometry. Result is one of 'HH' (a high value with neighbors high on average), 'LL' (opposite of 'HH'), 'HL' (a high value surrounded by lows on average), and 'LH' (opposite of 'HL'). Null values are returned when nulls exist in the original data. |
+| significance | NUMERIC | The statistical significance (from 0 to 1) of a cluster or outlier classification. Lower numbers are more significant. |
+| rowid | INT | Row id of the values which correspond to the input rows. |
+| vals | NUMERIC | Values from `'column_name'`. |
 
-* `cdb_moran_local` computes Moran I measures, quad classification and
-  significance values from numerial values associated to geometry entities
-  in an input table. The geometries should be contiguous polygons When
-  then `queen` `w_type` is used.
-* `cdb_moran_local_rate` computes the same statistics using a ratio between
-  numerator and denominator columns of a table.
 
-The parameters for `cdb_moran_local` are:
+#### Example Usage
 
-* `table` name of the table that contains the data values
-* `attr` name of the column
-* `signficance` significance threshold for the quads values
-* `num_ngbrs` number of neighbors to consider (default: 5)
-* `permutations` number of random permutations for calculation of
-  pseudo-p values (default: 99)
-* `geom_column` number of the geometry column (default: "the_geom")
-* `id_col` PK column of the table (default: "cartodb_id")
-* `w_type` Weight types: can be "knn" for k-nearest neighbor weights
-  or "queen" for contiguity based weights.
+```sql
+SELECT
+  c.the_geom,
+  aoi.quads,
+  aoi.significance,
+  c.num_cyclists_per_total_population
+FROM CDB_GetAreasOfInterestLocal('SELECT * FROM commute_data'
+                                 'num_cyclists_per_total_population') As aoi
+JOIN commute_data As c
+ON c.cartodb_id = aoi.rowid;
+```
 
-The function returns a table with the following columns:
+### CDB_AreasOfInterestGlobal(subquery text, column_name text)
 
-* `moran` Moran's value
-* `quads` quad classification ('HH', 'LL', 'HL', 'LH' or 'Not significant')
-* `significance` significance value
-* `ids` id of the corresponding record in the input table
+This function identifies the extent to which geometries cluster (the groupings of geometries with similarly high or low values relative to the mean) or form outliers (areas where geometries have values opposite of their neighbors). The output of this function gives values between -1 and 1 as well as a significance of that classification. Values close to 0 mean that there is little to no distribution of values as compared to what one would see in a randomly distributed collection of geometries and values.
 
-Function `cdb_moran_local_rate` only differs in that the `attr` input
-parameter is substituted by `numerator` and `denominator`.
+#### Arguments
+
+| Name | Type | Description |
+|------|------|-------------|
+| subquery | TEXT | SQL query that exposes the data to be analyzed (e.g., `SELECT * FROM interesting_table`). This query must have the geometry column name `the_geom` and id column name `cartodb_id` unless otherwise specified in the input arguments |
+| column_name | TEXT | Name of column (e.g., should be `'interesting_value'` instead of `interesting_value` without single quotes) used for the analysis. |
+| weight type (optional) | TEXT | Type of weight to use when finding neighbors. Currently available options are 'knn' (default) and 'queen'. Read more about weight types in [PySAL's weights documentation](https://pysal.readthedocs.io/en/v1.11.0/users/tutorials/weights.html). |
+| num_ngbrs (optional) | INT | Number of neighbors if using k-nearest neighbors weight type. Defaults to 5. |
+| permutations (optional) | INT | Number of permutations to check against a random arrangement of the values in `column_name`. This influences the accuracy of the output field `significance`. Defaults to 99. |
+| geom_col (optional) | TEXT | The column name for the geometries. Defaults to `'the_geom'` |
+| id_col (optional) | TEXT | The column name for the unique ID of each geometry/value pair. Defaults to `'cartodb_id'`. |
+
+#### Returns
+
+A table with the following columns.
+
+| Column Name | Type | Description |
+|-------------|------|-------------|
+| moran | NUMERIC | Value of Moran's I (spatial autocorrelation measure) for the entire dataset. Values closer to one indicate cluster, closer to -1 mean more outliers, and near zero indicates a random distribution of data. |
+| significance | NUMERIC | The statistical significance of the `moran` measure. |
+
+#### Examples
+
+```sql
+SELECT *
+FROM CDB_AreasOfInterestGlobal('SELECT * FROM commute_data', 'num_cyclists_per_total_population')
+```
+
+### CDB_AreasOfInterestLocalRate(subquery text, numerator_column text, denominator_column text)
+
+Just like `CDB_AreasOfInterestLocal`, this function classifies your data as being part of a cluster, as an outlier, or not part of a pattern based the significance of a classification. This function differs in that it calculates the classifications based on input `numerator` and `denominator` columns for finding the areas where there are clusters and outliers for the resulting rate of those two values.
+
+#### Arguments
+
+| Name | Type | Description |
+|------|------|-------------|
+| subquery | TEXT | SQL query that exposes the data to be analyzed (e.g., `SELECT * FROM interesting_table`). This query must have the geometry column name `the_geom` and id column name `cartodb_id` unless otherwise specified in the input arguments |
+| numerator | TEXT | Name of the numerator for forming a rate to be used in analysis. |
+| denominator | TEXT | Name of the denominator for forming a rate to be used in analysis. |
+| weight type (optional) | TEXT | Type of weight to use when finding neighbors. Currently available options are 'knn' (default) and 'queen'. Read more about weight types in [PySAL's weights documentation](https://pysal.readthedocs.io/en/v1.11.0/users/tutorials/weights.html). |
+| num_ngbrs (optional) | INT | Number of neighbors if using k-nearest neighbors weight type. Defaults to 5. |
+| permutations (optional) | INT | Number of permutations to check against a random arrangement of the values in `column_name`. This influences the accuracy of the output field `significance`. Defaults to 99. |
+| geom_col (optional) | TEXT | The column name for the geometries. Defaults to `'the_geom'` |
+| id_col (optional) | TEXT | The column name for the unique ID of each geometry/value pair. Defaults to `'cartodb_id'`. |
+
+#### Returns
+
+A table with the following columns.
+
+| Column Name | Type | Description |
+|-------------|------|-------------|
+| moran | NUMERIC | Value of Moran's I (spatial autocorrelation measure) for the geometry with id of `rowid` |
+| quads | TEXT | Classification of geometry. Result is one of 'HH' (a high value with neighbors high on average), 'LL' (opposite of 'HH'), 'HL' (a high value surrounded by lows on average), and 'LH' (opposite of 'HL'). Null values are returned when nulls exist in the original data. |
+| significance | NUMERIC | The statistical significance (from 0 to 1) of a cluster or outlier classification. Lower numbers are more significant. |
+| rowid | INT | Row id of the values which correspond to the input rows. |
+| vals | NUMERIC | Values from `'column_name'`. |
+
+
+#### Example Usage
+
+```sql
+SELECT
+  c.the_geom,
+  aoi.quads,
+  aoi.significance,
+  c.cyclists_per_total_population
+FROM CDB_GetAreasOfInterestLocalRate('SELECT * FROM commute_data'
+                                     'num_cyclists',
+                                     'total_population') As aoi
+JOIN commute_data As c
+ON c.cartodb_id = aoi.rowid;
+```
+
+### CDB_AreasOfInterestGlobalRate(subquery text, column_name text)
+
+This function identifies the extent to which geometries cluster (the groupings of geometries with similarly high or low values relative to the mean) or form outliers (areas where geometries have values opposite of their neighbors). The output of this function gives values between -1 and 1 as well as a significance of that classification. Values close to 0 mean that there is little to no distribution of values as compared to what one would see in a randomly distributed collection of geometries and values.
+
+#### Arguments
+
+| Name | Type | Description |
+|------|------|-------------|
+| subquery | TEXT | SQL query that exposes the data to be analyzed (e.g., `SELECT * FROM interesting_table`). This query must have the geometry column name `the_geom` and id column name `cartodb_id` unless otherwise specified in the input arguments |
+| numerator | TEXT | Name of the numerator for forming a rate to be used in analysis. |
+| denominator | TEXT | Name of the denominator for forming a rate to be used in analysis. |
+| weight type (optional) | TEXT | Type of weight to use when finding neighbors. Currently available options are 'knn' (default) and 'queen'. Read more about weight types in [PySAL's weights documentation](https://pysal.readthedocs.io/en/v1.11.0/users/tutorials/weights.html). |
+| num_ngbrs (optional) | INT | Number of neighbors if using k-nearest neighbors weight type. Defaults to 5. |
+| permutations (optional) | INT | Number of permutations to check against a random arrangement of the values in `column_name`. This influences the accuracy of the output field `significance`. Defaults to 99. |
+| geom_col (optional) | TEXT | The column name for the geometries. Defaults to `'the_geom'` |
+| id_col (optional) | TEXT | The column name for the unique ID of each geometry/value pair. Defaults to `'cartodb_id'`. |
+
+#### Returns
+
+A table with the following columns.
+
+| Column Name | Type | Description |
+|-------------|------|-------------|
+| moran | NUMERIC | Value of Moran's I (spatial autocorrelation measure) for the entire dataset. Values closer to one indicate cluster, closer to -1 mean more outliers, and near zero indicates a random distribution of data. |
+| significance | NUMERIC | The statistical significance of the `moran` measure. |
+
+#### Examples
+
+```sql
+SELECT *
+FROM CDB_AreasOfInterestGlobalRate('SELECT * FROM commute_data',          
+                                   'num_cyclists',
+                                   'total_population')
+```
+
+## Hotspot, Coldspot, and Outlier Functions
+
+These functions are convenience functions for extracting only information that you are interested in exposing based on the outputs of the `CDB_AreasOfInterest` functions. For instance, you can use `CDB_GetSpatialHotspots` to output only the classifications of `HH` and `HL`.
+
+### Non-rate functions
+
+#### CDB_GetSpatialHotspots
+This function's inputs and outputs exactly mirror `CDB_AreasOfInterestLocal` except that the outputs are filtered to be only 'HH' and 'HL' (areas of high values). For more information about this function's use, see `CDB_AreasOfInterestLocal`.
+
+#### CDB_GetSpatialColdspots
+This function's inputs and outputs exactly mirror `CDB_AreasOfInterestLocal` except that the outputs are filtered to be only 'LL' and 'LH' (areas of low values). For more information about this function's use, see `CDB_AreasOfInterestLocal`.
+
+#### CDB_GetSpatialOutliers
+This function's inputs and outputs exactly mirror `CDB_AreasOfInterestLocal` except that the outputs are filtered to be only 'HL' and 'LH' (areas where highs or lows are surrounded by opposite values on average). For more information about this function's use, see `CDB_AreasOfInterestLocal`.
+
+### Rate functions
+
+#### CDB_GetSpatialHotspotsRate
+
+This function's inputs and outputs exactly mirror `CDB_AreasOfInterestLocalRate` except that the outputs are filtered to be only 'HH' and 'HL' (areas of high values). For more information about this function's use, see `CDB_AreasOfInterestLocalRate`.
+
+#### CDB_GetSpatialColdspotsRate
+
+This function's inputs and outputs exactly mirror `CDB_AreasOfInterestLocalRate` except that the outputs are filtered to be only 'LL' and 'LH' (areas of low values). For more information about this function's use, see `CDB_AreasOfInterestLocalRate`.
+
+#### CDB_GetSpatialOutliersRate
+
+This function's inputs and outputs exactly mirror `CDB_AreasOfInterestLocalRate` except that the outputs are filtered to be only 'HL' and 'LH' (areas where highs or lows are surrounded by opposite values on average). For more information about this function's use, see `CDB_AreasOfInterestLocalRate`.
