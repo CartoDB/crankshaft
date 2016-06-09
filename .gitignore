@@ -1,3 +1,4 @@
 envs/
 *.pyc
 .DS_Store
+.idea/
