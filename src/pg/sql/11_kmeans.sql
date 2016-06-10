@@ -43,11 +43,9 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 
-CREATE AGGREGATE CDB_WeightedMean(the_geom geometry(Point, 4326), weight NUMERIC)(
+CREATE AGGREGATE CDB_WeightedMean(geometry(Point, 4326), NUMERIC)(
     SFUNC = CDB_WeightedMeanS,
     FINALFUNC = CDB_WeightedMeanF,
     STYPE = Numeric[],
     INITCOND = "{0.0,0.0,0.0}" 
 );
-
-
