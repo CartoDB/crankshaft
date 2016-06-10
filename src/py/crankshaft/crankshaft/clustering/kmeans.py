@@ -5,6 +5,7 @@ def kmeans(query, no_clusters, no_init=20):
     data = plpy.execute('''select array_agg(cartodb_id order by cartodb_id) as ids,
         array_agg(ST_X(the_geom) order by cartodb_id) xs,
         array_agg(ST_Y(the_geom) order by cartodb_id) ys from ({query}) a
+        where the_geom is not null
     '''.format(query=query))
 
     xs  = data[0]['xs']
