@@ -42,7 +42,7 @@ setup(
     # provisioned in the production servers.
     install_requires=['pysal==1.9.1', 'scikit-learn==0.17.1'],
 
-    requires=['pysal', 'numpy', 'sklearn' ],
+    requires=['pysal', 'numpy', 'sklearn'],
 
     test_suite='test'
 )
