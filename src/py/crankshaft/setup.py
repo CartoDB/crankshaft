@@ -40,9 +40,9 @@ setup(
 
     # The choice of component versions is dictated by what's
     # provisioned in the production servers.
-    install_requires=['scipy==0.17.1', 'pysal==1.9.1', 'scikit-learn==0.17.1'],
+    install_requires=['pysal==1.9.1', 'scikit-learn==0.17.1'],
 
-    requires=['scipy', 'pysal', 'numpy', 'sklearn'],
+    requires=['pysal', 'numpy', 'sklearn' ],
 
     test_suite='test'
 )
