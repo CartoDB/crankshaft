@@ -11,7 +11,6 @@ PYP_DIR = src/py
 # Generate and install developmet versions of the extension
 # and python package.
 # The extension is named 'dev' with a 'current' alias for easily upgrading.
-# The Python package is installed in a virtual environment envs/dev/
 # Requires sudo.
 install: ## Generate and install development version of the extension; requires sudo.
 	$(MAKE) -C $(PYP_DIR) install
@@ -29,7 +28,6 @@ release: ## Generate a new release of the extension. Only for telease manager
 	$(MAKE) -C $(PYP_DIR) release
 
 # Install the current release.
-# The Python package is installed in a virtual environment envs/X.Y.Z/
 # Requires sudo.
 # Use the RELEASE_VERSION environment variable to deploy a specific version:
 #     sudo make deploy RELEASE_VERSION=1.0.0
@@ -51,10 +49,6 @@ clean-releases: ## clean up all releases
 clean-release: ## clean up current release
 	rm -rf release/python/$(RELEASE_VERSION)
 	rm -f release/$(RELEASE_VERSION)--*.sql
-
-# Cleanup all virtual environments
-clean-environments: ## clean up all virtual environments
-	rm -rf envs/*
 
 clean-all: clean-dev clean-release clean-environments
 
