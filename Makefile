@@ -50,7 +50,7 @@ clean-release: ## clean up current release
 	rm -rf release/python/$(RELEASE_VERSION)
 	rm -f release/$(RELEASE_VERSION)--*.sql
 
-clean-all: clean-dev clean-release clean-environments
+clean-all: clean-dev clean-release
 
 help:
 	@IFS=$$'\n' ; \
