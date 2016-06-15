@@ -40,7 +40,7 @@ setup(
 
     # The choice of component versions is dictated by what's
     # provisioned in the production servers.
-    install_requires=['pysal==1.9.1'],
+    install_requires=['pysal==1.9.1', 'numpy==1.11.0'],
 
     requires=['pysal', 'numpy' ],
 
