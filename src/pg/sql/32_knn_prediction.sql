@@ -23,8 +23,8 @@ BEGIN
        SELECT unnest($2) As geoms, unnest($3) As vals
      ) As i
      ORDER BY $1 <-> geoms
-     LIMIT 5) As j'
-  USING source_geom, target_geoms, target_vals
+     LIMIT $4) As j'
+  USING source_geom, target_geoms, target_vals, num_neighbors
   INTO vals, distances;
 
   IF 0 = Any(distances)
