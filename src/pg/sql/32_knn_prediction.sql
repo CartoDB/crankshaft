@@ -9,15 +9,21 @@ DECLARE
   idx INT;
 BEGIN
 
+  IF array_length(target_geoms) IS NULL
+  THEN
+    RETURN NULL;
+  END IF;
+
   EXECUTE
-  'SELECT array_agg(vals), array_agg(ST_Distance($1::geography, geoms::geography)) As dist
-  FROM (
-    SELECT geoms, vals FROM (
-      SELECT unnest($2) As geoms, unnest($3) As vals
-    ) As i
-    ORDER BY $1 <-> geoms
-    LIMIT 5
-  ) As j'
+  'SELECT
+     array_agg(vals),
+     array_agg(ST_Distance($1::geography, geoms::geography)) As dist
+   FROM (
+     SELECT geoms, vals FROM (
+       SELECT unnest($2) As geoms, unnest($3) As vals
+     ) As i
+     ORDER BY $1 <-> geoms
+     LIMIT 5) As j'
   USING source_geom, target_geoms, target_vals
   INTO vals, distances;
 
@@ -38,9 +44,3 @@ BEGIN
   END IF;
 END;
 $$ LANGUAGE plpgsql;
-
--- SELECT
---   sum(val / ST_Distance(source_geom::geography, t.g::geography)) / sum(1.0 / ST_Distance(source_geom::geography, t.g::geography))
--- FROM target_geoms As t(g)
--- ORDER BY j.{geom_col} <-> i.{geom_col} ASC
--- LIMIT num_neighbors
