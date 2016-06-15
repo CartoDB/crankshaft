@@ -15,8 +15,8 @@ BEGIN
 
   EXECUTE
   'SELECT
-     sum(vals / coalesce(nullif(ST_Distance($1::geography, geoms::geography), 0), 1)) /
-     sum( 1.0 / coalesce(nullif(ST_Distance($1::geography, geoms::geography), 0), 1))
+     sum(vals / coalesce(nullif(ST_Distance($1::geography, geoms::geography), 0), 1)^2) /
+     sum( 1.0 / coalesce(nullif(ST_Distance($1::geography, geoms::geography), 0), 1)^2)
    FROM (
      SELECT geoms, vals FROM (
        SELECT unnest($2) As geoms, unnest($3) As vals
