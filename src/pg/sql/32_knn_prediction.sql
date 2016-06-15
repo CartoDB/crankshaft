@@ -6,7 +6,6 @@ DECLARE
   weighted_avg numeric;
   vals numeric[];
   distances numeric[];
-  idx INT;
 BEGIN
 
   IF array_length(target_geoms, 1) IS NULL
@@ -16,8 +15,8 @@ BEGIN
 
   EXECUTE
   'SELECT
-     array_agg(vals),
-     array_agg(ST_Distance($1::geography, geoms::geography)) As dist
+     sum(vals / coalesce(nullif(ST_Distance($1::geography, geoms::geography), 0), 1)) /
+     sum( 1.0 / coalesce(nullif(ST_Distance($1::geography, geoms::geography), 0), 1))
    FROM (
      SELECT geoms, vals FROM (
        SELECT unnest($2) As geoms, unnest($3) As vals
@@ -25,10 +24,8 @@ BEGIN
      ORDER BY $1 <-> geoms
      LIMIT $4) As j'
   USING source_geom, target_geoms, target_vals, num_neighbors
-  INTO vals, distances;
-  weighted_avg := (SELECT sum(  v / coalesce(nullif(d, 0), 1)) /
-                          sum(1.0 / coalesce(nullif(d, 0), 1))
-                   FROM (SELECT unnest(vals) As v, unnest(distances) As d) As x);
+  INTO weighted_avg;
+
   RETURN weighted_avg;
 END;
 $$ LANGUAGE plpgsql;
