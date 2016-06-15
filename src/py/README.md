@@ -10,7 +10,6 @@ nosetests test/
 
 ## Notes about Python dependencies
 * This extension is targeted at production databases. Therefore certain restrictions must be assumed about the production environment vs other experimental environments.
-* We're using `pip` and `virtualenv` to generate a suitable isolated environment for python code that has  all the dependencies
 * Every dependency should be:
   - Added to the `setup.py` file
   - Installed through it
@@ -30,21 +29,7 @@ PySAL 1.10 or later, so we'll stick to 1.9.1.
 apt-get install -y python-scipy
 ```
 
-We'll use virtual environments to install our packages,
-but configued to use also system modules so that the
-mentioned scipy and numpy are used.
-
-    # Create a virtual environment for python
-    $ virtualenv --system-site-packages dev
-
-    # Activate the virtualenv
-    $ source dev/bin/activate
-
-    # Install all the requirements
-    # expect this to take a while, as it will trigger a few compilations
-    (dev) $ pip install -I ./crankshaft
-
-#### Test the libraries with that virtual env
+#### Test the libraries
 
 ##### Test numpy library dependency:
 
