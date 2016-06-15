@@ -9,7 +9,7 @@ DECLARE
   idx INT;
 BEGIN
 
-  IF array_length(target_geoms) IS NULL
+  IF array_length(target_geoms, 1) IS NULL
   THEN
     RETURN NULL;
   END IF;
@@ -26,21 +26,9 @@ BEGIN
      LIMIT $4) As j'
   USING source_geom, target_geoms, target_vals, num_neighbors
   INTO vals, distances;
-
-  IF 0 = Any(distances)
-  THEN
-    FOR idx IN 1..array_length(distances, 1)
-    LOOP
-      IF distances[idx] = 0
-      THEN
-        weighted_avg := vals[idx];
-        RAISE DEBUG 'zero distance at %, returning val %', idx, weighted_avg;
-        RETURN weighted_avg;
-      END IF;
-    END LOOP;
-  ELSE
-    weighted_avg := (SELECT sum(v / d) / sum(1.0 / d) FROM (SELECT unnest(vals) As v, unnest(distances) As d) As x);
-    RETURN weighted_avg;
-  END IF;
+  weighted_avg := (SELECT sum(  v / coalesce(nullif(d, 0), 1)) /
+                          sum(1.0 / coalesce(nullif(d, 0), 1))
+                   FROM (SELECT unnest(vals) As v, unnest(distances) As d) As x);
+  RETURN weighted_avg;
 END;
 $$ LANGUAGE plpgsql;
