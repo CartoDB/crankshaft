@@ -2,7 +2,7 @@ include ../../Makefile.global
 
 # Install the package locally for development
 install:
-	pip install ./crankshaft
+	echo "pip install ./crankshaft"
 
 # Test develpment install
 test:
