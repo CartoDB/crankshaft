@@ -1,6 +1,8 @@
 sudo: false
 
 language: python
+python:
+  - 2.7
 
 addons:
   postgresql: "9.4"
@@ -14,9 +16,19 @@ addons:
 env:
   - PGUSER=postgres
 
-before_script:
-  - pip install numpy==1.11.0
-  - pip install scipy==0.17.1
+# From https://gist.github.com/dan-blanchard/7045057
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
+
+install:
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pysal scikit-learn
   - make install
 
 script: make test
