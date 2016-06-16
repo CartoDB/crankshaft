@@ -4,7 +4,7 @@ SELECT cdb_crankshaft._cdb_random_seeds(1234);
 SET ROLE test_regular_user;
 
 -- Add to the search path the schema
-SET search_path TO public,cartodb,cdb_crankshaft;
+SET search_path TO public,cdb_crankshaft;
 
 -- Exercise public functions
 SELECT ppoints.code, m.quads
