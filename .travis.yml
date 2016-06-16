@@ -9,6 +9,7 @@ addons:
   apt:
     packages:
       - postgresql-plpython-9.4
+      - postgresql-server-dev-9.4
       - liblapack-dev
       - libatlas-dev
       - gfortran
