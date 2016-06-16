@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 
 language: python
 python:
@@ -27,6 +27,6 @@ before_install:
 
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy pysal scikit-learn
-  - make install
+  - sudo make install
 
 script: make test
