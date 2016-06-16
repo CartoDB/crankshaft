@@ -24,10 +24,12 @@ before_install:
   - ./miniconda.sh -b -p `pwd`/miniconda
   - export PATH=`pwd`/miniconda/bin:$PATH
   - conda update --yes conda
+  - conda create --yes -n condaenv python=$TRAVIS_PYTHON_VERSION
+  - conda install --yes -n condaenv pip nose
+  - conda install --yes -n condaenv numpy=1.11.0 scipy=0.17.1 pysal=1.11.1 scikit-learn=0.17.1
 
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION pip nose
-  - conda install --yes numpy=1.11.0 scipy=0.17.1 pysal=1.11.1 scikit-learn=0.17.1
+  - source activate condaenv
   - sudo make install
 
 script: make test
