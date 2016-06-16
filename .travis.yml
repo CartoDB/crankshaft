@@ -1,0 +1,18 @@
+sudo: false
+
+language: python
+
+addons:
+  postgresql: "9.4"
+  apt:
+    packages:
+      - postgresql-plpython-9.4
+      - python-numpy
+      - python-scipy
+
+env:
+  - PGUSER=postgres
+
+before_script: make install
+
+script: make test
