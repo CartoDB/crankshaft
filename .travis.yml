@@ -14,6 +14,9 @@ addons:
 env:
   - PGUSER=postgres
 
-before_script: make install
+before_script:
+  - pip install numpy==1.11.0
+  - pip install scipy==0.17.1
+  - make install
 
 script: make test
