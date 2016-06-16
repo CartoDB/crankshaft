@@ -13,5 +13,5 @@ release: ../../release/$(EXTENSION).control $(SOURCES_DATA)
 	cp -r ./$(PACKAGE) ../../release/python/$(EXTVERSION)/
 	$(SED) -i -r 's/version='"'"'[0-9]+\.[0-9]+\.[0-9]+'"'"'/version='"'"'$(EXTVERSION)'"'"'/g'  ../../release/python/$(EXTVERSION)/$(PACKAGE)/setup.py
 
-deploy:
-	pip install --upgrade ../../release/python/$(RELEASE_VERSION)/$(PACKAGE)
+deploy: 
+	pip install $(RUN_OPTIONS) --upgrade ../../release/python/$(RELEASE_VERSION)/$(PACKAGE)
