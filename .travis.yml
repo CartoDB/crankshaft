@@ -30,6 +30,6 @@ before_install:
 
 install:
   - source activate condaenv
-  - sudo make install
+  - travis_wait 30 sudo make install
 
 script: make test
