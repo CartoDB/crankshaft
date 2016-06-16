@@ -60,7 +60,6 @@ it can be installed directly with:
 
 * `CREATE EXTENSION IF NOT EXISTS plpythonu;`
   `CREATE EXTENSION IF NOT EXISTS postgis;`
-  `CREATE EXTENSION IF NOT EXISTS cartodb;`
   `CREATE EXTENSION crankshaft WITH VERSION 'dev';`
 
 Note: the development extension uses the development python virtual
