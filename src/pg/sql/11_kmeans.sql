@@ -1,8 +1,6 @@
 CREATE OR REPLACE FUNCTION  CDB_KMeans(query text, no_clusters integer,no_init integer default 20)
 RETURNS table (cartodb_id integer, cluster_no integer) as $$
     
-    import plpy 
-    plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
     from crankshaft.clustering import kmeans
     return kmeans(query,no_clusters,no_init)
 
