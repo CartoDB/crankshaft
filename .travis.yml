@@ -7,8 +7,9 @@ addons:
   apt:
     packages:
       - postgresql-plpython-9.4
-      - python-numpy
-      - python-scipy
+      - liblapack-dev
+      - libatlas-dev
+      - gfortran
 
 env:
   - PGUSER=postgres
