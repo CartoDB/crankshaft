@@ -1,5 +1,5 @@
 
-CREATE OR REPLACE FUNCTION CDB_knnWeightedAverage(source_geom geometry(Point, 4326), target_geoms geometry(Point, 4326)[], target_vals numeric[], num_neighbors INT)
+CREATE OR REPLACE FUNCTION crankshaft.CDB_knnWeightedAverage(source_geom geometry(Point, 4326), target_geoms geometry(Point, 4326)[], target_vals numeric[], num_neighbors INT)
 RETURNS numeric
 AS $$
 DECLARE
