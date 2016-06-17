@@ -1,13 +1,13 @@
 sudo: true
 
-language: python
-python:
-  - 2.7
+language: c
 
 addons:
   postgresql: "9.4"
   apt:
     packages:
+      - python2.7
+      - python2.7-dev 
       - postgresql-plpython-9.4
       - postgresql-server-dev-9.4
       - liblapack-dev
@@ -24,7 +24,7 @@ before_install:
   - ./miniconda.sh -b -p `pwd`/miniconda
   - export PATH=`pwd`/miniconda/bin:$PATH
   - conda update --yes conda
-  - conda create --yes -n condaenv python=$TRAVIS_PYTHON_VERSION
+  - conda create --yes -n condaenv python=2.7
   - source activate condaenv
   - conda install --yes -n condaenv pip nose
   - conda install --yes -n condaenv numpy=1.11.0 scipy=0.17.1 pysal=1.11.1 scikit-learn=0.17.1
