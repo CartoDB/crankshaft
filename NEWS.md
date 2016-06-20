@@ -1,3 +1,8 @@
+0.0.4 (2016-06-20)
+------------------
+* Remove cartodb extension dependency from tests
+* Declare all correct dependencies with correct versions in setup.py
+
 0.0.3 (2016-06-16)
 ------------------
 * Adds new functions: kmeans, weighted centroids.
