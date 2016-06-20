@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION
-  cdb_create_segment (
+  CDB_CreateSegment (
       segment_name TEXT,
       table_name TEXT,
           column_name TEXT,
@@ -14,7 +14,7 @@ AS $$
 $$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION
-  cdb_correlated_variables(
+  CDB_CorrelatedVariables(
     query text,
     geoid_column text DEFAULT 'geoid',
     census_table text DEFAULT 'ml_learning_block_groups_clipped'
@@ -26,7 +26,7 @@ AS $$
 $$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION
-  cdb_predict_segment (
+  CDB_PredictSegment (
       segment_name TEXT,
       geoid_column TEXT DEFAULT 'geoid',
       census_table TEXT DEFAULT 'block_groups'
@@ -40,7 +40,7 @@ $$ LANGUAGE plpythonu;
 
 
 CREATE OR REPLACE FUNCTION
-  cdb_create_and_predict_segment (
+  CDB_CreateAndPredictSegment (
       segment_name TEXT,
       query TEXT,
       target_table TEXT,
