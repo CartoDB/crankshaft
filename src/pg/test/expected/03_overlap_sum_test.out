@@ -1,0 +1,13 @@
+\i test/fixtures/polyg_values.sql
+SET client_min_messages TO WARNING;
+\set ECHO none
+ round 
+-------
+  4.42
+(1 row)
+
+ round 
+-------
+  4.42
+(1 row)
+
