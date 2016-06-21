@@ -67,7 +67,7 @@ def moran_local(subquery, attr,
     # resulting in a collection of not as near neighbors
 
     qvals = OrderedDict([("id_col", id_col),
-                         ("attr1", attr_name),
+                         ("attr1", attr),
                          ("geom_col", geom_col),
                          ("subquery", subquery),
                          ("num_ngbrs", num_ngbrs)])
