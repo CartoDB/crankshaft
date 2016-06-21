@@ -149,7 +149,7 @@ def moran_local_rate(subquery, numerator, denominator,
     qvals = OrderedDict([("id_col", id_col),
                          ("numerator", numerator),
                          ("denominator", denominator),
-                         ("geom_col": geom_col),
+                         ("geom_col", geom_col),
                          ("subquery", subquery),
                          ("num_ngbrs", num_ngbrs)])
 
@@ -191,7 +191,7 @@ def moran_local_bv(subquery, attr1, attr2,
     qvals = OrderedDict([("id_col", id_col),
                          ("attr1", attr1),
                          ("attr2", attr2),
-                         ("geom_col": geom_col),
+                         ("geom_col", geom_col),
                          ("subquery", subquery),
                          ("num_ngbrs", num_ngbrs)])
 
