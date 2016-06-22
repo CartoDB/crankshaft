@@ -1,14 +1,6 @@
 import unittest
 import numpy as np
-
-
-# from mock_plpy import MockPlPy
-# plpy = MockPlPy()
-#
-# import sys
-# sys.modules['plpy'] = plpy
 from helper import plpy, fixture_file
-
 import crankshaft.segmentation as segmentation
 import json
 
