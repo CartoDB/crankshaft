@@ -14,9 +14,12 @@ $$
 DECLARE
     gs geometry[];
     vs numeric[];
+    output numeric;
 BEGIN
     EXECUTE 'WITH a AS('||query||') SELECT array_agg(the_geom), array_agg(attrib) FROM a' INTO gs, vs;
-    RETURN QUERY SELECT CDB_SpatialInterpolation(gs, vs, point, method, p1,p2) FROM a;
+    SELECT CDB_SpatialInterpolation(gs, vs, point, method, p1,p2) INTO output FROM a;
+
+    RETURN output;
 END;
 $$
 language plpgsql IMMUTABLE;
