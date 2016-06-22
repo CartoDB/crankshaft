@@ -1,5 +1,6 @@
+SET client_min_messages TO WARNING;
+\set ECHO none
 \pset format unaligned
-\set ECHO all
 
 WITH a AS (
     SELECT
