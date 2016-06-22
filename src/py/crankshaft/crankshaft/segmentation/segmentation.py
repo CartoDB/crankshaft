@@ -5,7 +5,7 @@ Segmentation creation and prediction
 import sklearn
 import numpy as np
 import plpy
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn import metrics
 from sklearn.cross_validation import train_test_split
 
@@ -26,9 +26,10 @@ def get_data(variable, feature_columns, query):
         ))
     target = np.array(data[0]['target'])
     features = np.column_stack([np.array(data[0][col], dtype=float) for col in feature_columns])
+
     return replace_nan_with_mean(target), replace_nan_with_mean(features)
 
-def create_and_predict_segment(query,variable,target_query):
+def create_and_predict_segment(query,variable,target_query,model_params):
     """
     generate a segment with machine learning
     Stuart Lynn
@@ -38,14 +39,14 @@ def create_and_predict_segment(query,variable,target_query):
     feature_columns = set(columns) - set([variable, 'the_geom', 'the_geom_webmercator'])
     target,features = get_data(variable, feature_columns, query)
 
-    model, accuracy = train_model(target,features, test_split=0.2)
+    model, accuracy = train_model(target,features, model_params, 0.2)
     cartodb_ids, result = predict_segment(model,feature_columns,target_query)
-    return zip(cartodb_ids, result)
+    return zip(cartodb_ids, result, np.full(result.shape, accuracy ))
 
 
-def train_model(target,features,test_split):
+def train_model(target,features,model_params,test_split):
     features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=test_split)
-    model = GradientBoostingClassifier(n_estimators = 200, max_features=features.shape[1])
+    model = GradientBoostingRegressor(**model_params)
     plpy.notice('training the model: fitting to data')
     model.fit(features_train, target_train)
     plpy.notice('model trained')
@@ -54,7 +55,7 @@ def train_model(target,features,test_split):
 
 def calculate_model_accuracy(model,features,target):
     prediction = model.predict(features)
-    return metrics.mean_squared_error(prediction,target)/np.std(target)
+    return metrics.mean_squared_error(prediction,target)
 
 def predict_segment(model,features,target_query):
     """
