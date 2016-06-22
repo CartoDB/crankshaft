@@ -19,7 +19,7 @@ def replace_nan_with_mean(array):
 
 def get_data(variable, feature_columns, query):
     columns  = ','.join(['array_agg("{col}") as "{col}"'.format(col=col) for col in feature_columns])
-    data = plpy.execute(''' select array_agg("{variable}") as target, {columns} from ({query}) as a'''.format(
+    data = plpy.execute('''select array_agg("{variable}") as target, {columns} from ({query}) as a'''.format(
         variable = variable,
         columns = columns,
         query = query
@@ -34,9 +34,10 @@ def create_and_predict_segment(query,variable,target_query,model_params):
     generate a segment with machine learning
     Stuart Lynn
     """
+
     columns = plpy.execute('select * from  ({query}) a  limit 1  '.format(query=query))[0].keys()
 
-    feature_columns = set(columns) - set([variable, 'the_geom', 'the_geom_webmercator'])
+    feature_columns = set(columns) - set([variable, 'cartodb_id', 'the_geom', 'the_geom_webmercator'])
     target,features = get_data(variable, feature_columns, query)
 
     model, accuracy = train_model(target,features, model_params, 0.2)
@@ -75,7 +76,6 @@ def predict_segment(model,features,target_query):
 
     while True:
         rows  = cursor.fetch(batch_size)
-
         if not rows:
             break
         batch  = np.row_stack([np.array(row['features'], dtype=float) for row in rows])
