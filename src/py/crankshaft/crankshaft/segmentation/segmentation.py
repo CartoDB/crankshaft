@@ -29,6 +29,18 @@ def get_data(variable, feature_columns, query):
 
     return replace_nan_with_mean(target), replace_nan_with_mean(features)
 
+
+def create_and_predict_segment_agg(target, features, target_features, target_ids,model_parameters):
+    clean_target = replace_nan_with_mean(target)
+    clean_features = replace_nan_with_mean(features)
+    target_features = replace_nan_with_mean(target_features)
+
+    model, accuracy = train_model(clean_target,clean_features, model_parameters, 0.2)
+    prediction = model.predict(target_features)
+    return zip(target_ids, prediction, np.full(prediction.shape, accuracy))
+
+
+
 def create_and_predict_segment(query,variable,target_query,model_params):
     """
     generate a segment with machine learning
@@ -48,9 +60,7 @@ def create_and_predict_segment(query,variable,target_query,model_params):
 def train_model(target,features,model_params,test_split):
     features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=test_split)
     model = GradientBoostingRegressor(**model_params)
-    plpy.notice('training the model: fitting to data')
     model.fit(features_train, target_train)
-    plpy.notice('model trained')
     accuracy = calculate_model_accuracy(model,features,target)
     return model, accuracy
 
@@ -82,10 +92,8 @@ def predict_segment(model,features,target_query):
 
         #Need to fix this. Should be global mean. This will cause weird effects
         batch  = replace_nan_with_mean(batch)
-        plpy.notice(len(batch))
         prediction   = model.predict(batch)
         results.append(prediction)
-        plpy.notice('predicting: predicted')
 
 
     cartodb_ids = plpy.execute('select array_agg(cartodb_id order by cartodb_id) as cartodb_ids from ({0}) a '.format(target_query))[0]['cartodb_ids']
