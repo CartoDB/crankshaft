@@ -40,17 +40,15 @@ def get_data(variable, feature_columns, query):
             prepared data, packaged into NumPy arrays
     """
 
-    columns  = ','.join(['array_agg("{col}") As "{col}"'.format(col=col) for col in feature_columns])
+    columns = ','.join(['array_agg("{col}") As "{col}"'.format(col=col) for col in feature_columns])
 
-    data = plpy.execute('''
-        SELECT array_agg("{variable}") As target,
-               {columns}
-        FROM ({query}) As a
-        '''.format(
-        variable = variable,
-        columns = columns,
-        query = query
-        ))
+    try:
+        data = plpy.execute('''SELECT array_agg("{variable}") As target, {columns} FROM ({query}) As a'''.format(
+            variable=variable,
+            columns=columns,
+            query=query))
+    except Exception, e:
+        plpy.error('failed to fetch data to construct model')
 
     target = np.array(data[0]['target'])
 
