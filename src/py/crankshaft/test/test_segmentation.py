@@ -23,6 +23,11 @@ class SegmentationTest(unittest.TestCase):
         else:
             return  [dict( zip(['x1','x2','x3','target', 'cartodb_id'],[x1,x2,x3,y,cartodb_id]))]
 
+    def test_replace_nan_with_mean(self):
+        test_array = np.array([1.2, np.nan, 3.2, np.nan, np.nan])
+
+
+
     def test_create_and_predict_segment(self):
         n_samples = 1000
 
