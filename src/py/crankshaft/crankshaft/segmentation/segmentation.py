@@ -125,10 +125,7 @@ def predict_segment(model, features, target_query):
     batch_size = 1000
     joined_features = ','.join(['"{0}"::numeric'.format(a) for a in features])
 
-    cursor = plpy.cursor('''
-      SELECT Array[{joined_features}] As features
-      FROM ({target_query}) As a
-      '''.format(
+    cursor = plpy.cursor('SELECT Array[{joined_features}] As features FROM ({target_query}) As a'.format(
         joined_features=joined_features,
         target_query= target_query))
 
