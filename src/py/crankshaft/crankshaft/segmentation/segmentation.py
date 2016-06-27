@@ -57,8 +57,7 @@ def get_data(variable, feature_columns, query):
     # put arrays into an n x m array of arrays
     features = np.column_stack([np.array(data[0][col], dtype=float) for col in feature_columns])
 
-    return replace_nan_with_mean(target),
-           replace_nan_with_mean(features)
+    return replace_nan_with_mean(target), replace_nan_with_mean(features)
 
 # High level interface
 # --------------------
