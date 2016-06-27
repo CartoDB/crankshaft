@@ -1,7 +1,7 @@
 
 ## Segmentation Functions
 
-### CDB_CreateAndPredictSegment (query TEXT, variable_name TEXT, target_query TEXT)
+### CDB_CreateAndPredictSegment(query TEXT, variable_name TEXT, target_query TEXT)
 
 This function trains a [Gradient Boosting](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html) model to attempt to predict the target data and then generates predictions for new data.  
 
@@ -57,7 +57,7 @@ A table with the following columns.
 
 | Column Name | Type | Description |
 |-------------|------|-------------|
-| cartodb\_id | INTEGER | The CartoDB id of the row in the target\_query|
+| cartodb\_id | INTEGER | The CartoDB id of the row in the target\_query |
 | prediction | NUMERIC | The predicted value of the variable of interest |
 | accuracy | NUMERIC | The mean squared accuracy of the model. |
 | n\_estimators (optional) | INTEGER DEFAULT 1200 | Number of estimators to be used |
@@ -77,6 +77,6 @@ target AS (
     SELECT cdb_crankshaft.CDB_PyAgg(Array[median_rent, male_pop, female_pop]::Numeric[]) As features,
      array_agg(cartodb_id) As cartodb_ids FROM late_night_agg)  
 
-SELECT cdb_crankshaft.CDB_CreateAndPredictSegment2(training.target, training.features, target.features, target.cartodb_ids)
+SELECT cdb_crankshaft.CDB_CreateAndPredictSegment(training.target, training.features, target.features, target.cartodb_ids)
 FROM training, target;
 ```
