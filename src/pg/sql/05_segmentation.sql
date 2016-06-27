@@ -9,32 +9,31 @@ CREATE OR REPLACE FUNCTION
     max_depth INTEGER DEFAULT 3,
     subsample DOUBLE PRECISION DEFAULT 0.5,
     learning_rate DOUBLE PRECISION DEFAULT 0.01,
-    min_samples_leaf INTEGER DEFAULT 1
-  )
-RETURNS TABLE( cartodb_id Numeric, prediction Numeric , accuracy Numeric)
+    min_samples_leaf INTEGER DEFAULT 1)
+RETURNS TABLE(cartodb_id NUMERIC, prediction NUMERIC, accuracy NUMERIC)
 AS $$
-    import numpy as np 
-    import plpy 
+    import numpy as np
+    import plpy
 
     from crankshaft.segmentation import create_and_predict_segment_agg
-    model_params = { 'n_estimators' : n_estimators, 
-                     'max_depth' : max_depth, 
-                     'subsample' : subsample, 
-                     'learning_rate' : learning_rate, 
-                     'min_samples_leaf' : min_samples_leaf} 
-  
+    model_params = {'n_estimators': n_estimators,
+                    'max_depth': max_depth,
+                    'subsample': subsample,
+                    'learning_rate': learning_rate,
+                    'min_samples_leaf': min_samples_leaf}
+
     def unpack2D(data):
         dimension = data.pop(0)
         a = np.array(data, dtype=float)
         return a.reshape(len(a)/dimension, dimension)
 
-    return create_and_predict_segment_agg( np.array(target, dtype=float), 
-            unpack2D(features), 
-            unpack2D(target_features), 
+    return create_and_predict_segment_agg(np.array(target, dtype=float),
+            unpack2D(features),
+            unpack2D(target_features),
             target_ids,
             model_params)
 
-$$ Language plpythonu;
+$$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION
   CDB_CreateAndPredictSegment (
@@ -45,12 +44,10 @@ CREATE OR REPLACE FUNCTION
       max_depth INTEGER DEFAULT 3,
       subsample DOUBLE PRECISION DEFAULT 0.5,
       learning_rate DOUBLE PRECISION DEFAULT 0.01,
-      min_samples_leaf INTEGER DEFAULT 1
-
-  )
-RETURNS TABLE (cartodb_id text, prediction Numeric,accuracy Numeric )
+      min_samples_leaf INTEGER DEFAULT 1)
+RETURNS TABLE (cartodb_id TEXT, prediction NUMERIC, accuracy NUMERIC)
 AS $$
   from crankshaft.segmentation import create_and_predict_segment
-  model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf} 
+  model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf}
   return create_and_predict_segment(query,variable_name,target_table, model_params)
 $$ LANGUAGE plpythonu;
