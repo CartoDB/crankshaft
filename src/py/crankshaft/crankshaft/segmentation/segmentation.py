@@ -146,9 +146,6 @@ def predict_segment(model, features, target_query):
         results.append(prediction)
 
 
-    cartodb_ids = plpy.execute('''
-        SELECT array_agg(cartodb_id ORDER BY cartodb_id) As cartodb_ids
-        FROM ({0}) As a
-        '''.format(target_query))[0]['cartodb_ids']
+    cartodb_ids = plpy.execute('''SELECT array_agg(cartodb_id ORDER BY cartodb_id) As cartodb_ids FROM ({0}) As a'''.format(target_query))[0]['cartodb_ids']
 
     return cartodb_ids, np.concatenate(results)
