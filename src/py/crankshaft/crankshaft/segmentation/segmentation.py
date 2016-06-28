@@ -63,7 +63,14 @@ def get_data(variable, feature_columns, query):
 
 def create_and_predict_segment_agg(target, features, target_features, target_ids, model_parameters):
     """
+    Version of create_and_predict_segment that works on arrays that come stright form the SQL calling
+    the function.
 
+        Input:
+            @param target: The 1D array of lenth NSamples containing the target variable we want the model to predict
+            @param features: Thw 2D array of size NSamples * NFeatures that form the imput to the model
+            @param target_ids: A 1D array of target_ids that will be used to associate the results of the prediction with the rows which they come from
+            @param model_parameters: A dictionary containing parameters for the model.
     """
 
     clean_target = replace_nan_with_mean(target)
@@ -100,7 +107,13 @@ def create_and_predict_segment(query, variable, target_query, model_params):
 
 def train_model(target, features, model_params, test_split):
     """
-
+        Train the Gradient Boosting model on the provided data and calculate the accuracy of the model
+        Input:
+            @param target: 1D Array of the variable that the model is to be trianed to predict
+            @param features: 2D Array NSamples * NFeatures to use in trining the model
+            @param model_params: A dictionary of model parameters, the full specification can be found on the
+                scikit learn page for [GradientBoostingRegressor](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html)
+            @parma test_split: The fraction of the data to be withheld for testing the model / calculating the accuray
     """
     features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=test_split)
     model = GradientBoostingRegressor(**model_params)
@@ -123,10 +136,11 @@ def calculate_model_accuracy(model, features, target):
 
 def predict_segment(model, features, target_query):
     """
-    predict a segment with machine learning
-    Stuart Lynn
-
-    description of params?
+    Use the provided model to predict the values for the new feature set
+        Input:
+            @param model: The pretrained model
+            @features: A list of features to use in the model prediction (list of column names)
+            @target_query: The query to run to obtain the data to predict on and the cartdb_ids associated with it.
     """
 
     batch_size = 1000
