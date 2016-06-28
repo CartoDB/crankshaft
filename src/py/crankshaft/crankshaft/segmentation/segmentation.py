@@ -48,11 +48,12 @@ def get_data(variable, feature_columns, query):
             columns=columns,
             query=query))
     except Exception, e:
-        plpy.error('failed to fetch data to construct model')
+        plpy.error('Failed to access data to build segmentation model: %s' % e)
 
+    # extract target data from plpy object
     target = np.array(data[0]['target'])
 
-    # put arrays into an n x m array of arrays
+    # put n feature data arrays into an n x m array of arrays
     features = np.column_stack([np.array(data[0][col], dtype=float) for col in feature_columns])
 
     return replace_nan_with_mean(target), replace_nan_with_mean(features)
@@ -69,7 +70,7 @@ def create_and_predict_segment_agg(target, features, target_features, target_ids
     clean_features = replace_nan_with_mean(features)
     target_features = replace_nan_with_mean(target_features)
 
-    model, accuracy = train_model(clean_target,clean_features, model_parameters, 0.2)
+    model, accuracy = train_model(clean_target, clean_features, model_parameters, 0.2)
     prediction = model.predict(target_features)
     return zip(target_ids, prediction, np.full(prediction.shape, accuracy))
 
@@ -81,14 +82,21 @@ def create_and_predict_segment(query, variable, target_query, model_params):
     Stuart Lynn
     """
 
-    columns = plpy.execute('SELECT * FROM ({query}) As a LIMIT 1  '.format(query=query))[0].keys()
+    ## fetch column names
+    try:
+        columns = plpy.execute('SELECT * FROM ({query}) As a LIMIT 1  '.format(query=query))[0].keys()
+    except Exception, e:
+        plpy.error('Failed to build segmentation model: %s' % e)
 
+    ## extract column names to be used in building the segmentation model
     feature_columns = set(columns) - set([variable, 'cartodb_id', 'the_geom', 'the_geom_webmercator'])
-    target,features = get_data(variable, feature_columns, query)
 
-    model, accuracy = train_model(target,features, model_params, 0.2)
-    cartodb_ids, result = predict_segment(model,feature_columns,target_query)
-    return zip(cartodb_ids, result, np.full(result.shape, accuracy ))
+    ## get data from database
+    target, features = get_data(variable, feature_columns, query)
+
+    model, accuracy = train_model(target, features, model_params, 0.2)
+    cartodb_ids, result = predict_segment(model, feature_columns, target_query)
+    return zip(cartodb_ids, result, np.full(result.shape, accuracy))
 
 
 def train_model(target, features, model_params, test_split):
@@ -98,7 +106,7 @@ def train_model(target, features, model_params, test_split):
     features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=test_split)
     model = GradientBoostingRegressor(**model_params)
     model.fit(features_train, target_train)
-    accuracy = calculate_model_accuracy(model,features,target)
+    accuracy = calculate_model_accuracy(model, features, target)
     return model, accuracy
 
 def calculate_model_accuracy(model, features, target):
@@ -125,9 +133,12 @@ def predict_segment(model, features, target_query):
     batch_size = 1000
     joined_features = ','.join(['"{0}"::numeric'.format(a) for a in features])
 
-    cursor = plpy.cursor('SELECT Array[{joined_features}] As features FROM ({target_query}) As a'.format(
-        joined_features=joined_features,
-        target_query= target_query))
+    try:
+        cursor = plpy.cursor('SELECT Array[{joined_features}] As features FROM ({target_query}) As a'.format(
+            joined_features=joined_features,
+            target_query=target_query))
+    except Exception, e:
+        plpy.error('Failed to build segmentation model: %s' % e)
 
     results = []
 
@@ -142,7 +153,9 @@ def predict_segment(model, features, target_query):
         prediction = model.predict(batch)
         results.append(prediction)
 
-
-    cartodb_ids = plpy.execute('''SELECT array_agg(cartodb_id ORDER BY cartodb_id) As cartodb_ids FROM ({0}) As a'''.format(target_query))[0]['cartodb_ids']
+    try:
+        cartodb_ids = plpy.execute('''SELECT array_agg(cartodb_id ORDER BY cartodb_id) As cartodb_ids FROM ({0}) As a'''.format(target_query))[0]['cartodb_ids']
+    except Exception, e:
+        plpy.error('Failed to build segmentation model: %s' % e)
 
     return cartodb_ids, np.concatenate(results)
