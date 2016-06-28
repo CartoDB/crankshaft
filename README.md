@@ -9,11 +9,10 @@ CartoDB Spatial Analysis extension for PostgreSQL.
 * - *src/pg* contains the PostgreSQL extension source code
 * - *src/py* Python module source code
 * *release* reseleased versions
-* *env* base directory for Python virtual environments
 
 ## Requirements
 
-* pip, virtualenv, PostgreSQL
+* pip, PostgreSQL
 * python-scipy system package (see [src/py/README.md](https://github.com/CartoDB/crankshaft/blob/master/src/py/README.md))
 
 # Working Process -- Quickstart Guide

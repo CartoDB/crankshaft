@@ -1,2 +1,3 @@
-"""Import all functions from moran clustering"""
-from crankshaft.clustering.moran import *
+"""Import all functions from for clustering"""
+from moran import *
+from kmeans import *
