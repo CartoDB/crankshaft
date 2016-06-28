@@ -1,5 +1,6 @@
 """
-    Utilities module for generic PySAL functionality, mainly centered on translating queries into numpy arrays or PySAL weights objects
+    Utilities module for generic PySAL functionality, mainly centered on
+      translating queries into numpy arrays or PySAL weights objects
 """
 
 import numpy as np
@@ -20,19 +21,23 @@ def construct_neighbor_query(w_type, query_vals):
 def get_weight(query_res, w_type='knn', num_ngbrs=5):
     """
         Construct PySAL weight from return value of query
-        @param query_res: query results with attributes and neighbors
+        @param query_res dict-like: query results with attributes and neighbors
     """
-    if w_type.lower() == 'knn':
-        row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
-        weights = {x['id']: row_normed_weights for x in query_res}
-    else:
-        weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
-                            if len(x['neighbors']) > 0
-                            else [] for x in query_res}
+    # if w_type.lower() == 'knn':
+    #     row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
+    #     weights = {x['id']: row_normed_weights for x in query_res}
+    # else:
+    #     weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
+    #                         if len(x['neighbors']) > 0
+    #                         else [] for x in query_res}
 
     neighbors = {x['id']: x['neighbors'] for x in query_res}
+    print 'len of neighbors: %d' % len(neighbors)
 
-    return ps.W(neighbors, weights)
+    built_weight = ps.W(neighbors)
+    built_weight.transform = 'r'
+
+    return built_weight
 
 def query_attr_select(params):
     """
@@ -41,32 +46,63 @@ def query_attr_select(params):
                        table name, etc.)
     """
 
-    attrs = [k for k in params
-             if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs')]
-
-    template = "i.\"{%(col)s}\"::numeric As attr%(alias_num)s, "
-
     attr_string = ""
+    template = "i.\"%(col)s\"::numeric As attr%(alias_num)s, "
 
-    for idx, val in enumerate(sorted(attrs)):
-        attr_string += template % {"col": val, "alias_num": idx + 1}
+    if 'time_cols' in params:
+        ## if markov analysis
+        attrs = params['time_cols']
+
+        for idx, val in enumerate(attrs):
+            attr_string += template % {"col": val, "alias_num": idx + 1}
+    else:
+        ## if moran's analysis
+        attrs = [k for k in params
+                 if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')]
+
+        for idx, val in enumerate(sorted(attrs)):
+            attr_string += template % {"col": params[val], "alias_num": idx + 1}
 
     return attr_string
 
 def query_attr_where(params):
     """
+      Construct where conditions when building neighbors query
         Create portion of WHERE clauses for weeding out NULL-valued geometries
+        Input: dict of params:
+            {'subquery': ...,
+             'numerator': 'data1',
+             'denominator': 'data2',
+             '': ...}
+        Output: 'idx_replace."data1" IS NOT NULL AND idx_replace."data2" IS NOT NULL'
+        Input:
+        {'subquery': ...,
+         'time_cols': ['time1', 'time2', 'time3'],
+         'etc': ...}
+        Output: 'idx_replace."time1" IS NOT NULL AND idx_replace."time2" IS NOT
+          NULL AND idx_replace."time3" IS NOT NULL'
     """
-    attrs = sorted([k for k in params
-                    if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs')])
-
     attr_string = []
+    template = "idx_replace.\"%s\" IS NOT NULL"
 
-    for attr in attrs:
-        attr_string.append("idx_replace.\"{%s}\" IS NOT NULL" % attr)
+    if 'time_cols' in params:
+        ## markov where clauses
+        attrs = params['time_cols']
+        # add values to template
+        for attr in attrs:
+            attr_string.append(template % attr)
+    else:
+        ## moran where clauses
 
-    if len(attrs) == 2:
-        attr_string.append("idx_replace.\"{%s}\" <> 0" % attrs[1])
+        # get keys
+        attrs = sorted([k for k in params
+                        if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')])
+        # add values to template
+        for attr in attrs:
+            attr_string.append(template % params[attr])
+
+        if len(attrs) == 2:
+            attr_string.append("idx_replace.\"%s\" <> 0" % params[attrs[1]])
 
     out = " AND ".join(attr_string)
 
