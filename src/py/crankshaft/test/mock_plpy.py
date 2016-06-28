@@ -2,7 +2,7 @@ import re
 
 class MockCursor:
     def __init__(self, data):
-        self.cursor_pos =0
+        self.cursor_pos = 0
         self.data = data
 
     def fetch(self, batch_size):
@@ -38,7 +38,7 @@ class MockPlPy:
     def info(self, msg):
         self.infos.append(msg)
 
-    def cursor(self,query):
+    def cursor(self, query):
         data = self.execute(query)
         return MockCursor(data)
 
