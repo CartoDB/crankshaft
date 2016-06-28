@@ -21,7 +21,6 @@ CREATE OR REPLACE FUNCTION
   	  id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (trend NUMERIC, trend_up NUMERIC, trend_down NUMERIC, volatility NUMERIC, rowid INT)
 AS $$
-  plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
 
   from crankshaft.space_time_dynamics import spatial_markov_trend
 
