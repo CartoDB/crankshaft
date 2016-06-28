@@ -1,7 +1,8 @@
-0.0.5 (2016-06-23)
+0.0.5 (2016-06-28)
 ------------------
 * Fix bug which effected the ordering of attributes in moran queries
 * Adds new function: CDB_SpatialInterpolation
+* Adds new function: CDB_SpatialMarkovTrend
 
 0.0.4 (2016-06-20)
 ------------------
