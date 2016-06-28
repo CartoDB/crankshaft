@@ -1,7 +1,4 @@
 \pset format unaligned
-\set ECHO all
-\i test/fixtures/ml_values.sql
-SET client_min_messages TO WARNING;
 \set ECHO none
 _cdb_random_seeds
 

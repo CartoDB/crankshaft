@@ -26,8 +26,6 @@ class SegmentationTest(unittest.TestCase):
     def test_replace_nan_with_mean(self):
         test_array = np.array([1.2, np.nan, 3.2, np.nan, np.nan])
 
-
-
     def test_create_and_predict_segment(self):
         n_samples = 1000
 
@@ -35,6 +33,7 @@ class SegmentationTest(unittest.TestCase):
         random_state_test = np.random.RandomState(134)
         training_data = self.generate_random_data(n_samples, random_state_train)
         test_data, test_y = self.generate_random_data(n_samples, random_state_test, row_type=True)
+
 
         ids =  [{'cartodb_ids': range(len(test_data))}]
         rows =  [{'x1': 0,'x2':0,'x3':0,'y':0,'cartodb_id':0}]
@@ -44,7 +43,6 @@ class SegmentationTest(unittest.TestCase):
         plpy._define_result('select array_agg\(cartodb\_id order by cartodb\_id\) as cartodb_ids from \(.*\) a',ids)
         plpy._define_result('.*select \* from test.*' ,test_data)
 
-
         model_parameters =  {'n_estimators': 1200,
                              'max_depth': 3,
                              'subsample' : 0.5,
@@ -53,7 +51,7 @@ class SegmentationTest(unittest.TestCase):
 
         result = segmentation.create_and_predict_segment(
                 'select * from training',
-                'y',
+                'target',
                 'select * from test',
                 model_parameters)
 

@@ -90,7 +90,6 @@ def create_and_predict_segment(query, variable, target_query, model_params):
 
     ## extract column names to be used in building the segmentation model
     feature_columns = set(columns) - set([variable, 'cartodb_id', 'the_geom', 'the_geom_webmercator'])
-
     ## get data from database
     target, features = get_data(variable, feature_columns, query)
 
