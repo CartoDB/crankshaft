@@ -1,6 +1,6 @@
 ## Spatial Markov
 
-### CDB_SpatialMarkov(subquery text, column_names text array)
+### CDB_SpatialMarkovTrend(subquery text, column_names text array)
 
 This function takes time series data associated with geometries and outputs likelihoods that the next value of a geometry will move up, down, or stay static as compared to the most recent measurement. For more information, read about [Spatial Dynamics in PySAL](https://pysal.readthedocs.io/en/v1.11.0/users/tutorials/dynamics.html).
 
@@ -23,9 +23,9 @@ A table with the following columns.
 
 | Column Name | Type | Description |
 |-------------|------|-------------|
-| trend | NUMERIC |  |
-| trend_up | NUMERIC |  |
-| trend_down | NUMERIC | The statistical significance (from 0 to 1) of a cluster or outlier classification. Lower numbers are more significant. |
+| trend | NUMERIC | The probability that the measure at this location will move up (a positive number) or down (a negative number) |
+| trend_up | NUMERIC | The probability that a measure will move up in subsequent steps of time |
+| trend_down | NUMERIC | The probability that a measure will move down in subsequent steps of time |
 | volatility | NUMERIC | A measure of the variance of the probabilities returned from the Spatial Markov predictions |
 | rowid | NUMERIC | id of the row that corresponds to the `id_col` (by default `cartodb_id` of the input rows)  |
 
@@ -34,13 +34,14 @@ A table with the following columns.
 
 ```sql
 SELECT
+  c.cartodb_id,
   c.the_geom,
   m.trend,
   m.trend_up,
   m.trend_down,
   m.volatility
-FROM CDB_SpatialMarkov('SELECT * FROM nyc_real_estate'
-                       Array['m03y2009','m03y2010','m03y2011','m03y2012','m03y2013','m03y2014','m03y2015','m03y2016']) As m
+FROM CDB_SpatialMarkovTrend('SELECT * FROM nyc_real_estate'
+                            Array['m03y2009','m03y2010','m03y2011','m03y2012','m03y2013','m03y2014','m03y2015','m03y2016']) As m
 JOIN nyc_real_estate As c
 ON c.cartodb_id = m.rowid;
 ```
