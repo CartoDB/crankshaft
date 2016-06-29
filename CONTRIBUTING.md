@@ -1,6 +1,6 @@
 # Development process
 
-Please read the Working Process/Quickstart Guide in README.md first.
+Please read the Working Process/Quickstart Guide in [README.md](https://github.com/CartoDB/crankshaft/blob/master/README.md) first.
 
 For any modification of crankshaft, such as adding new features,
 refactoring or bug-fixing, topic branch must be created out of the `develop`
@@ -60,7 +60,6 @@ it can be installed directly with:
 
 * `CREATE EXTENSION IF NOT EXISTS plpythonu;`
   `CREATE EXTENSION IF NOT EXISTS postgis;`
-  `CREATE EXTENSION IF NOT EXISTS cartodb;`
   `CREATE EXTENSION crankshaft WITH VERSION 'dev';`
 
 Note: the development extension uses the development python virtual

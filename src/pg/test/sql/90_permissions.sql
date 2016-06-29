@@ -4,12 +4,12 @@ SELECT cdb_crankshaft._cdb_random_seeds(1234);
 SET ROLE test_regular_user;
 
 -- Add to the search path the schema
-SET search_path TO public,cartodb,cdb_crankshaft;
+SET search_path TO public,cdb_crankshaft;
 
 -- Exercise public functions
 SELECT ppoints.code, m.quads
   FROM ppoints
-  JOIN cdb_moran_local('ppoints', 'value') m
+  JOIN CDB_AreasOfInterest_Local('ppoints', 'value') m
     ON ppoints.cartodb_id = m.ids
   ORDER BY ppoints.code;
 SELECT round(cdb_overlap_sum(
