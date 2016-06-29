@@ -1,4 +1,4 @@
-0.0.5 (2016-06-29)
+0.1.0 (2016-06-29)
 ------------------
 * Adds Spatial Markov function
 * Adds Spacial interpolation function
