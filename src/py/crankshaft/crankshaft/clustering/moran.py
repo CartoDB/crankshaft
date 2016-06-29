@@ -7,6 +7,7 @@ Moran's I geostatistics (global clustering & outliers presence)
 
 import pysal as ps
 import plpy
+from collections import OrderedDict
 
 # crankshaft module
 import crankshaft.pysal_utils as pu
@@ -21,11 +22,11 @@ def moran(subquery, attr_name,
      core clusters with PySAL.
     Andy Eschbacher
     """
-    qvals = {"id_col": id_col,
-             "attr1": attr_name,
-             "geom_col": geom_col,
-             "subquery": subquery,
-             "num_ngbrs": num_ngbrs}
+    qvals = OrderedDict([("id_col", id_col),
+                         ("attr1", attr_name),
+                         ("geom_col", geom_col),
+                         ("subquery", subquery),
+                         ("num_ngbrs", num_ngbrs)])
 
     query = pu.construct_neighbor_query(w_type, qvals)
 
@@ -65,11 +66,11 @@ def moran_local(subquery, attr,
     # geometries with attributes that are null are ignored
     # resulting in a collection of not as near neighbors
 
-    qvals = {"id_col": id_col,
-             "attr1": attr,
-             "geom_col": geom_col,
-             "subquery": subquery,
-             "num_ngbrs": num_ngbrs}
+    qvals = OrderedDict([("id_col", id_col),
+                         ("attr1", attr),
+                         ("geom_col", geom_col),
+                         ("subquery", subquery),
+                         ("num_ngbrs", num_ngbrs)])
 
     query = pu.construct_neighbor_query(w_type, qvals)
 
@@ -101,12 +102,12 @@ def moran_rate(subquery, numerator, denominator,
     Moran's I Rate (global)
     Andy Eschbacher
     """
-    qvals = {"id_col": id_col,
-             "attr1": numerator,
-             "attr2": denominator,
-             "geom_col": geom_col,
-             "subquery": subquery,
-             "num_ngbrs": num_ngbrs}
+    qvals = OrderedDict([("id_col", id_col),
+                         ("attr1", numerator),
+                         ("attr2", denominator)
+                         ("geom_col", geom_col),
+                         ("subquery", subquery),
+                         ("num_ngbrs", num_ngbrs)])
 
     query = pu.construct_neighbor_query(w_type, qvals)
 
@@ -145,13 +146,14 @@ def moran_local_rate(subquery, numerator, denominator,
     # geometries with values that are null are ignored
     # resulting in a collection of not as near neighbors
 
-    query = pu.construct_neighbor_query(w_type,
-                                     {"id_col": id_col,
-                                      "numerator": numerator,
-                                      "denominator": denominator,
-                                      "geom_col": geom_col,
-                                      "subquery": subquery,
-                                      "num_ngbrs": num_ngbrs})
+    qvals = OrderedDict([("id_col", id_col),
+                         ("numerator", numerator),
+                         ("denominator", denominator),
+                         ("geom_col", geom_col),
+                         ("subquery", subquery),
+                         ("num_ngbrs", num_ngbrs)])
+
+    query = pu.construct_neighbor_query(w_type, qvals)
 
     try:
         result = plpy.execute(query)
@@ -174,7 +176,7 @@ def moran_local_rate(subquery, numerator, denominator,
     lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, weight,
                                           permutations=permutations)
 
-    # find units of significance
+    # find quadrants for each geometry
     quads = quad_position(lisa.q)
 
     return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
@@ -186,12 +188,12 @@ def moran_local_bv(subquery, attr1, attr2,
     """
     plpy.notice('** Constructing query')
 
-    qvals = {"num_ngbrs": num_ngbrs,
-             "attr1": attr1,
-             "attr2": attr2,
-             "subquery": subquery,
-             "geom_col": geom_col,
-             "id_col": id_col}
+    qvals = OrderedDict([("id_col", id_col),
+                         ("attr1", attr1),
+                         ("attr2", attr2),
+                         ("geom_col", geom_col),
+                         ("subquery", subquery),
+                         ("num_ngbrs", num_ngbrs)])
 
     query = pu.construct_neighbor_query(w_type, qvals)
 
