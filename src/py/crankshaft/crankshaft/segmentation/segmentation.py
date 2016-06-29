@@ -79,7 +79,8 @@ def create_and_predict_segment_agg(target, features, target_features, target_ids
 
     model, accuracy = train_model(clean_target, clean_features, model_parameters, 0.2)
     prediction = model.predict(target_features)
-    return zip(target_ids, prediction, np.full(prediction.shape, accuracy))
+    accuracy_array = [accuracy]*prediction.shape[0]
+    return zip(target_ids, prediction, np.full(prediction.shape, accuracy_array))
 
 
 
@@ -102,7 +103,8 @@ def create_and_predict_segment(query, variable, target_query, model_params):
 
     model, accuracy = train_model(target, features, model_params, 0.2)
     cartodb_ids, result = predict_segment(model, feature_columns, target_query)
-    return zip(cartodb_ids, result, np.full(result.shape, accuracy))
+    accuracy_array = [accuracy]*result.shape[0]
+    return zip(cartodb_ids, result, accuracy_array)
 
 
 def train_model(target, features, model_params, test_split):
