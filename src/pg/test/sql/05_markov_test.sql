@@ -10,9 +10,9 @@ SELECT cdb_crankshaft._cdb_random_seeds(1234);
 
 SELECT
   m1.cartodb_id,
-  CASE WHEN m1.cartodb_id = 1 THEN abs(m2.trend - 0.069767441860465115) / 0.069767441860465115
-       WHEN m1.cartodb_id = 2 THEN abs(m2.trend - 0.15151515151515152) / 0.15151515151515152
-       WHEN m1.cartodb_id = 3 THEN abs(m2.trend - 0.069767441860465115) / 0.069767441860465115
+  CASE WHEN m1.cartodb_id = 1 THEN abs(m2.trend - 0.069767441860465115) / 0.069767441860465115 < 0.01
+       WHEN m1.cartodb_id = 2 THEN abs(m2.trend - 0.15151515151515152) / 0.15151515151515152 < 0.01
+       WHEN m1.cartodb_id = 3 THEN abs(m2.trend - 0.069767441860465115) / 0.069767441860465115 < 0.01
        ELSE NULL END As trend_test,
   CASE WHEN m1.cartodb_id = 1 THEN abs(m2.trend_up - 0.065217391304347824) / 0.065217391304347824 < 0.05
        WHEN m1.cartodb_id = 2 THEN abs(m2.trend_up - 0.13157894736842105) / 0.13157894736842105 < 0.05
