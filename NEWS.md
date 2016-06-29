@@ -1,3 +1,9 @@
+0.0.5 (2016-06-28)
+------------------
+* Fix bug which effected the ordering of attributes in moran queries
+* Adds new function: CDB_SpatialInterpolation
+* Adds new function: CDB_SpatialMarkovTrend
+
 0.0.4 (2016-06-20)
 ------------------
 * Remove cartodb extension dependency from tests
@@ -14,4 +20,4 @@
 
 0.0.1 (2016-02-22)
 ------------------
-* Preliminar release
+* Preliminary release
