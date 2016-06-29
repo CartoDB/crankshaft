@@ -1,3 +1,4 @@
+"""Random seed generator used for non-deterministic functions in crankshaft"""
 import random
 import numpy
 

@@ -176,7 +176,7 @@ def moran_local_rate(subquery, numerator, denominator,
     lisa = ps.esda.moran.Moran_Local_Rate(numer, denom, weight,
                                           permutations=permutations)
 
-    # find units of significance
+    # find quadrants for each geometry
     quads = quad_position(lisa.q)
 
     return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)

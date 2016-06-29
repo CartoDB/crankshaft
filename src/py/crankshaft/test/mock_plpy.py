@@ -35,6 +35,9 @@ class MockPlPy:
     def notice(self, msg):
         self.notices.append(msg)
 
+    def debug(self, msg):
+        self.notices.append(msg)
+
     def info(self, msg):
         self.infos.append(msg)
 
