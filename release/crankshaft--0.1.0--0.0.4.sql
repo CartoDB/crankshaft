@@ -27,22 +27,22 @@ DROP FUNCTION
     features NUMERIC[],
     target_features NUMERIC[],
     target_ids NUMERIC[],
-    n_estimators INTEGER DEFAULT 1200,
-    max_depth INTEGER DEFAULT 3,
-    subsample DOUBLE PRECISION DEFAULT 0.5,
-    learning_rate DOUBLE PRECISION DEFAULT 0.01,
-    min_samples_leaf INTEGER DEFAULT 1);
+    n_estimators INTEGER,
+    max_depth INTEGER,
+    subsample DOUBLE PRECISION,
+    learning_rate DOUBLE PRECISION,
+    min_samples_leaf INTEGER);
 
 DROP FUNCTION
   CDB_CreateAndPredictSegment (
       query TEXT,
       variable_name TEXT,
       target_table TEXT,
-      n_estimators INTEGER DEFAULT 1200,
-      max_depth INTEGER DEFAULT 3,
-      subsample DOUBLE PRECISION DEFAULT 0.5,
-      learning_rate DOUBLE PRECISION DEFAULT 0.01,
-      min_samples_leaf INTEGER DEFAULT 1);
+      n_estimators INTEGER,
+      max_depth INTEGER,
+      subsample DOUBLE PRECISION,
+      learning_rate DOUBLE PRECISION,
+      min_samples_leaf INTEGER);
 
 --------------------------------------------------------------------------------
 
@@ -51,18 +51,18 @@ DROP FUNCTION
 DROP FUNCTION CDB_SpatialInterpolation(
     IN query text,
     IN point geometry,
-    IN method integer DEFAULT 1,
-    IN p1 numeric DEFAULT 0,
-    IN p2 numeric DEFAULT 0
+    IN method integer,
+    IN p1 numeric,
+    IN p2 numeric
     );
 
 DROP FUNCTION CDB_SpatialInterpolation(
     IN geomin geometry[],
     IN colin numeric[],
     IN point geometry,
-    IN method integer DEFAULT 1,
-    IN p1 numeric DEFAULT 0,
-    IN p2 numeric DEFAULT 0
+    IN method integer,
+    IN p1 numeric,
+    IN p2 numeric
     );
 
 --------------------------------------------------------------------------------
@@ -73,9 +73,9 @@ DROP FUNCTION
   CDB_SpatialMarkovTrend (
       subquery TEXT,
       time_cols TEXT[],
-      num_classes INT DEFAULT 7,
-      w_type TEXT DEFAULT 'knn',
-      num_ngbrs INT DEFAULT 5,
-  	  permutations INT DEFAULT 99,
-  	  geom_col TEXT DEFAULT 'the_geom',
-  	  id_col TEXT DEFAULT 'cartodb_id');
+      num_classes INT,
+      w_type TEXT,
+      num_ngbrs INT,
+  	  permutations INT,
+  	  geom_col TEXT,
+  	  id_col TEXT);
