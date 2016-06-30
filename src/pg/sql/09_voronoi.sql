@@ -71,7 +71,7 @@ BEGIN
             ST_MakeLine(n.p1,n.p2) ,
             ST_MakeLine(n.p2,n.p3) ,
             ST_MakeLine(n.p3,n.p1)]) as Edge,
-            ST_Force_2D(Find_Circle(n.p1,n.p2,n.p3)) as ct ,
+            ST_Force_2D(_Find_Circle(n.p1,n.p2,n.p3)) as ct ,
             CASE WHEN st_distance(p.ct, ST_ExteriorRing(p.pg)) < tolerance THEN
                 TRUE
             ELSE  FALSE END AS ctx,
@@ -157,7 +157,7 @@ $$ language plpgsql IMMUTABLE;
   * @copyright  : Simon Greener @ 2012
   *               Licensed under a Creative Commons Attribution-Share Alike 2.5 Australia License. (http://creativecommons.org/licenses/by-sa/2.5/au/)
 **/
-CREATE OR REPLACE FUNCTION Find_Circle(p_pt1 geometry, p_pt2 geometry, p_pt3 geometry)
+CREATE OR REPLACE FUNCTION _Find_Circle(p_pt1 geometry, p_pt2 geometry, p_pt3 geometry)
   RETURNS geometry AS
 $BODY$
 DECLARE
