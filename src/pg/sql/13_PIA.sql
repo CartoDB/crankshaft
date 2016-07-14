@@ -3,6 +3,11 @@
 -- https://sites.google.com/site/polesofinaccessibility/
 -- Requires: https://github.com/CartoDB/cartodb-postgresql
 
+-- Based on:
+-- https://github.com/mapbox/polylabel/blob/master/index.js
+-- https://sites.google.com/site/polesofinaccessibility/
+-- Requires: https://github.com/CartoDB/cartodb-postgresql
+
 CREATE OR REPLACE FUNCTION CDB_PIA(
     IN polygon geometry,
     IN tolerance numeric DEFAULT 1.0
@@ -11,12 +16,12 @@ RETURNS geometry  AS $$
 DECLARE
     env geometry[];
     cells geometry[];
+    cell geometry;
     best_c geometry;
     best_d numeric;
     test_d numeric;
     test_mx numeric;
     test_h numeric;
-    test_tol numeric;
     test_cells geometry[];
     width numeric;
     height numeric;
@@ -31,19 +36,16 @@ BEGIN
     -- grid #0 cell size
     height := ST_YMax(polygon) - ST_YMin(polygon);
     width := ST_XMax(polygon) - ST_XMin(polygon);
-    SELECT 0.5*LEAST(height, width) INTO h;
+    h := 0.5*LEAST(height, width);
 
     -- grid #0
     with c1 as(
-        SELECT CDB_RectangleGrid(polygon, h, h) as cell
+        SELECT CDB_RectangleGrid(polygon, h, h) as c
     )
-    -- ,c2 as(
-    --     SELECT cell FROM c1 WHERE ST_Intersects(cell, polygon)
-    -- )
-    SELECT array_agg(cell) INTO cells FROM c1;
+    SELECT array_agg(c) INTO cells FROM c1;
 
     -- 1st guess: centroid
-    SELECT _Signed_Dist(polygon, ST_Centroid(Polygon)) INTO best_d;
+    best_d := _Signed_Dist(polygon, ST_Centroid(Polygon));
 
     -- looping the loop
     n := array_length(cells,1);
@@ -52,41 +54,39 @@ BEGIN
 
         EXIT WHEN i > n;
 
-        -- cell side size
-        SELECT ST_XMax(cells[i]) - ST_XMin(cells[i]) INTO test_h;
+        cell := cells[i];
+        i := i+1;
+
+        -- cell side size, it's square
+        test_h := ST_XMax(cell) - ST_XMin(cell) ;
 
         -- check distance
-        SELECT _Signed_Dist(polygon, ST_Centroid(cells[i])) INTO test_d;
+        test_d := _Signed_Dist(polygon, ST_Centroid(cell));
         IF test_d > best_d THEN
             best_d := test_d;
             best_c := cells[i];
         END IF;
 
         -- longest distance within the cell
-        SELECT test_d + (test_h * sqr) INTO test_mx;
+        test_mx := test_d + (test_h/2 * sqr);
 
         -- if the cell has no chance to contains the desired point, continue
-        SELECT test_mx - best_d INTO test_tol;
-        IF test_tol <= tolerance THEN
-            i := i+1;
-            CONTINUE;
-        END IF;
+        CONTINUE WHEN test_mx - best_d <= tolerance;
 
         -- resample the cell
         with c1 as(
-            SELECT CDB_RectangleGrid(cells[i], test_h/2, test_h/2) as cell
+            SELECT CDB_RectangleGrid(cell, test_h/2, test_h/2) as c
         )
         -- , c2 as(
         --     SELECT cell FROM c1 WHERE ST_Intersects(cell, polygon)
         -- )
-        SELECT array_agg(cell) INTO test_cells FROM c1;
+        SELECT array_agg(c) INTO test_cells FROM c1;
 
         -- concat the new cells to the former array
         cells := cells || test_cells;
 
         -- prepare next iteration
         n := array_length(cells,1);
-        i := i+1;
 
     END LOOP;
 
