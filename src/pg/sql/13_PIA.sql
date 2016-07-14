@@ -77,9 +77,6 @@ BEGIN
         with c1 as(
             SELECT CDB_RectangleGrid(cell, test_h/2, test_h/2) as c
         )
-        -- , c2 as(
-        --     SELECT cell FROM c1 WHERE ST_Intersects(cell, polygon)
-        -- )
         SELECT array_agg(c) INTO test_cells FROM c1;
 
         -- concat the new cells to the former array
