@@ -34,4 +34,4 @@ before_install:
 
 script:
   - sudo make install
-  - PGPORT=$(cat .pg95.port) make test
+  - PGPORT=$(cat .pg95.port) make test || { cat src/pg/test/regression.diffs; false; }
