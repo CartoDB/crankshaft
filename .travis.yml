@@ -31,11 +31,8 @@ before_install:
       postgresql-9.5-postgis-scripts
 
   # configure it to accept local connections from postgres
-  - echo -e "# TYPE  DATABASE        USER            ADDRESS                 METHOD
-local   all             postgres                                trust
-local   all             all                                     trust
-host    all             all             127.0.0.1/32            trust" \
-      | sudo tee /etc/postgresql/9.5/main/pg_hba.conf
+  - echo -e "# TYPE  DATABASE        USER            ADDRESS                 METHOD \nlocal   all             postgres                                trust\nlocal   all             all                                     trust\nhost    all             all             127.0.0.1/32            trust" \
+    | sudo tee /etc/postgresql/9.5/main/pg_hba.conf
   - sudo service postgresql reload
 
 script:
