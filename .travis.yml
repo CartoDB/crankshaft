@@ -21,13 +21,14 @@ before_install:
   - sudo apt-get -y --no-install-recommends install python-scikits-learn=0.14.1-3-cdb2
 
   # Install postgres db and build deps
+  - dpkg -l | grep postgres # TODO: remove this line
   - sudo /etc/init.d/postgresql stop # stop travis default instance
   - sudo apt-get -y install postgresql-9.5 postgresql-server-dev-9.5 postgresql-plpython-9.5 postgresql-9.5-postgis-2.2 postgresql-9.5-postgis-scripts
 
   # configure it to accept local connections from postgres
   - echo -e "# TYPE  DATABASE        USER            ADDRESS                 METHOD \nlocal   all             postgres                                trust\nlocal   all             all                                     trust\nhost    all             all             127.0.0.1/32            trust" \
     | sudo tee /etc/postgresql/9.5/main/pg_hba.conf
-  - sudo cat /etc/postgresql/9.5/main/postgresql.conf | grep ^port
+  - sudo cat /etc/postgresql/9.5/main/postgresql.conf | grep ^port # TODO: remove this line
   - sudo /etc/init.d/postgresql restart 9.5
 
 script:
