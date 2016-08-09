@@ -37,4 +37,6 @@ before_install:
 
 script:
   - sudo make install
+  - dpkg -l | grep -i postgis
+  - PGPORT=$(cat .pg95.port) psql -U postgres -c "SELECT PostGIS_Version();"
   - PGPORT=$(cat .pg95.port) make test || { cat src/pg/test/regression.diffs; false; }
