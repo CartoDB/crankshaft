@@ -37,6 +37,4 @@ before_install:
 
 script:
   - sudo make install
-  - dpkg -l | grep -i postgis
-  - PGPORT=$(cat .pg95.port) psql -U postgres -c "SELECT * FROM  pg_available_extension_versions WHERE name LIKE 'postgis';"
   - PGPORT=$(cat .pg95.port) make test || { cat src/pg/test/regression.diffs; false; }
