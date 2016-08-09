@@ -7,6 +7,7 @@ before_install:
   - sudo add-apt-repository -y ppa:cartodb/sci
   - sudo add-apt-repository -y ppa:cartodb/postgresql-9.5
   - sudo add-apt-repository -y ppa:cartodb/gis
+  - sudo add-apt-repository -y ppa:cartodb/gis-testing
   - sudo apt-get update
 
   - sudo apt-get -y install python-joblib=0.8.3-1-cdb1
