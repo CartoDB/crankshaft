@@ -1,4 +1,4 @@
-# crankshaft
+# crankshaft [![Build Status](https://travis-ci.org/CartoDB/crankshaft.svg?branch=develop)](https://travis-ci.org/CartoDB/crankshaft)
 
 CartoDB Spatial Analysis extension for PostgreSQL.
 
