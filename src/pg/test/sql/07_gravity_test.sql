@@ -18,4 +18,4 @@ SELECT
 FROM
     t,
     s,
-    crankshaft.CDB_Gravity(t.id, t.g, t.w, s.id, s.g, s.p, 2, 100000, 3) g;
+    cdb_crankshaft.CDB_Gravity(t.id, t.g, t.w, s.id, s.g, s.p, 2, 100000, 3) g;
