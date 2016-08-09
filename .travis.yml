@@ -48,6 +48,8 @@ before_install:
   # save the postgres port for later usage
   - sudo cat /etc/postgresql/9.5/main/postgresql.conf | grep ^port | grep -oh '[0-9]*' > .pg95.port
 
-script:
+install:
   - sudo make install
+
+script:
   - PGPORT=$(cat .pg95.port) make test || { cat src/pg/test/regression.diffs; false; }
