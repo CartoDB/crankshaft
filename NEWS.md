@@ -1,3 +1,10 @@
+0.1.0 (2016-06-29)
+------------------
+* Adds Spatial Markov function
+* Adds Spacial interpolation function
+* Adds `CDB_pyAgg (columns Numeric[])` helper function
+* Adds Segmentation Functions
+
 0.0.4 (2016-06-20)
 ------------------
 * Remove cartodb extension dependency from tests
