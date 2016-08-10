@@ -23,8 +23,12 @@ trap cleanup EXIT
 (cd src/pg && sudo make deploy) || die " Could not deploy last release"
 psql -c "SELECT * FROM pg_available_extension_versions WHERE name LIKE 'crankshaft';"
 
+echo "[rtorre] so far so good"
+
 # Install in the fresh DB
 psql $DBNAME -f ci/create-default-extension.sql
+
+echo "[rtorre] is it creating the extension?"
 
 # TODO save public functions and signatures
 
