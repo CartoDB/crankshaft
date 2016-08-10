@@ -1,3 +1,6 @@
+SET client_min_messages TO WARNING;
+\set ECHO none
+
 WITH t AS (
     SELECT
     ARRAY[1,2,3] AS id,
