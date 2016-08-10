@@ -50,3 +50,4 @@ install:
 
 script:
   - make test || { cat src/pg/test/regression.diffs; false; }
+  - ./check-compatibility.sh
