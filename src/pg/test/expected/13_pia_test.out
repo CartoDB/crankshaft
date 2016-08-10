@@ -1,6 +1,5 @@
 SET client_min_messages TO WARNING;
 \set ECHO none
-
                  st_astext
 -------------------------------------------
  POINT(-409081.865887381 4930017.52075948)
