@@ -50,11 +50,13 @@ EOF
 
 # TODO save public functions and signatures
 
+# Deploy current dev branch
+make clean-dev || die "Could not clean dev files"
+sudo make install || die "Could not deploy current dev branch"
+
 # Check it can be upgraded
 psql $DBNAME -c "ALTER EXTENSION crankshaft update to 'dev';" || die "Cannot upgrade to dev version"
 
 
 
 # TODO check against saved public functions and signatures
-
-
