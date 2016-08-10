@@ -22,7 +22,7 @@ trap cleanup EXIT
 (cd src/py && sudo make deploy RUN_OPTIONS="--no-deps") || die "Could not deploy python extension"
 (cd src/pg && sudo make deploy) || die " Could not deploy last release"
 echo "[rtorre] is it even getting here???"
-psql -c "SELECT * FROM pg_available_extension_versions WHERE name LIKE 'crankshaft';"
+#psql -c "SELECT * FROM pg_available_extension_versions WHERE name LIKE 'crankshaft';"
 
 echo "[rtorre] so far so good"
 
