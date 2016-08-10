@@ -1,3 +1,6 @@
+SET client_min_messages TO WARNING;
+\set ECHO none
+
                            cdb_densify
 -----------------------------------------------------------------
  (01010000001361C3D32B6501403255302AA9B34440,7.0)

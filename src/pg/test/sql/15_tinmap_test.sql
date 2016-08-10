@@ -1,3 +1,6 @@
+SET client_min_messages TO WARNING;
+\set ECHO none
+
 with data as (
     select
     ARRAY[7.0,8.0,1.0,2.0,3.0,5.0,6.0,4.0] as colin,
