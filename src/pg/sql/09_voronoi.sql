@@ -162,7 +162,10 @@ $$ language plpgsql IMMUTABLE;
   * @copyright  : Simon Greener @ 2012
   *               Licensed under a Creative Commons Attribution-Share Alike 2.5 Australia License. (http://creativecommons.org/licenses/by-sa/2.5/au/)
 **/
-CREATE OR REPLACE FUNCTION _Find_Circle(p_pt1 geometry, p_pt2 geometry, p_pt3 geometry)
+CREATE OR REPLACE FUNCTION _Find_Circle(
+    IN p_pt1 geometry,
+    IN p_pt2 geometry,
+    IN p_pt3 geometry)
   RETURNS geometry AS
 $BODY$
 DECLARE
