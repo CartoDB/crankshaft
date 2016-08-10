@@ -40,7 +40,7 @@ BEGIN
 
     -- grid #0
     with c1 as(
-        SELECT CDB_RectangleGrid(polygon, h, h) as c
+        SELECT CDB_RectangleGrid(polygon, h::float, h::float) as c
     )
     SELECT array_agg(c) INTO cells FROM c1;
 
