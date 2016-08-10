@@ -1,4 +1,4 @@
-## Spacial interpolation
+## Voronoi
 
 Function to construct the [Voronoi Diagram](https://en.wikipedia.org/wiki/Voronoi_diagram) from a dataset of scatter points, clipped to the significant area
 
@@ -13,7 +13,7 @@ PostGIS wil include this in future versions ([doc for dev branch](http://postgis
 |------|------|-------------|
 | geom   | geometry[]  | Array of points's geometries |
 | buffer | numeric   | enlargment ratio for the envelope area used for the restraints|
-| tolerance   | geometry | The target point to calc the value |
+| tolerance   | numeric |  Delaunay tolerance, optional |
 
 ### Returns
 
