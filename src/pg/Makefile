@@ -10,13 +10,14 @@ include ../../Makefile.global
 # * test runs the tests for the currently generated Development
 #   extension.
 
-DATA         = $(EXTENSION)--dev.sql \
-	             $(EXTENSION)--current--dev.sql \
-	             $(EXTENSION)--dev--current.sql
+DATA = \
+    $(EXTENSION)--dev.sql \
+    $(EXTENSION)--current--dev.sql \
+    $(EXTENSION)--dev--current.sql \
+    $(EXTENSION)--$(RELEASE_VERSION)--dev.sql
 
 SOURCES_DATA_DIR = sql
 SOURCES_DATA = $(wildcard $(SOURCES_DATA_DIR)/*.sql)
-
 
 REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g'
 
