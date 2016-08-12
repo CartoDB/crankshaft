@@ -35,6 +35,7 @@ git fetch && git checkout -b my-cool-feature origin/develop
 ```
 1. Code, commit, push, repeat.
 1. Write some **tests** for your feature or bugfix.
+1. Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/develop/NEWS.md) doc.
 1. Create a pull request and mention relevant people for a **peer review**.
 1. Address the comments and improvements you get from the peer review.
 1. Mention `@CartoDB/dataservices` in the PR to get it merged into `develop`.
