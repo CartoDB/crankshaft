@@ -1,5 +1,13 @@
 #!/bin/bash
 
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+if [[ "$CURRENT_BRANCH" == "master" || "$CURRENT_BRANCH" == "HEAD" ]]
+then
+    echo "master branch or detached HEAD"
+    exit 0
+fi
+
 # Add remote-master
 git remote add -t master remote-master https://github.com/CartoDB/crankshaft.git
 
