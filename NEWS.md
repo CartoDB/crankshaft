@@ -1,3 +1,7 @@
+0.2.0 (2016-08-11)
+------------------
+* Adds Gravity Model
+
 0.1.0 (2016-06-29)
 ------------------
 * Adds Spatial Markov function
