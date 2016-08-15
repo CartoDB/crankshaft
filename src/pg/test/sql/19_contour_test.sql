@@ -11,4 +11,4 @@ SELECT
     foo.*
 FROM
     a,
-    CDB_contour(a.g, a.vals, 500, 0.0, 1,3,5) foo;
+    cdb_crankshaft.CDB_contour(a.g, a.vals, 500, 0.0, 1,3,5) foo;
