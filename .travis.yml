@@ -1,0 +1,57 @@
+language: c
+
+env:
+  global:
+    - PAGER=cat
+
+before_install:
+  - ./check-up-to-date-with-master.sh
+  - sudo apt-get -y install python-pip
+
+  - sudo apt-get -y install python-software-properties
+  - sudo add-apt-repository -y ppa:cartodb/sci
+  - sudo add-apt-repository -y ppa:cartodb/postgresql-9.5
+  - sudo add-apt-repository -y ppa:cartodb/gis
+  - sudo add-apt-repository -y ppa:cartodb/gis-testing
+  - sudo apt-get update
+
+  - sudo apt-get -y install python-joblib=0.8.3-1-cdb1
+  - sudo apt-get -y install python-numpy=1:1.6.1-6ubuntu1
+
+  # Install pysal
+  - sudo pip install -I pysal==1.11.2
+
+  - sudo apt-get -y install python-scipy=0.14.0-2-cdb6
+  - sudo apt-get -y --no-install-recommends install python-sklearn-lib=0.14.1-3-cdb2
+  - sudo apt-get -y --no-install-recommends install python-sklearn=0.14.1-3-cdb2
+  - sudo apt-get -y --no-install-recommends install python-scikits-learn=0.14.1-3-cdb2
+
+  # Force instalation of libgeos-3.5.0 (presumably needed because of existing version of postgis)
+  - sudo apt-get -y install libgeos-3.5.0=3.5.0-1cdb2
+
+  # Install postgres db and build deps
+  - sudo /etc/init.d/postgresql stop # stop travis default instance
+  - sudo apt-get -y remove --purge postgresql-9.1
+  - sudo apt-get -y remove --purge postgresql-9.2
+  - sudo apt-get -y remove --purge postgresql-9.3
+  - sudo apt-get -y remove --purge postgresql-9.4
+  - sudo apt-get -y remove --purge postgis
+  - sudo apt-get -y autoremove
+
+  - sudo apt-get -y install postgresql-9.5=9.5.2-2ubuntu1
+  - sudo apt-get -y install postgresql-server-dev-9.5=9.5.2-2ubuntu1
+  - sudo apt-get -y install postgresql-plpython-9.5=9.5.2-2ubuntu1
+  - sudo apt-get -y install postgresql-9.5-postgis-2.2=2.2.2.0-cdb2
+  - sudo apt-get -y install postgresql-9.5-postgis-scripts=2.2.2.0-cdb2
+
+  # configure it to accept local connections from postgres
+  - echo -e "# TYPE  DATABASE        USER            ADDRESS                 METHOD \nlocal   all             postgres                                trust\nlocal   all             all                                     trust\nhost    all             all             127.0.0.1/32            trust" \
+    | sudo tee /etc/postgresql/9.5/main/pg_hba.conf
+  - sudo /etc/init.d/postgresql restart 9.5
+
+install:
+  - sudo make install
+
+script:
+  - make test || { cat src/pg/test/regression.diffs; false; }
+  - ./check-compatibility.sh

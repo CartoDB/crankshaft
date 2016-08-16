@@ -14,9 +14,12 @@ $$
 DECLARE
     gs geometry[];
     vs numeric[];
+    output numeric;
 BEGIN
     EXECUTE 'WITH a AS('||query||') SELECT array_agg(the_geom), array_agg(attrib) FROM a' INTO gs, vs;
-    RETURN QUERY SELECT CDB_SpatialInterpolation(gs, vs, point, method, p1,p2) FROM a;
+    SELECT CDB_SpatialInterpolation(gs, vs, point, method, p1,p2) INTO output FROM a;
+
+    RETURN output;
 END;
 $$
 language plpgsql IMMUTABLE;
@@ -71,11 +74,11 @@ BEGIN
                 SELECT array_agg(v) INTO vertex FROM a;
 
             -- retrieve the value of each vertex
-        WITH a AS(SELECT unnest(vertex) as geo, unnest(colin) as c)
+        WITH a AS(SELECT unnest(geomin) as geo, unnest(colin) as c)
             SELECT c INTO va FROM a WHERE ST_Equals(geo, vertex[1]);
-        WITH a AS(SELECT unnest(vertex) as geo, unnest(colin) as c)
+        WITH a AS(SELECT unnest(geomin) as geo, unnest(colin) as c)
             SELECT c INTO vb FROM a WHERE ST_Equals(geo, vertex[2]);
-        WITH a AS(SELECT unnest(vertex) as geo, unnest(colin) as c)
+        WITH a AS(SELECT unnest(geomin) as geo, unnest(colin) as c)
                 SELECT c INTO vc FROM a WHERE ST_Equals(geo, vertex[3]);
 
         SELECT ST_area(g), ST_area(ST_MakePolygon(ST_MakeLine(ARRAY[point, vertex[2], vertex[3], point]))), ST_area(ST_MakePolygon(ST_MakeLine(ARRAY[point, vertex[1], vertex[3], point]))), ST_area(ST_MakePolygon(ST_MakeLine(ARRAY[point,vertex[1],vertex[2], point]))) INTO sg, sa, sb, sc;

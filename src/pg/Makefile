@@ -7,22 +7,19 @@ include ../../Makefile.global
 #   requires sudo. In additionof the current development version
 #   named 'dev', an alias 'current' is generating for ease of
 #   update (upgrade to 'current', then to 'dev').
-#   the python module is installed in a virtualenv in envs/dev/
 # * test runs the tests for the currently generated Development
 #   extension.
 
-DATA         = $(EXTENSION)--dev.sql \
-	             $(EXTENSION)--current--dev.sql \
-	             $(EXTENSION)--dev--current.sql
+DATA = \
+    $(EXTENSION)--dev.sql \
+    $(EXTENSION)--current--dev.sql \
+    $(EXTENSION)--dev--current.sql \
+    $(EXTENSION)--$(RELEASE_VERSION)--dev.sql
 
 SOURCES_DATA_DIR = sql
 SOURCES_DATA = $(wildcard $(SOURCES_DATA_DIR)/*.sql)
 
-VIRTUALENV_PATH = $(realpath ../../envs)
-ESC_VIRVIRTUALENV_PATH = $(subst /,\/,$(VIRTUALENV_PATH))
-
-REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g' \
-               -e 's/@@VIRTUALENV_PATH@@/$(ESC_VIRVIRTUALENV_PATH)/g'
+REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g'
 
 $(DATA): $(SOURCES_DATA)
 	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > $@
@@ -54,7 +51,6 @@ release: ../../release/$(EXTENSION).control $(SOURCES_DATA)
 	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > ../../release/$(EXTENSION)--$(EXTVERSION).sql
 
 # Install the current relese into the PostgreSQL extensions directory
-# and the Python package in a virtual environment envs/X.Y.Z
 deploy:
 	$(INSTALL_DATA) ../../release/$(EXTENSION).control '$(DESTDIR)$(datadir)/extension/'
 	$(INSTALL_DATA) ../../release/*.sql '$(DESTDIR)$(datadir)/extension/'

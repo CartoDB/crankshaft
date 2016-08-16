@@ -1,71 +1,66 @@
-# crankshaft
+# Crankshaft [![Build Status](https://travis-ci.org/CartoDB/crankshaft.svg?branch=develop)](https://travis-ci.org/CartoDB/crankshaft)
 
 CartoDB Spatial Analysis extension for PostgreSQL.
 
 ## Code organization
 
-* *doc* documentation
-* *src* source code
-* - *src/pg* contains the PostgreSQL extension source code
-* - *src/py* Python module source code
-* *release* reseleased versions
-* *env* base directory for Python virtual environments
+* `doc/` documentation
+* `src/` source code
+ - `pg/` contains the PostgreSQL extension source code
+ - `py/` Python module source code
+* `release` reseleased versions
 
 ## Requirements
 
-* pip, virtualenv, PostgreSQL
-* python-scipy system package (see [src/py/README.md](https://github.com/CartoDB/crankshaft/blob/master/src/py/README.md))
+* PostgreSQL
+* plpythonu and postgis extensions
+* python-scipy system package (see [src/py/README.md](https://github.com/CartoDB/crankshaft/blob/develop/src/py/README.md))
 
-# Working Process -- Quickstart Guide
+# Development Process
 
-We distinguish two roles regarding the development cycle of crankshaft:
+We distinguish two roles:
 
 * *developers* will implement new functionality and bugfixes into
-  the codebase and will request for new releases of the extension.
-* A *release manager* will attend these requests and will handle
-  the release process. The release process is sequential:
-  no concurrent releases will ever be in the works.
+  the codebase.
+* A *release manager* will handle the release process.
 
-We use the default `develop` branch as the basis for development.
-The `master` branch is used to merge and tag releases to be
-deployed in production.
+We use the branch `develop` as the main integration branch for development. The `master` is reserved to handle releases.
 
-Developers shall create a new topic branch from `develop` for any new feature
-or bugfix and commit their changes to it and eventually merge back into
-the `develop` branch. When a new release is required a Pull Request
-will be open against the `develop` branch.
+The process is as follows:
 
-The `develop` pull requests will be handled by the release manage,
-who will merge into master where new releases are prepared and tagged.
-The `master` branch is the sole responsibility of the release masters
-and developers must not commit or merge into it.
+1. Create a new **topic branch** from `develop` for any new feature
+or bugfix and commit their changes to it:
+```shell
+git fetch && git checkout -b my-cool-feature origin/develop
+```
+1. Code, commit, push, repeat.
+1. Write some **tests** for your feature or bugfix.
+1. Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/develop/NEWS.md) doc.
+1. Create a pull request and mention relevant people for a **peer review**.
+1. Address the comments and improvements you get from the peer review.
+1. Mention `@CartoDB/dataservices` in the PR to get it merged into `develop`.
+
+In order for a pull request to be accepted, the following criteria should be met:
+* The peer review should pass and no major issue should be left unaddressed.
+* CI tests must pass (travis will take care of that).
+
 
 ## Development Guidelines
 
 For a detailed description of the development process please see
-the [CONTRIBUTING.md](https://github.com/CartoDB/crankshaft/blob/master/CONTRIBUTING.md) guide.
+the [CONTRIBUTING.md](https://github.com/CartoDB/crankshaft/blob/develop/CONTRIBUTING.md) guide.
 
-Any modification to the source code (`src/pg/sql` for the SQL extension,
-`src/py/crankshaft` for the Python package) shall always be done
-in a topic branch created from the `develop` branch.
 
-Tests, documentation and peer code reviewing are required for all
-modifications.
+## Testing
 
-The tests (both for SQL and Python) are executed by running,
-from the top directory:
+The tests (both for SQL and Python) are executed by running, from the top directory:
 
-```
+```shell
 sudo make install
 make test
 ```
 
-To request a new release, which will be handled by them
-release manager, a Pull Request must be created in the `develop`
-branch.
-
 ## Release
 
-The release and deployment process is described in the
-[RELEASE.md](https://github.com/CartoDB/crankshaft/blob/master/RELEASE.md) guide and it is the responsibility of the designated
-release manager.
+The release process is described in the
+[RELEASE.md](https://github.com/CartoDB/crankshaft/blob/develop/RELEASE.md) guide and is the responsibility of the designated *release manager*.

@@ -40,9 +40,10 @@ setup(
 
     # The choice of component versions is dictated by what's
     # provisioned in the production servers.
-    install_requires=['pysal==1.9.1'],
+    # IMPORTANT NOTE: please don't change this line. Instead issue a ticket to systems for evaluation.
+    install_requires=['joblib==0.8.3', 'numpy==1.6.1', 'scipy==0.14.0', 'pysal==1.11.2', 'scikit-learn==0.14.1'],
 
-    requires=['pysal', 'numpy' ],
+    requires=['pysal', 'numpy', 'sklearn'],
 
     test_suite='test'
 )

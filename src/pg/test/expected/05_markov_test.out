@@ -1,0 +1,10 @@
+SET client_min_messages TO WARNING;
+\set ECHO none
+_cdb_random_seeds
+
+(1 row)
+cartodb_id|trend_test|trend_up_test|trend_down_test|volatility_test
+1|t|t|t|t
+2|t|t|t|t
+3|t|t|t|t
+(3 rows)

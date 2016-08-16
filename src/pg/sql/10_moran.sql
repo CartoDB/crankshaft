@@ -10,7 +10,6 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (moran NUMERIC, significance NUMERIC)
 AS $$
-  plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
   return moran(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
@@ -28,7 +27,6 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT)
 RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, vals NUMERIC)
 AS $$
-  plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
   return moran_local(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
@@ -122,7 +120,6 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (moran FLOAT, significance FLOAT)
 AS $$
-  plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local
   # TODO: use named parameters or a dictionary
   return moran_rate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
@@ -143,7 +140,6 @@ CREATE OR REPLACE FUNCTION
 RETURNS
 TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, vals NUMERIC)
 AS $$
-  plpy.execute('SELECT cdb_crankshaft._cdb_crankshaft_activate_py()')
   from crankshaft.clustering import moran_local_rate
   # TODO: use named parameters or a dictionary
   return moran_local_rate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)

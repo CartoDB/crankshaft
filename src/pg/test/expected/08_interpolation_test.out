@@ -1,7 +1,12 @@
 SET client_min_messages TO WARNING;
 \set ECHO none
+<<<<<<< HEAD
  nn  |           nni            |       idw       
 -----+--------------------------+-----------------
  200 | 780.79470198683925288365 | 341.46260750526
+=======
+cdb_spatialinterpolation
+t
+>>>>>>> ebbf68af5700f33737ac18516e2bdc22ea330b24
 (1 row)
 
