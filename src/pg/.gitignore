@@ -4,3 +4,4 @@ results/
 crankshaft--dev.sql
 crankshaft--dev--current.sql
 crankshaft--current--dev.sql
+crankshaft--*--dev.sql
