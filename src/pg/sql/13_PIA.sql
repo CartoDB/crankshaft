@@ -61,7 +61,7 @@ BEGIN
         test_h := ST_XMax(cell) - ST_XMin(cell) ;
 
         -- check distance
-        test_d := _Signed_Dist(polygon, ST_Centroid(cell));
+        test_d := cdb_crankshaft._Signed_Dist(polygon, ST_Centroid(cell));
         IF test_d > best_d THEN
             best_d := test_d;
             best_c := cells[i];
