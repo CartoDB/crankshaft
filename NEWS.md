@@ -1,3 +1,8 @@
+0.3.0 (2016-08-17)
+------------------
+* Adds Voronoi function
+* Fixes barycenter method in interpolation
+
 0.2.0 (2016-08-11)
 ------------------
 * Adds Gravity Model
