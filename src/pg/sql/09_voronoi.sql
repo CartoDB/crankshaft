@@ -152,13 +152,14 @@ $$ language plpgsql IMMUTABLE;
   * @function   : FindCircle
   * @precis     : Function that determines if three points form a circle. If so a table containing
   *               centre and radius is returned. If not, a null table is returned.
-  * @version    : 1.0
+  * @version    : 1.0.1
   * @param      : p_pt1        : First point in curve
   * @param      : p_pt2        : Second point in curve
   * @param      : p_pt3        : Third point in curve
   * @return     : geometry     : In which X,Y ordinates are the centre X, Y and the Z being the radius of found circle
   *                              or NULL if three points do not form a circle.
   * @history    : Simon Greener - Feb 2012 - Original coding.
+  *               Rafa de la Torre - Aug 2016 - Small fix for type checking
   * @copyright  : Simon Greener @ 2012
   *               Licensed under a Creative Commons Attribution-Share Alike 2.5 Australia License. (http://creativecommons.org/licenses/by-sa/2.5/au/)
 **/
@@ -186,8 +187,8 @@ BEGIN
       RETURN NULL;
    END IF;
    IF ( ST_GeometryType(p_pt1) <> 'ST_Point' OR
-        ST_GeometryType(p_pt1) <> 'ST_Point' OR
-        ST_GeometryType(p_pt1) <> 'ST_Point' ) THEN
+        ST_GeometryType(p_pt2) <> 'ST_Point' OR
+        ST_GeometryType(p_pt3) <> 'ST_Point' ) THEN
       RAISE EXCEPTION 'All supplied geometries must be points.';
       RETURN NULL;
    END IF;
