@@ -12,6 +12,15 @@ RETURNS geometry  AS $$
 DECLARE
     geomout geometry;
 BEGIN
+    -- we need to make the geometry calculations in (pseudo)meters!!!
+    with a as (
+        SELECT unnest(geomin) as g1
+    ),
+    b as(
+        SELECT st_transform(g1, 3857) g2 from a
+    )
+    SELECT array_agg(g2) INTO geomin from b;
+
     WITH
     convexhull_1 as (
         SELECT
@@ -138,8 +147,9 @@ BEGIN
         FROM voro_cells v
     )
     SELECT
-        st_collect(ST_intersection(c.g, v.g))
-       -- ST_intersection(c.g, v.g)
+        st_collect(
+            ST_Transform(ST_intersection(c.g, v.g), 4326)
+        )
     INTO geomout
     FROM
         voro_set v,
@@ -186,8 +196,8 @@ BEGIN
       RETURN NULL;
    END IF;
    IF ( ST_GeometryType(p_pt1) <> 'ST_Point' OR
-        ST_GeometryType(p_pt1) <> 'ST_Point' OR
-        ST_GeometryType(p_pt1) <> 'ST_Point' ) THEN
+        ST_GeometryType(p_pt2) <> 'ST_Point' OR
+        ST_GeometryType(p_pt3) <> 'ST_Point' ) THEN
       RAISE EXCEPTION 'All supplied geometries must be points.';
       RETURN NULL;
    END IF;
