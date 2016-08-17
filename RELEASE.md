@@ -28,6 +28,8 @@ shall be performed by the designated *Release Manager*.
   git push origin X.Y.Z
   ```
 1. Deploy and test in staging
+1. Deploy and test in production
+1. Merge back into develop
 
 
 ## Some remarks
