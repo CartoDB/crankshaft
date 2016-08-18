@@ -1,11 +1,11 @@
 CREATE OR REPLACE FUNCTION CDB_Contour(
     IN geomin geometry[],
     IN colin numeric[],
-    IN resolution integer,
     IN buffer numeric,
     IN intmethod integer,
     IN classmethod integer,
-    IN steps integer
+    IN steps integer,
+    IN max_time integer DEFAULT 60000
     )
 RETURNS TABLE(
     the_geom geometry,
@@ -15,18 +15,27 @@ RETURNS TABLE(
     avg_value numeric
 )  AS $$
 DECLARE
-    cell numeric;
+    cell_count integer;
     tin geometry[];
 BEGIN
     -- calc the cell size in web mercator units
-    WITH center as (
-        SELECT ST_centroid(ST_Collect(geomin)) as c
-    )
-    SELECT
-        round(resolution / cos(ST_y(c) * pi()/180))
-        INTO cell
-    FROM center;
+    -- WITH center as (
+    --     SELECT ST_centroid(ST_Collect(geomin)) as c
+    -- )
+    -- SELECT
+    --     round(resolution / cos(ST_y(c) * pi()/180))
+    --     INTO cell
+    -- FROM center;
     -- raise notice 'Resol: %', cell;
+
+    -- calc the optimal number of cells for the current dataset
+    SELECT
+    CASE intmethod
+        WHEN 0 THEN round(3.7745903782 * max_time - 9.4399210051 * array_length(geomin,1) - 1350.8778213073)
+        WHEN 1 THEN round(2.2855592156 * max_time - 87.285217133 * array_length(geomin,1) + 17255.7085601797)
+        WHEN 2 THEN  round(0.9799471999 * max_time - 127.0334085369 * array_length(geomin,1) + 22707.9579721218)
+        ELSE 10000
+    END INTO cell_count;
 
     -- we don't have iterative barycentric interpolation in CDB_interpolation,
     --    and it's a costy function, so let's make a custom one here till
@@ -59,10 +68,17 @@ BEGIN
             ST_Transform(e, 3857) as geom
         FROM envelope
     ),
+    resolution as(
+        SELECT
+             round(|/ (
+                 ST_area(geom) / cell_count
+             )) as cell
+        FROM envelope3857
+    ),
     grid as(
         SELECT
-            ST_Transform(cdb_crankshaft.CDB_RectangleGrid(geom, cell, cell), 4326) as geom
-        FROM envelope3857
+            ST_Transform(cdb_crankshaft.CDB_RectangleGrid(e.geom, r.cell, r.cell), 4326) as geom
+        FROM envelope3857 e, resolution r
     ),
     interp as(
         SELECT
