@@ -29,6 +29,7 @@ shall be performed by the designated *Release Manager*.
   ```
 1. Deploy and test in staging
 1. Deploy and test in production
+2. Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/master/NEWS.md) file
 1. Merge back into develop
 
 
