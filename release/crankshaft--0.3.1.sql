@@ -378,7 +378,7 @@ BEGIN
     convexhull_1 as (
         SELECT
             ST_ConvexHull(ST_Collect(geomin)) as g,
-            buffer * |/ st_area(ST_ConvexHull(ST_Collect(geomin))) as r
+            buffer * |/ (st_area(ST_ConvexHull(ST_Collect(geomin)))/PI()) as r
     ),
     clipper as(
         SELECT
@@ -498,15 +498,26 @@ BEGIN
         SELECT
         (st_dump(v.g)).geom as g
         FROM voro_cells v
+    ),
+    clipped_voro as(
+        SELECT
+            ST_intersection(c.g, v.g) as g
+        FROM
+            voro_set v,
+            clipper c
+        WHERE
+            ST_GeometryType(v.g) = 'ST_Polygon'
     )
     SELECT
         st_collect(
-            ST_Transform(ST_intersection(c.g, v.g), 4326)
+            ST_Transform(
+                ST_ConvexHull(g),
+                4326
+            )
         )
     INTO geomout
     FROM
-        voro_set v,
-        clipper c;
+        clipped_voro;
     RETURN geomout;
 END;
 $$ language plpgsql IMMUTABLE;
