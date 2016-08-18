@@ -1,3 +1,9 @@
+0.3.1 (2016-08-18)
+------------------
+* Fix Voronoi projection issue
+* Fix Voronoi spurious segments issue
+* Add tests for interpolation
+
 0.3.0 (2016-08-17)
 ------------------
 * Adds Voronoi function
