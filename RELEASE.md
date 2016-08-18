@@ -8,21 +8,29 @@ shall be performed by the designated *Release Manager*.
 1. Merge `develop` into `master`
 1. Update the version number in `src/pg/crankshaft.control`.
 1. Generate the next release files with this command:
-```shell
-make release
-```
+
+  ```shell
+  make release
+  ```
 1. Generate an upgrade path from the previous to the next release by copying the generated release file. E.g:
-```shell
-cp release/cranckshaft--X.Y.Z.sql release/cranckshaft--A.B.C--X.Y.Z.sql
-```
-NOTE: you can rely on this thanks to the compatibility checks. TODO: automate this step [#94](https://github.com/CartoDB/crankshaft/issues/94)
+
+  ```shell
+  cp release/cranckshaft--X.Y.Z.sql release/cranckshaft--A.B.C--X.Y.Z.sql
+  ```
+  NOTE: you can rely on this thanks to the compatibility checks. 
+  
+  TODO: automate this step [#94](https://github.com/CartoDB/crankshaft/issues/94)
 1. Commit and push the generated files.
 1. Tag the release:
-```
-git tag -a X.Y.Z -m "Release X.Y.Z"
-git push origin X.Y.Z
-```
+
+  ```
+  git tag -a X.Y.Z -m "Release X.Y.Z"
+  git push origin X.Y.Z
+  ```
 1. Deploy and test in staging
+1. Deploy and test in production
+2. Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/master/NEWS.md) file
+1. Merge back into develop
 
 
 ## Some remarks
@@ -34,11 +42,13 @@ git push origin X.Y.Z
 ## Deploy commands
 
 The new release can be deployed for staging/smoke tests with this command:
-```shell
-sudo make deploy
-```
+
+  ```shell
+  sudo make deploy
+  ```
 
 To install a specific version 'X.Y.Z' different from the default one:
-```shell
-sudo make deploy RELEASE_VERSION=X.Y.Z
-```
+
+  ```shell
+  sudo make deploy RELEASE_VERSION=X.Y.Z
+  ```
