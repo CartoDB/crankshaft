@@ -25,7 +25,7 @@ BEGIN
     convexhull_1 as (
         SELECT
             ST_ConvexHull(ST_Collect(geomin)) as g,
-            buffer * |/ st_area(ST_ConvexHull(ST_Collect(geomin))) as r
+            buffer * |/ (st_area(ST_ConvexHull(ST_Collect(geomin)))/PI()) as r
     ),
     clipper as(
         SELECT
@@ -153,7 +153,8 @@ BEGIN
     INTO geomout
     FROM
         voro_set v,
-        clipper c;
+        clipper c
+    WHERE ST_GeometryType(v.g) = 'ST_Polygon';
     RETURN geomout;
 END;
 $$ language plpgsql IMMUTABLE;
