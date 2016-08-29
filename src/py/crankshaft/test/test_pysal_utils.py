@@ -2,18 +2,19 @@ import unittest
 
 import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
+from collections import OrderedDict
 
 
 class PysalUtilsTest(unittest.TestCase):
     """Testing class for utility functions related to PySAL integrations"""
 
     def setUp(self):
-        self.params = {"id_col": "cartodb_id",
-                       "attr1": "andy",
-                       "attr2": "jay_z",
-                       "subquery": "SELECT * FROM a_list",
-                       "geom_col": "the_geom",
-                       "num_ngbrs": 321}
+        self.params = OrderedDict([("id_col", "cartodb_id"),
+                                   ("attr1": "andy"),
+                                   ("attr2": "jay_z"),
+                                   ("subquery": "SELECT * FROM a_list"),
+                                   ("geom_col": "the_geom"),
+                                   ("num_ngbrs": 321)])
 
         self.params_array = {"id_col": "cartodb_id",
                              "time_cols": ["_2013_dec", "_2014_jan", "_2014_feb"],
@@ -69,7 +70,7 @@ class PysalUtilsTest(unittest.TestCase):
                     "i.\"jay_z\" IS NOT NULL AND " \
                     "i.\"jay_z\" <> 0 " \
               "ORDER BY i.\"cartodb_id\" ASC;"
-        
+
         ans_array = "SELECT i.\"cartodb_id\" As id, " \
               "i.\"_2013_dec\"::numeric As attr1, " \
               "i.\"_2014_jan\"::numeric As attr2, " \
