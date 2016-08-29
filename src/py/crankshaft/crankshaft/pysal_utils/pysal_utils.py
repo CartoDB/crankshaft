@@ -58,9 +58,9 @@ def query_attr_select(params):
     else:
         ## if moran's analysis
         attrs = [k for k in params
-                 if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')]
+                 if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs')]
 
-        for idx, val in enumerate(sorted(attrs)):
+        for idx, val in enumerate(attrs):
             attr_string += template % {"col": params[val], "alias_num": idx + 1}
 
     return attr_string
