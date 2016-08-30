@@ -15,7 +15,7 @@ shall be performed by the designated *Release Manager*.
 1. Generate an upgrade path from the previous to the next release by copying the generated release file. E.g:
 
   ```shell
-  cp release/cranckshaft--X.Y.Z.sql release/cranckshaft--A.B.C--X.Y.Z.sql
+  cp release/crankshaft--X.Y.Z.sql release/crankshaft--A.B.C--X.Y.Z.sql
   ```
   NOTE: you can rely on this thanks to the compatibility checks. 
   
