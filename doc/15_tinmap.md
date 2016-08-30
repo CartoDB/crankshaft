@@ -2,7 +2,7 @@
 
 Generates a fake contour map, in the form of a TIN map, from a set of scattered points.Depends on **CDB_Densify**.
 
-Its iterative nature let's the user smooth the final result as much as desired, but with a exponential time cost increase
+Its iterative nature lets the user smooth the final result as much as desired, but with a exponential time cost increase.
 
 ### CDB_TINmap(geomin geometry[], colin numeric[], iterations integer)
 
