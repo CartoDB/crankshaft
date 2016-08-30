@@ -1,6 +1,6 @@
 # Crankshaft [![Build Status](https://travis-ci.org/CartoDB/crankshaft.svg?branch=develop)](https://travis-ci.org/CartoDB/crankshaft)
 
-CartoDB Spatial Analysis extension for PostgreSQL.
+CARTO Spatial Analysis extension for PostgreSQL.
 
 ## Code organization
 
@@ -30,9 +30,10 @@ The process is as follows:
 
 1. Create a new **topic branch** from `develop` for any new feature
 or bugfix and commit their changes to it:
-```shell
-git fetch && git checkout -b my-cool-feature origin/develop
-```
+
+  ```shell
+  git fetch && git checkout -b my-cool-feature origin/develop
+  ```
 1. Code, commit, push, repeat.
 1. Write some **tests** for your feature or bugfix.
 1. Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/develop/NEWS.md) doc.

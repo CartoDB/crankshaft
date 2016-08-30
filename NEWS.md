@@ -1,3 +1,14 @@
+0.3.1 (2016-08-18)
+------------------
+* Fix Voronoi projection issue
+* Fix Voronoi spurious segments issue
+* Add tests for interpolation
+
+0.3.0 (2016-08-17)
+------------------
+* Adds Voronoi function
+* Fixes barycenter method in interpolation
+
 0.2.0 (2016-08-11)
 ------------------
 * Adds Gravity Model
