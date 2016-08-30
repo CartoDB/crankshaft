@@ -1,3 +1,10 @@
+0.4.0 (2016-08-30)
+------------------
+* Add CDB_Contour
+* Add CDB_PIA
+* Add CDB_Densify
+* Add CDB_TINmap
+
 0.3.1 (2016-08-18)
 ------------------
 * Fix Voronoi projection issue
