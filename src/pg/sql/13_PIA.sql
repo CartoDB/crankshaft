@@ -32,6 +32,7 @@ DECLARE
     p geometry;
 BEGIN
     sqr := |/2;
+    polygon := ST_Transform(polygon, 3857);
 
     -- grid #0 cell size
     height := ST_YMax(polygon) - ST_YMin(polygon);
@@ -87,7 +88,7 @@ BEGIN
 
     END LOOP;
 
-    RETURN ST_Centroid(best_c);
+    RETURN ST_transform(ST_Centroid(best_c), 4326);
 
 END;
 $$ language plpgsql IMMUTABLE;
