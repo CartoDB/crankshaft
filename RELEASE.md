@@ -20,6 +20,7 @@ shall be performed by the designated *Release Manager*.
   NOTE: you can rely on this thanks to the compatibility checks. 
   
   TODO: automate this step [#94](https://github.com/CartoDB/crankshaft/issues/94)
+2. Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/master/NEWS.md) file
 1. Commit and push the generated files.
 1. Tag the release:
 
@@ -29,7 +30,6 @@ shall be performed by the designated *Release Manager*.
   ```
 1. Deploy and test in staging
 1. Deploy and test in production
-2. Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/master/NEWS.md) file
 1. Merge back into develop
 
 
