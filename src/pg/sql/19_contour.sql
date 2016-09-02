@@ -1,4 +1,4 @@
-DROP FUNCTION cdb_contour(geometry[],numeric[],numeric,integer,integer,integer,integer);
+DROP FUNCTION IF EXISTS cdb_contour(geometry[],numeric[],numeric,integer,integer,integer,integer);
 
 CREATE OR REPLACE FUNCTION CDB_Contour(
     IN geomin geometry[],
