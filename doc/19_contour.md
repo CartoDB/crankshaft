@@ -1,6 +1,6 @@
 ## Contour maps
 
-Function to generate a contour map from an scatter dataset of points, using one of three methos:
+Function to generate a contour map from an scatter dataset of points, using one of these three methods:
 
 * [Nearest neighbor](https://en.wikipedia.org/wiki/Nearest-neighbor_interpolation)
 * [Barycentric](https://en.wikipedia.org/wiki/Barycentric_coordinate_system)
