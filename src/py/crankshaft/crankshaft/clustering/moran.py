@@ -39,7 +39,7 @@ def moran(subquery, attr_name,
             return pu.empty_zipped_array(2)
         plpy.notice('** Query returned with %d rows' % len(result))
     except plpy.SPIError, e:
-        plpy.error('Query failed: %s' % e)
+        plpy.error('Analysis failed: %s' % e)
         plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(2)
 
@@ -79,7 +79,7 @@ def moran_local(subquery, attr,
         if len(result) == 0:
             return pu.empty_zipped_array(5)
     except plpy.SPIError, e:
-        plpy.error('Query failed: %s' % e)
+        plpy.error('Analysis failed: %s' % e)
         plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(5)
 
@@ -119,7 +119,7 @@ def moran_rate(subquery, numerator, denominator,
             return pu.empty_zipped_array(2)
         plpy.notice('** Query returned with %d rows' % len(result))
     except plpy.SPIError, e:
-        plpy.error('Query failed: %s' % e)
+        plpy.error('Analysis failed: %s' % e)
         plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(2)
 
@@ -159,7 +159,7 @@ def moran_local_rate(subquery, numerator, denominator,
         if len(result) == 0:
             return pu.empty_zipped_array(5)
     except plpy.SPIError, e:
-        plpy.error('Query failed: %s' % e)
+        plpy.error('Analysis failed: %s' % e)
         plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(5)
 
