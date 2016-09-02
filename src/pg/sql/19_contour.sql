@@ -1,5 +1,3 @@
-DROP FUNCTION IF EXISTS cdb_contour(geometry[],numeric[],numeric,integer,integer,integer,integer);
-
 CREATE OR REPLACE FUNCTION CDB_Contour(
     IN geomin geometry[],
     IN colin numeric[],
@@ -7,7 +5,7 @@ CREATE OR REPLACE FUNCTION CDB_Contour(
     IN intmethod integer,
     IN classmethod integer,
     IN steps integer,
-    IN resolution integer DEFAULT -90
+    IN max_time integer DEFAULT -90
     )
 RETURNS TABLE(
     the_geom geometry,
@@ -19,11 +17,14 @@ RETURNS TABLE(
 DECLARE
     cell_count integer;
     tin geometry[];
-    max_time integer;
+    resolution integer;
 BEGIN
 
-    -- calc the optimal number of cells for the current dataset
+    -- nasty trick to override issue #121
+    resolution := max_time;
     max_time := -1 * resolution;
+
+    -- calc the optimal number of cells for the current dataset
     SELECT
     CASE intmethod
         WHEN 0 THEN round(3.7745903782 * max_time - 9.4399210051 * array_length(geomin,1) - 1350.8778213073)
