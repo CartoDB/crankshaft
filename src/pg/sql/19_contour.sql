@@ -21,6 +21,9 @@ DECLARE
 BEGIN
 
     -- nasty trick to override issue #121
+    IF max_time = 0 THEN
+        max_time = -90;
+    END IF;
     resolution := max_time;
     max_time := -1 * resolution;
 
