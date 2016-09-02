@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION CDB_Contour(
     IN intmethod integer,
     IN classmethod integer,
     IN steps integer,
-    IN max_time integer DEFAULT 60000
+    IN resolution integer DEFAULT -90
     )
 RETURNS TABLE(
     the_geom geometry,
@@ -17,18 +17,11 @@ RETURNS TABLE(
 DECLARE
     cell_count integer;
     tin geometry[];
+    max_time integer;
 BEGIN
-    -- calc the cell size in web mercator units
-    -- WITH center as (
-    --     SELECT ST_centroid(ST_Collect(geomin)) as c
-    -- )
-    -- SELECT
-    --     round(resolution / cos(ST_y(c) * pi()/180))
-    --     INTO cell
-    -- FROM center;
-    -- raise notice 'Resol: %', cell;
 
     -- calc the optimal number of cells for the current dataset
+    max_time := -1 * resolution;
     SELECT
     CASE intmethod
         WHEN 0 THEN round(3.7745903782 * max_time - 9.4399210051 * array_length(geomin,1) - 1350.8778213073)
@@ -70,9 +63,13 @@ BEGIN
     ),
     resolution as(
         SELECT
-             round(|/ (
-                 ST_area(geom) / cell_count
-             )) as cell
+            CASE WHEN resolution <= 0  THEN
+                round(|/ (
+                 ST_area(geom) / abs(cell_count)
+             ))
+            ELSE
+                resolution
+            END AS cell
         FROM envelope3857
     ),
     grid as(
