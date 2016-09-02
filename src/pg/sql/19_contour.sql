@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION CDB_Contour(
     IN intmethod integer,
     IN classmethod integer,
     IN steps integer,
-    IN max_time integer DEFAULT -90
+    IN max_time integer DEFAULT 60000
     )
 RETURNS TABLE(
     the_geom geometry,
