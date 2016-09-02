@@ -30,17 +30,13 @@ def moran(subquery, attr_name,
 
     query = pu.construct_neighbor_query(w_type, qvals)
 
-    plpy.notice('** Query: %s' % query)
-
     try:
         result = plpy.execute(query)
         # if there are no neighbors, exit
         if len(result) == 0:
             return pu.empty_zipped_array(2)
-        plpy.notice('** Query returned with %d rows' % len(result))
     except plpy.SPIError, e:
         plpy.error('Analysis failed: %s' % e)
-        plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(2)
 
     ## collect attributes
@@ -80,7 +76,6 @@ def moran_local(subquery, attr,
             return pu.empty_zipped_array(5)
     except plpy.SPIError, e:
         plpy.error('Analysis failed: %s' % e)
-        plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(5)
 
     attr_vals = pu.get_attributes(result)
@@ -110,17 +105,13 @@ def moran_rate(subquery, numerator, denominator,
 
     query = pu.construct_neighbor_query(w_type, qvals)
 
-    plpy.notice('** Query: %s' % query)
-
     try:
         result = plpy.execute(query)
         # if there are no neighbors, exit
         if len(result) == 0:
             return pu.empty_zipped_array(2)
-        plpy.notice('** Query returned with %d rows' % len(result))
     except plpy.SPIError, e:
         plpy.error('Analysis failed: %s' % e)
-        plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(2)
 
     ## collect attributes
@@ -160,7 +151,6 @@ def moran_local_rate(subquery, numerator, denominator,
             return pu.empty_zipped_array(5)
     except plpy.SPIError, e:
         plpy.error('Analysis failed: %s' % e)
-        plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(5)
 
     ## collect attributes
@@ -183,7 +173,6 @@ def moran_local_bv(subquery, attr1, attr2,
     """
         Moran's I (local) Bivariate (untested)
     """
-    plpy.notice('** Constructing query')
 
     qvals = OrderedDict([("id_col", id_col),
                          ("attr1", attr1),
@@ -202,7 +191,6 @@ def moran_local_bv(subquery, attr1, attr2,
     except plpy.SPIError:
         plpy.error("Error: areas of interest query failed, " \
                    "check input parameters")
-        plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(4)
 
     ## collect attributes
@@ -216,12 +204,8 @@ def moran_local_bv(subquery, attr1, attr2,
     lisa = ps.esda.moran.Moran_Local_BV(attr1_vals, attr2_vals, weight,
                                         permutations=permutations)
 
-    plpy.notice("len of Is: %d" % len(lisa.Is))
-
     # find clustering of significance
     lisa_sig = quad_position(lisa.q)
-
-    plpy.notice('** Finished calculations')
 
     return zip(lisa.Is, lisa_sig, lisa.p_sim, weight.id_order)
 
