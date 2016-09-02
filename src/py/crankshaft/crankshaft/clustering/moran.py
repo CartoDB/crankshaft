@@ -38,10 +38,9 @@ def moran(subquery, attr_name,
         if len(result) == 0:
             return pu.empty_zipped_array(2)
         plpy.notice('** Query returned with %d rows' % len(result))
-    except plpy.SPIError:
-        plpy.error('Error: areas of interest query failed, check input parameters')
+    except plpy.SPIError, e:
+        plpy.error('Query failed: %s' % e)
         plpy.notice('** Query failed: "%s"' % query)
-        plpy.notice('** Error: %s' % plpy.SPIError)
         return pu.empty_zipped_array(2)
 
     ## collect attributes
@@ -79,8 +78,8 @@ def moran_local(subquery, attr,
         # if there are no neighbors, exit
         if len(result) == 0:
             return pu.empty_zipped_array(5)
-    except plpy.SPIError:
-        plpy.error('Error: areas of interest query failed, check input parameters')
+    except plpy.SPIError, e:
+        plpy.error('Query failed: %s' % e)
         plpy.notice('** Query failed: "%s"' % query)
         return pu.empty_zipped_array(5)
 
@@ -119,10 +118,9 @@ def moran_rate(subquery, numerator, denominator,
         if len(result) == 0:
             return pu.empty_zipped_array(2)
         plpy.notice('** Query returned with %d rows' % len(result))
-    except plpy.SPIError:
-        plpy.error('Error: areas of interest query failed, check input parameters')
+    except plpy.SPIError, e:
+        plpy.error('Query failed: %s' % e)
         plpy.notice('** Query failed: "%s"' % query)
-        plpy.notice('** Error: %s' % plpy.SPIError)
         return pu.empty_zipped_array(2)
 
     ## collect attributes
@@ -160,10 +158,9 @@ def moran_local_rate(subquery, numerator, denominator,
         # if there are no neighbors, exit
         if len(result) == 0:
             return pu.empty_zipped_array(5)
-    except plpy.SPIError:
-        plpy.error('Error: areas of interest query failed, check input parameters')
+    except plpy.SPIError, e:
+        plpy.error('Query failed: %s' % e)
         plpy.notice('** Query failed: "%s"' % query)
-        plpy.notice('** Error: %s' % plpy.SPIError)
         return pu.empty_zipped_array(5)
 
     ## collect attributes
