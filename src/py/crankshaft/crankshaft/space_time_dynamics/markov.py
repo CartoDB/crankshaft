@@ -56,9 +56,9 @@ def spatial_markov_trend(subquery, time_cols, num_classes=7,
         )
         if len(query_result) == 0:
             return zip([None], [None], [None], [None], [None])
-    except plpy.SPIError, err:
+    except plpy.SPIError, e:
         plpy.debug('Query failed with exception %s: %s' % (err, pu.construct_neighbor_query(w_type, qvals)))
-        plpy.error('Query failed, check the input parameters')
+        plpy.error('Analysis failed: %s' % e)
         return zip([None], [None], [None], [None], [None])
 
     ## build weight
