@@ -44,6 +44,13 @@ def query_attr_select(params):
         Create portion of SELECT statement for attributes inolved in query.
         @param params: dict of information used in query (column names,
                        table name, etc.)
+            Example:
+            OrderedDict([('attr1', 'numerator'),
+                         ('attr2', 'denominator'),
+                         ('subquery', 'SELECT * FROM interesting_data')])
+        Output:
+          "i.\"numerator\"::numeric As attr1, " \
+          "i.\"denominator\"::numeric As attr2, "
     """
 
     attr_string = ""
