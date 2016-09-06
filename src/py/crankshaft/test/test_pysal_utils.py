@@ -23,6 +23,13 @@ class PysalUtilsTest(unittest.TestCase):
                                     ("geom_col", "the_geom"),
                                     ("num_ngbrs", 321)])
 
+        self.params3 = OrderedDict([("id_col", "cartodb_id"),
+                                    ("attr1", "numerator"),
+                                    ("attr2", "denominator"),
+                                    ("subquery", "SELECT * FROM pecan"),
+                                    ("geom_col", "the_geom"),
+                                    ("num_ngbrs", 321)])
+
         self.params_array = {"id_col": "cartodb_id",
                              "time_cols": ["_2013_dec", "_2014_jan", "_2014_feb"],
                              "subquery": "SELECT * FROM a_list",
@@ -38,12 +45,16 @@ class PysalUtilsTest(unittest.TestCase):
         ans2 = "i.\"price\"::numeric As attr1, " \
                "i.\"sq_meters\"::numeric As attr2, "
 
+        ans3 = "i.\"numerator\"::numeric As attr1, " \
+               "i.\"denominator\"::numeric As attr2, "
+
         ans_array = "i.\"_2013_dec\"::numeric As attr1, " \
                     "i.\"_2014_jan\"::numeric As attr2, " \
                     "i.\"_2014_feb\"::numeric As attr3, "
 
         self.assertEqual(pu.query_attr_select(self.params), ans)
         self.assertEqual(pu.query_attr_select(self.params2), ans2)
+        self.assertEqual(pu.query_attr_select(self.params3), ans3)
         self.assertEqual(pu.query_attr_select(self.params_array), ans_array)
 
     def test_query_attr_where(self):
