@@ -15,8 +15,11 @@ from crankshaft import random_seeds
 import json
 
 class GetisTest(unittest.TestCase):
-    """Testing class for Getis-Ord's G funtion"""
-
+    """Testing class for Getis-Ord's G funtion
+       This test replicates the work done in PySAL documentation:
+          https://pysal.readthedocs.io/en/v1.11.0/users/tutorials/autocorrelation.html#local-g-and-g
+    """
+    
     def setUp(self):
         plpy._reset()
         self.neighbors_data = json.loads(open(fixture_file('neighbors_getis.json')).read())
@@ -34,4 +37,6 @@ class GetisTest(unittest.TestCase):
         expected = np.array(self.getis_data)[:, 0:2]
         for ([res_z, res_p], [exp_z, exp_p]) in zip(result, expected):
             self.assertAlmostEqual(res_z, exp_z, delta=1e-2)
-            self.assertAlmostEqual(res_p, exp_p, delta=1e-2)
+            if exp_p <= 0.05:
+                self.assertTrue(res_p < 0.05)
+
