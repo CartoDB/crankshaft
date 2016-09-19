@@ -1,0 +1,23 @@
+\pset format unaligned
+\set ECHO all
+\i test/fixtures/ppoints.sql
+SET client_min_messages TO WARNING;
+\set ECHO none
+_cdb_random_seeds
+
+(1 row)
+z_score|p_value
+-1.0358|0.0160
+-0.6404|0.0070
+2.6802|0.0190
+4.7529|0.0020
+2.7270|0.0250
+-1.2444|0.0230
+4.6322|0.0150
+4.5325|0.0220
+-1.3115|0.0090
+-1.3115|0.0080
+4.6361|0.0010
+2.8307|0.0310
+-1.3115|0.0020
+(13 rows)
