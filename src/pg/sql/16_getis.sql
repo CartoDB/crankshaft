@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION
       column_name TEXT,
       w_type TEXT DEFAULT 'knn',
       num_ngbrs INT DEFAULT 5,
-      permutations INT DEFAULT 99,
+      permutations INT DEFAULT 999,
       geom_col TEXT DEFAULT 'the_geom',
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (z_val NUMERIC, p_val NUMERIC, p_z_sim NUMERIC, rowid BIGINT)
