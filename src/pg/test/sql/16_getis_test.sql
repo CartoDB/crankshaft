@@ -6,8 +6,9 @@
 SELECT cdb_crankshaft._cdb_random_seeds(1234);
 
 -- test against PySAL example dataset
-SELECT z_score, p_val
+SELECT z_score, p_value
 FROM cdb_crankshaft.CDB_GetisOrdsG(
-  'select * from ppoints2',
-  'ratio') As cdb_getisordsg(z_score, p_val, p_z_sim)
-WHERE p_val <= 0.05;
+  'select * from getis_data',
+  'hr8893', 'knn', 5, 999,
+  'the_geom', 'cartodb_id') As cdb_getisordsg(z_score, p_value, p_z_sim)
+WHERE p_value <= 0.05;

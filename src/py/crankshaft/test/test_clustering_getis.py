@@ -14,6 +14,25 @@ import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
 import json
 
+# Fixture files produced as follows
+#
+# import pysal as ps
+# import numpy as np
+# f = ps.open(ps.examples.get_path("stl_hom.txt"))
+# y = np.array(f.by_col['HR8893'])
+# w = ps.knnW_from_shapefile(ps.examples.get_path("stl_hom.shp"), k=5)
+#
+# out = [{"id": index, "neighbors": w.neighbors[index], "value": val}
+#        for index, val in enumerate(y)]
+# with open('neighbors_getis.json', 'w') as f:
+#     f.write(str(out))
+#
+# np.random.seed(1234)
+# lgstar = ps.esda.getisord.G_Local(y, w, star=True, permutations=999)
+#
+# with open('getis_data.json', 'w') as f:
+#     f.write(str(zip(lgstar.z_sim, lgstar.p_sim, lgstar.p_z_sim)))
+
 
 class GetisTest(unittest.TestCase):
     """Testing class for Getis-Ord's G funtion
