@@ -1,4 +1,4 @@
--- 0: nearest neighbor
+-- 0: nearest neighbor (s)
 -- 1: barymetric
 -- 2: IDW
 
@@ -51,11 +51,17 @@ DECLARE
     output numeric;
 BEGIN
     output :=  -999.999;
-    -- nearest
+
+    -- nearest neighbors
+    -- p1: limit the number of neighbors, 0-> closest one
     IF method = 0 THEN
 
+        IF p1 = 0 THEN
+            p1 := 1;
+        END IF;
+
         WITH    a as (SELECT unnest(geomin) as g, unnest(colin) as v)
-        SELECT a.v INTO output FROM a ORDER BY point<->a.g LIMIT 1;
+        SELECT avg(a.v) INTO output FROM a ORDER BY point<->a.g LIMIT p1::integer;
         RETURN output;
 
     -- barymetric
@@ -120,6 +126,11 @@ BEGIN
                 )
         SELECT sum(b.f)/sum(b.k) INTO output FROM b;
         RETURN output;
+
+    -- krigin
+    ELSIF method = 3 THEN
+
+
 
     END IF;
 
