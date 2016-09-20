@@ -1,0 +1,7 @@
+SET client_min_messages TO WARNING;
+\set ECHO none
+       avg_area       
+----------------------
+ 0.000178661700690617
+(1 row)
+
