@@ -10,5 +10,5 @@ SELECT z_score, p_value
 FROM cdb_crankshaft.CDB_GetisOrdsG(
   'select * from getis_data',
   'hr8893', 'knn', 5, 999,
-  'the_geom', 'cartodb_id') As cdb_getisordsg(z_score, p_value, p_z_sim)
+  'the_geom', 'cartodb_id') As t(z_score, p_value, p_z_sim)
 WHERE p_value <= 0.05;

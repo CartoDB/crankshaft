@@ -28,14 +28,16 @@ import json
 #     f.write(str(out))
 #
 # np.random.seed(1234)
+# # need to do random.seed(1234) too?
 # lgstar = ps.esda.getisord.G_Local(y, w, star=True, permutations=999)
 #
-# with open('getis_data.json', 'w') as f:
+# with open('getis.json', 'w') as f:
 #     f.write(str(zip(lgstar.z_sim, lgstar.p_sim, lgstar.p_z_sim)))
+#
 
 
 class GetisTest(unittest.TestCase):
-    """Testing class for Getis-Ord's G funtion
+    """Testing class for Getis-Ord's G* funtion
        This test replicates the work done in PySAL documentation:
           https://pysal.readthedocs.io/en/v1.11.0/users/tutorials/autocorrelation.html#local-g-and-g
     """
