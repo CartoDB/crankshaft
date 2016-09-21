@@ -37,6 +37,9 @@ Function to interpolate a numeric attribute of a point in a scatter dataset of p
 |-------------|------|-------------|
 | value  | numeric | Interpolated value at the given point, `-888.888` if the given point is out of the boundaries of the source points set |
 
+Default values:
+* -888.888: when using Barycentric, the target point is out of the realm of the input points
+* -777.777: asking for a method not available
 
 #### Example Usage
 

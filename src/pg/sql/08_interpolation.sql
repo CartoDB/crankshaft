@@ -1,7 +1,7 @@
 -- 0: nearest neighbor(s)
 -- 1: barymetric
 -- 2: IDW
--- 3: krigin
+-- 3: krigin ---> TO DO
 
 
 CREATE OR REPLACE FUNCTION CDB_SpatialInterpolation(
@@ -52,7 +52,7 @@ DECLARE
     vc numeric;
     output numeric;
 BEGIN
-    output :=  -999.999;
+    -- output :=  -999.999;
 
     -- nearest neighbors
     -- p1: limit the number of neighbors, 0-> closest one
@@ -133,7 +133,7 @@ BEGIN
     -- krigin
     ELSIF method = 3 THEN
 
-
+    --  TO DO
 
     END IF;
 
