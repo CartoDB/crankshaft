@@ -12,6 +12,6 @@ SELECT
     foo.*
 FROM
     a,
-    cdb_crankshaft.CDB_contour(a.g, a.vals,  0.0, 1, 3, 5, 60) foo
+    cdb_crankshaft.CDB_contour(a.g, a.vals,  0.0, 1, 3, 5, -60) foo
 )
 SELECT bin, avg_value from b order by bin;
