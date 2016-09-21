@@ -18,22 +18,28 @@ import json
 #
 # import pysal as ps
 # import numpy as np
-# f = ps.open(ps.examples.get_path("stl_hom.txt"))
+# import random
+#
+# # setup variables
+# f = ps.open(ps.examples.get_path("stl_hom.dbf"))
 # y = np.array(f.by_col['HR8893'])
-# w = ps.knnW_from_shapefile(ps.examples.get_path("stl_hom.shp"), k=5)
+# w_queen = ps.queen_from_shapefile(ps.examples.get_path("stl_hom.shp"))
 #
-# out = [{"id": index, "neighbors": w.neighbors[index], "value": val}
-#        for index, val in enumerate(y)]
-# with open('neighbors_getis.json', 'w') as f:
-#     f.write(str(out))
+# out_queen = [{"id": index + 1,
+#               "neighbors": [x+1 for x in w_queen.neighbors[index]],
+#               "value": val} for index, val in enumerate(y)]
 #
+# with open('neighbors_queen_getis.json', 'w') as f:
+#     f.write(str(out_queen))
+#
+# random.seed(1234)
 # np.random.seed(1234)
-# # need to do random.seed(1234) too?
-# lgstar = ps.esda.getisord.G_Local(y, w, star=True, permutations=999)
+# lgstar_queen = ps.esda.getisord.G_Local(y, w_queen, star=True,
+#                                         permutations=999)
 #
-# with open('getis.json', 'w') as f:
-#     f.write(str(zip(lgstar.z_sim, lgstar.p_sim, lgstar.p_z_sim)))
-#
+# with open('getis_queen.json', 'w') as f:
+#     f.write(str(zip(lgstar_queen.z_sim,
+#                     lgstar_queen.p_sim, lgstar_queen.p_z_sim)))
 
 
 class GetisTest(unittest.TestCase):
@@ -44,9 +50,14 @@ class GetisTest(unittest.TestCase):
 
     def setUp(self):
         plpy._reset()
+
+        # load raw data for analysis
         self.neighbors_data = json.loads(
           open(fixture_file('neighbors_getis.json')).read())
-        self.getis_data = json.loads(open(fixture_file('getis.json')).read())
+
+        # load pre-computed/known values
+        self.getis_data = json.loads(
+          open(fixture_file('getis.json')).read())
 
     def test_getis_ord(self):
         """Test Getis-Ord's G*"""
@@ -56,7 +67,7 @@ class GetisTest(unittest.TestCase):
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
         result = cc.getis_ord('subquery', 'value',
-                              'knn', 5, 999, 'the_geom', 'cartodb_id')
+                              'queen', None, 999, 'the_geom', 'cartodb_id')
         result = [(row[0], row[1]) for row in result]
         expected = np.array(self.getis_data)[:, 0:2]
         for ([res_z, res_p], [exp_z, exp_p]) in zip(result, expected):
