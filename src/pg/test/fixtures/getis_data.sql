@@ -3,19 +3,15 @@ SET client_min_messages TO WARNING;
 
 --
 -- Getis-Ord's G* test dataset, subsetted from PySAL examples:
---   https://github.com/pysal/pysal/tree/952ea04029165048a774d9a1846cf86ad000c096/pysal/examples/stl 
+--   https://github.com/pysal/pysal/tree/952ea04029165048a774d9a1846cf86ad000c096/pysal/examples/stl
 --
 
 
 CREATE TABLE getis_data (
     cartodb_id integer,
     the_geom geometry(Geometry,4326),
-    hr8893 numeric 
+    hr8893 numeric
 );
-
-
-ALTER TABLE getis_data OWNER TO contrib_regression;
-
 
 COPY getis_data (cartodb_id, the_geom, hr8893) FROM stdin;
 22	0106000020E61000000100000001030000000100000007000000000000E0B10056C0000000C0B8964340FFFFFFFF4C1756C00000002054964340000000A00F1E56C00000004072964340000000C02D1E56C0000000A0439B434000000060381E56C00000000036B04340000000E0E20056C0000000608CB04340000000E0B10056C0000000C0B8964340	10.8557430000000004
@@ -100,4 +96,3 @@ COPY getis_data (cartodb_id, the_geom, hr8893) FROM stdin;
 
 
 CREATE INDEX getis_data_gix ON getis_data USING GIST(the_geom);
-

@@ -72,5 +72,3 @@ class GetisTest(unittest.TestCase):
         expected = np.array(self.getis_data)[:, 0:2]
         for ([res_z, res_p], [exp_z, exp_p]) in zip(result, expected):
             self.assertAlmostEqual(res_z, exp_z, delta=1e-2)
-            if exp_p <= 0.05:
-                self.assertTrue(res_p < 0.05)

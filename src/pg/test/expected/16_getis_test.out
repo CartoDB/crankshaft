@@ -1,6 +1,6 @@
 \pset format unaligned
 \set ECHO all
-\i test/fixtures/ppoints.sql
+\i test/fixtures/getis_data.sql
 SET client_min_messages TO WARNING;
 \set ECHO none
 _cdb_random_seeds
