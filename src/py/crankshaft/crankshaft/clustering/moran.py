@@ -14,6 +14,7 @@ import crankshaft.pysal_utils as pu
 
 # High level interface ---------------------------------------
 
+
 def moran(subquery, attr_name,
           w_type, num_ngbrs, permutations, geom_col, id_col):
     """
@@ -39,17 +40,18 @@ def moran(subquery, attr_name,
         plpy.error('Analysis failed: %s' % e)
         return pu.empty_zipped_array(2)
 
-    ## collect attributes
+    # collect attributes
     attr_vals = pu.get_attributes(result)
 
-    ## calculate weights
+    # calculate weights
     weight = pu.get_weight(result, w_type, num_ngbrs)
 
-    ## calculate moran global
+    # calculate moran global
     moran_global = ps.esda.moran.Moran(attr_vals, weight,
                                        permutations=permutations)
 
     return zip([moran_global.I], [moran_global.EI])
+
 
 def moran_local(subquery, attr,
                 w_type, num_ngbrs, permutations, geom_col, id_col):
@@ -90,6 +92,7 @@ def moran_local(subquery, attr,
 
     return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
 
+
 def moran_rate(subquery, numerator, denominator,
                w_type, num_ngbrs, permutations, geom_col, id_col):
     """
@@ -114,17 +117,18 @@ def moran_rate(subquery, numerator, denominator,
         plpy.error('Analysis failed: %s' % e)
         return pu.empty_zipped_array(2)
 
-    ## collect attributes
+    # collect attributes
     numer = pu.get_attributes(result, 1)
     denom = pu.get_attributes(result, 2)
 
     weight = pu.get_weight(result, w_type, num_ngbrs)
 
-    ## calculate moran global rate
+    # calculate moran global rate
     lisa_rate = ps.esda.moran.Moran_Rate(numer, denom, weight,
                                          permutations=permutations)
 
     return zip([lisa_rate.I], [lisa_rate.EI])
+
 
 def moran_local_rate(subquery, numerator, denominator,
                      w_type, num_ngbrs, permutations, geom_col, id_col):
@@ -153,7 +157,7 @@ def moran_local_rate(subquery, numerator, denominator,
         plpy.error('Analysis failed: %s' % e)
         return pu.empty_zipped_array(5)
 
-    ## collect attributes
+    # collect attributes
     numer = pu.get_attributes(result, 1)
     denom = pu.get_attributes(result, 2)
 
@@ -167,6 +171,7 @@ def moran_local_rate(subquery, numerator, denominator,
     quads = quad_position(lisa.q)
 
     return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
+
 
 def moran_local_bv(subquery, attr1, attr2,
                    permutations, geom_col, id_col, w_type, num_ngbrs):
@@ -189,11 +194,11 @@ def moran_local_bv(subquery, attr1, attr2,
         if len(result) == 0:
             return pu.empty_zipped_array(4)
     except plpy.SPIError:
-        plpy.error("Error: areas of interest query failed, " \
+        plpy.error("Error: areas of interest query failed, "
                    "check input parameters")
         return pu.empty_zipped_array(4)
 
-    ## collect attributes
+    # collect attributes
     attr1_vals = pu.get_attributes(result, 1)
     attr2_vals = pu.get_attributes(result, 2)
 
@@ -210,6 +215,7 @@ def moran_local_bv(subquery, attr1, attr2,
     return zip(lisa.Is, lisa_sig, lisa.p_sim, weight.id_order)
 
 # Low level functions ----------------------------------------
+
 
 def map_quads(coord):
     """
@@ -230,6 +236,7 @@ def map_quads(coord):
         return 'HL'
     else:
         return None
+
 
 def quad_position(quads):
     """
