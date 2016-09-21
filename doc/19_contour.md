@@ -18,7 +18,7 @@ Function to generate a contour map from an scatter dataset of points, using one 
 | method   | integer     | 0:nearest neighbor, 1: barycentric, 2: IDW|
 | classmethod   | integer     | 0:equals, 1: heads&tails, 2:jenks, 3:quantiles |
 | steps   | integer     | Number of steps in the classification|
-| max_time   | integer     | Max time in milliseconds for processing time
+| max_time   | integer     | if <= 0: max processing time in seconds (smart resolution) , if >0: resolution in meters
 
 ### Returns
 Returns a table object
