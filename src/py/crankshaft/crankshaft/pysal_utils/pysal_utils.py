@@ -50,7 +50,7 @@ def query_attr_select(params):
     """
 
     attr_string = ""
-    template = 'i."%(col)s"::numeric As attr%(alias_num)s, '
+    template = "i.\"%(col)s\"::numeric As attr%(alias_num)s, "
 
     if 'time_cols' in params:
         # if markov analysis
@@ -90,7 +90,7 @@ def query_attr_where(params):
           NULL AND idx_replace."time3" IS NOT NULL'
     """
     attr_string = []
-    template = 'idx_replace."%s" IS NOT NULL'
+    template = "idx_replace.\"%s\" IS NOT NULL"
 
     if 'time_cols' in params:
         # markov where clauses
@@ -110,7 +110,7 @@ def query_attr_where(params):
             attr_string.append(template % params[attr])
 
         if len(attrs) == 2:
-            attr_string.append('idx_replace."%s" <> 0' % params[attrs[1]])
+            attr_string.append("idx_replace.\"%s\" <> 0" % params[attrs[1]])
 
     out = " AND ".join(attr_string)
 
@@ -129,23 +129,22 @@ def knn(params):
                     "attr_where_i": attr_where.replace("idx_replace", "i"),
                     "attr_where_j": attr_where.replace("idx_replace", "j")}
 
-    query = '''
-        SELECT
-          i."{id_col}" As id,
-                %(attr_select)s
-                (SELECT ARRAY(SELECT j."{id_col}"
-                              FROM ({subquery}) As j
-                              WHERE
-                                i."{id_col}" <> j."{id_col}" AND
-                                %(attr_where_j)s
-                              ORDER BY
-                                j."{geom_col}" <-> i."{geom_col}" ASC
-                              LIMIT {num_ngbrs})
-                ) As neighbors
-          FROM ({subquery}) As i
-         WHERE %(attr_where_i)s
-        ORDER BY i."{id_col}" ASC;
-            ''' % replacements
+    query = "SELECT " \
+                "i.\"{id_col}\" As id, " \
+                "%(attr_select)s" \
+                "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
+                              "FROM ({subquery}) As j " \
+                              "WHERE " \
+                                "i.\"{id_col}\" <> j.\"{id_col}\" AND " \
+                                "%(attr_where_j)s " \
+                              "ORDER BY " \
+                                "j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
+                              "LIMIT {num_ngbrs})" \
+                ") As neighbors " \
+            "FROM ({subquery}) As i " \
+            "WHERE " \
+                "%(attr_where_i)s " \
+            "ORDER BY i.\"{id_col}\" ASC;" % replacements
 
     return query.format(**params)
 
@@ -162,20 +161,19 @@ def queen(params):
                     "attr_where_i": attr_where.replace("idx_replace", "i"),
                     "attr_where_j": attr_where.replace("idx_replace", "j")}
 
-    query = '''
-        SELECT
-          i."{id_col}" As id,
-          %(attr_select)s
-          (SELECT ARRAY(SELECT j."{id_col}"
-             FROM ({subquery}) As j
-            WHERE i."{id_col}" <> j."{id_col}" AND
-                  ST_Touches(i."{geom_col}", j."{geom_col}") AND
-                  %(attr_where_j)s
-                  ) As neighbors
-          FROM ({subquery}) As i
-         WHERE %(attr_where_i)s
-        ORDER BY i."{id_col}" ASC;
-            ''' % replacements
+    query = "SELECT " \
+                "i.\"{id_col}\" As id, " \
+                "%(attr_select)s" \
+                "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
+                 "FROM ({subquery}) As j " \
+                 "WHERE i.\"{id_col}\" <> j.\"{id_col}\" AND " \
+                       "ST_Touches(i.\"{geom_col}\", j.\"{geom_col}\") AND " \
+                       "%(attr_where_j)s)" \
+                ") As neighbors " \
+            "FROM ({subquery}) As i " \
+            "WHERE " \
+                "%(attr_where_i)s " \
+            "ORDER BY i.\"{id_col}\" ASC;" % replacements
 
     return query.format(**params)
 
