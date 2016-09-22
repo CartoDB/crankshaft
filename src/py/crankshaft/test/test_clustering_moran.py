@@ -14,6 +14,7 @@ import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
 import json
 
+
 class MoranTest(unittest.TestCase):
     """Testing class for Moran's I functions"""
 
@@ -26,12 +27,15 @@ class MoranTest(unittest.TestCase):
                        "geom_col": "the_geom",
                        "num_ngbrs": 321}
         self.params_markov = {"id_col": "cartodb_id",
-                              "time_cols": ["_2013_dec", "_2014_jan", "_2014_feb"],
+                              "time_cols": ["_2013_dec", "_2014_jan",
+                                            "_2014_feb"],
                               "subquery": "SELECT * FROM a_list",
                               "geom_col": "the_geom",
                               "num_ngbrs": 321}
-        self.neighbors_data = json.loads(open(fixture_file('neighbors.json')).read())
-        self.moran_data = json.loads(open(fixture_file('moran.json')).read())
+        self.neighbors_data = json.loads(
+          open(fixture_file('neighbors.json')).read())
+        self.moran_data = json.loads(
+          open(fixture_file('moran.json')).read())
 
     def test_map_quads(self):
         """Test map_quads"""
@@ -54,35 +58,49 @@ class MoranTest(unittest.TestCase):
 
     def test_moran_local(self):
         """Test Moran's I local"""
-        data = [ { 'id': d['id'], 'attr1': d['value'], 'neighbors': d['neighbors'] } for d in self.neighbors_data]
+        data = [{'id': d['id'],
+                 'attr1': d['value'],
+                 'neighbors': d['neighbors']} for d in self.neighbors_data]
+
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local('subquery', 'value', 'knn', 5, 99, 'the_geom', 'cartodb_id')
+        result = cc.moran_local('subquery', 'value',
+                                'knn', 5, 99, 'the_geom', 'cartodb_id')
         result = [(row[0], row[1]) for row in result]
-        expected = self.moran_data
-        for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
+        zipped_values = zip(result, self.moran_data)
+
+        for ([res_val, res_quad], [exp_val, exp_quad]) in zipped_values:
             self.assertAlmostEqual(res_val, exp_val)
             self.assertEqual(res_quad, exp_quad)
 
     def test_moran_local_rate(self):
         """Test Moran's I rate"""
-        data = [ { 'id': d['id'], 'attr1': d['value'], 'attr2': 1, 'neighbors': d['neighbors'] } for d in self.neighbors_data]
+        data = [{'id': d['id'],
+                 'attr1': d['value'],
+                 'attr2': 1,
+                 'neighbors': d['neighbors']} for d in self.neighbors_data]
+
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local_rate('subquery', 'numerator', 'denominator', 'knn', 5, 99, 'the_geom', 'cartodb_id')
-        print 'result == None? ', result == None
+        result = cc.moran_local_rate('subquery', 'numerator', 'denominator',
+                                     'knn', 5, 99, 'the_geom', 'cartodb_id')
         result = [(row[0], row[1]) for row in result]
-        expected = self.moran_data
-        for ([res_val, res_quad], [exp_val, exp_quad]) in zip(result, expected):
+
+        zipped_values = zip(result, self.moran_data)
+
+        for ([res_val, res_quad], [exp_val, exp_quad]) in zipped_values:
             self.assertAlmostEqual(res_val, exp_val)
 
     def test_moran(self):
         """Test Moran's I global"""
-        data = [{ 'id': d['id'], 'attr1': d['value'], 'neighbors': d['neighbors'] } for d in self.neighbors_data]
+        data = [{'id': d['id'],
+                 'attr1': d['value'],
+                 'neighbors': d['neighbors']} for d in self.neighbors_data]
         plpy._define_result('select', data)
         random_seeds.set_random_seeds(1235)
-        result = cc.moran('table', 'value', 'knn', 5, 99, 'the_geom', 'cartodb_id')
-        print 'result == None?', result == None
+        result = cc.moran('table', 'value',
+                          'knn', 5, 99, 'the_geom', 'cartodb_id')
+
         result_moran = result[0][0]
         expected_moran = np.array([row[0] for row in self.moran_data]).mean()
         self.assertAlmostEqual(expected_moran, result_moran, delta=10e-2)
