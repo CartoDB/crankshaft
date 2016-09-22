@@ -1,3 +1,13 @@
+0.4.2 (2016-09-22)
+------------------
+* Bugfix for cdb_areasofinterestglobal: import correct modules
+
+0.4.1 (2016-09-21)
+------------------
+* Let the user set the resolution in CDB_Contour function
+* Add Nearest Neighbors method to CDB_SpatialInterpolation
+* Improve error reporting for moran and markov functions
+
 0.4.0 (2016-08-30)
 ------------------
 * Add CDB_Contour
