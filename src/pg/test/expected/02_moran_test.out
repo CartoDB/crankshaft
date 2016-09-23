@@ -6,6 +6,12 @@ SET client_min_messages TO WARNING;
 _cdb_random_seeds
 
 (1 row)
+moran|significance
+0.3399|-0.0196
+(1 row)
+_cdb_random_seeds
+
+(1 row)
 code|quads
 01|HH
 02|HL

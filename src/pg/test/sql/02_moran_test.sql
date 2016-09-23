@@ -6,6 +6,14 @@
 -- Areas of Interest functions perform some nondeterministic computations
 -- (to estimate the significance); we will set the seeds for the RNGs
 -- that affect those results to have repeateble results
+
+-- Moran's I Global
+SELECT cdb_crankshaft._cdb_random_seeds(1234);
+
+SELECT round(moran, 4) As moran, round(significance, 4) As significance
+  FROM cdb_crankshaft.CDB_AreasOfInterestGlobal('SELECT * FROM ppoints', 'value') m(moran, significance);
+
+-- Moran's I Local
 SELECT cdb_crankshaft._cdb_random_seeds(1234);
 
 SELECT ppoints.code, m.quads
