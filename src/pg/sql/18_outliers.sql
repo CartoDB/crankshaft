@@ -1,5 +1,8 @@
+
+-- Find outliers using a static threshold
+--
 CREATE OR REPLACE FUNCTION CDB_StaticOutlier(attr numeric, threshold numeric)
-RETURNS numeric
+RETURNS boolean
 AS $$
 BEGIN
 
@@ -8,6 +11,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Find outliers by a percentage above the threshold
 
 CREATE OR REPLACE FUNCTION CDB_PercentOutlier(attr numeric[], outlier_fraction numeric, ids int[])
 RETURNS TABLE(outlier boolean, rowid int)
@@ -28,6 +32,8 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+
+-- Find outliers above a given number of standard deviations from the mean
 
 CREATE OR REPLACE FUNCTION CDB_StdDevOutlier(attrs numeric[], num_deviations numeric, ids int[])
 RETURNS TABLE(outlier boolean, rowid int)
