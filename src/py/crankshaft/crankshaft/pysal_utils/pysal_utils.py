@@ -45,15 +45,16 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
 def query_attr_select(params):
     """
         Create portion of SELECT statement for attributes inolved in query.
+        Defaults to order in the params
         @param params: dict of information used in query (column names,
                        table name, etc.)
             Example:
-            OrderedDict([('attr1', 'numerator'),
-                         ('attr2', 'denominator'),
+            OrderedDict([('numerator', 'price'),
+                         ('denominator', 'sq_meters'),
                          ('subquery', 'SELECT * FROM interesting_data')])
         Output:
-          "i.\"numerator\"::numeric As attr1, " \
-          "i.\"denominator\"::numeric As attr2, "
+          "i.\"price\"::numeric As attr1, " \
+          "i.\"sq_meters\"::numeric As attr2, "
     """
 
     attr_string = ""
@@ -87,8 +88,8 @@ def query_attr_where(params):
              'numerator': 'data1',
              'denominator': 'data2',
              '': ...}
-        Output: 'idx_replace."data1" IS NOT NULL AND idx_replace."data2"
-                IS NOT NULL'
+        Output:
+          'idx_replace."data1" IS NOT NULL AND idx_replace."data2" IS NOT NULL'
         Input:
         {'subquery': ...,
          'time_cols': ['time1', 'time2', 'time3'],
@@ -109,15 +110,17 @@ def query_attr_where(params):
         # moran where clauses
 
         # get keys
-        attrs = sorted([k for k in params
-                        if k not in ('id_col', 'geom_col', 'subquery',
-                                     'num_ngbrs', 'subquery')])
+        attrs = [k for k in params
+                 if k not in ('id_col', 'geom_col', 'subquery',
+                              'num_ngbrs', 'subquery')]
+
         # add values to template
         for attr in attrs:
             attr_string.append(template % params[attr])
 
-        if len(attrs) == 2:
-            attr_string.append("idx_replace.\"%s\" <> 0" % params[attrs[1]])
+        if 'denominator' in attrs:
+            attr_string.append(
+              "idx_replace.\"%s\" <> 0" % params['denominator'])
 
     out = " AND ".join(attr_string)
 
