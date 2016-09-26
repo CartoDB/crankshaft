@@ -197,10 +197,11 @@ code|quads
 46|LL
 47|LL
 48|HH
-49|LL
+49|LH
 50|HH
 51|LL
-(51 rows)
+52|LL
+(52 rows)
 _cdb_random_seeds
 
 (1 row)
@@ -259,9 +260,10 @@ code|quads
 45|LH
 46|LL
 47|LL
-49|LL
+49|LH
 51|LL
-(28 rows)
+52|LL
+(29 rows)
 _cdb_random_seeds
 
 (1 row)
@@ -277,4 +279,5 @@ code|quads
 42|LH
 43|LH
 45|LH
-(11 rows)
+49|LH
+(12 rows)
