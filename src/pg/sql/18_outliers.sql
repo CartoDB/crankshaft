@@ -27,7 +27,7 @@ BEGIN
 
   SELECT array_agg(
            CASE WHEN avg_val = 0 THEN null
-                ELSE  outlier_fraction > i / avg_val
+                ELSE  outlier_fraction < i::numeric / avg_val::numeric
            END
               ) INTO out_vals
     FROM unnest(attr) As x(i);
