@@ -23,7 +23,6 @@ DECLARE
     dists numeric[][];
     rs integer[][];
     poss integer[][];
-    result text[];
     results text[]; -- [s]concat(c) !!!
     we numeric []; -- [s]
     s bigint;
@@ -33,7 +32,7 @@ BEGIN
     we := array_fill(0, ARRAY[array_length(salesmen_id,1)]);
 
     -- init results
-    results := array_fill('', ARRAY[array_length(salesmen_id,1)]);
+    results := array_fill(''::text, ARRAY[array_length(salesmen_id,1)]);
 
     -- if not weighting is set, default to 1, so the share is based only on counting the clients
     IF clients_w = '{}'::numeric[] THEN
@@ -103,6 +102,10 @@ BEGIN
         FROM un0
         GROUP BY cid
     )
+
+    -- TODO necesito que todos las arrays que voy a agregar tengan las mismas dimensiones
+    -- deberían tenerlas, así que tengo que debuggear esto a fondo
+
     SELECT
         array_agg(cid),
         array_agg(cw),
@@ -113,6 +116,7 @@ BEGIN
     INTO cids, cws, sids, dists, rs, poss
     FROM un1;
 
+    raise notice 'BLOQUE 1';
 
     -- cids[n_clientes]
     -- xxxx[n_clientes][m_vendedores]
@@ -120,23 +124,25 @@ BEGIN
     -- assign clients to salesmen in an fare way
 
     -- clients with bigger weight than the share and assign to the closest one
-    -- **
-    -- **
-    -- **
+
 
     -- assign normal clients
-    FOR i IN 1..array_length(cids,1) -- clients loop
+    -- clients loop
+    FOR i IN 1..array_length(cids,1)
     LOOP
+
         flag := false;
-        FOR j IN 1..array_length(sids,2) -- salesmen loop to check
+
+         -- salesmen loop to check
+        FOR j IN 1..array_length(sids,2)
         LOOP
             s := array_position(salesmen_id, sids[i][j]);
-            IF result[s]='' THEN
-                result[s] := result[s] || cids[i];
+            IF results[s]=''::text THEN
+                results[s] := cids[i]::text;
                 we[s] := we[s] + cws[i];
                 flag := true;
-            ELSE IF (we[s] + cws[i]) <= lim THEN
-                results[s] = results[s] || ',' || cids[i];
+            ELSEIF (we[s] + cws[i]) <= lim::numeric THEN
+                results[s] := results[s] || ',' || cids[i]::text;
                 we[s] := we[s] + cws[i];
                 flag := true;
             ELSE
@@ -150,36 +156,12 @@ BEGIN
                 SELECT min(t.w) as mw FROM unnest(we) as t(w)
             )
             SELECT array_position(we, mw) INTO s FROM a;
-            results[s] = results[s] || cids[i];
+            results[s] = results[s] || ',' || cids[i]::text;
         END IF;
 
     END LOOP;
 
-    -- ================= old version, not weighted ===================
-    -- FOR i IN 1..array_length(cids,1)
-    -- LOOP
-    --     flag := false;
-    --     FOR j IN 1..array_length(sids,2)
-    --     LOOP
-    --         s := sids[i][j];
-    --         result := string_to_array(results[s],',');
-    --         IF result = ARRAY[]::text[] THEN
-    --             results[s] = results[s] || cids[i];
-    --             flag := true;
-    --         ELSE IF array_length(result,1) <= lim THEN
-    --             results[s] = results[s] || ',' || cids[i];
-    --             flag := true;
-    --         ELSE
-    --             CONTINUE;
-    --         END IF;
-    --     END LOOP;
-    --     IF flag = false THEN
-    --         s := sids[i][1];
-    --         results[s] = results[s] || cids[i];
-    --     END IF;
-    -- END LOOP;
-    -- ====================== ^^^ ====================================
-
+    raise notice 'BLOQUE 2';
 
     RETURN QUERY
     WITH
@@ -193,7 +175,7 @@ BEGIN
     c AS(
         SELECT
             b.id as sales_id,
-            string_to_array(results[b.id],',') as clients_list
+            string_to_array(results[b.id]::text,',') as clients_list
         FROM b
     ),
     d AS(
@@ -203,17 +185,19 @@ BEGIN
         FROM c
     )
     SELECT
-        d.sales_id as salesman,
-        d.c_id as cartodb_id,
+        d.c_id::bigint as cartodb_id,
         a.geom as the_geom,
+        d.sales_id as salesman,
         0.0 as dist
     FROM d LEFT JOIN a
-    ON d.c_id = a.id;
+    ON d.c_id::bigint = a.id;
 END;
 $$ language plpgsql;
 
--- test
 
+ -- ====================== ^^^ ====================================
+-- test
+ -- ====================== ^^^ ====================================
 WITH
 a0 AS (
     with gs as (SELECT generate_series(1001,1100) as g) select array_agg(g::bigint) as id from gs
@@ -228,11 +212,16 @@ b AS(
     ARRAY[ST_GeomFromText('POINT(2.1744 41.403)',4326),ST_GeomFromText('POINT(2.1228 41.380)',4326),ST_GeomFromText('POINT(2.1511 41.374)',4326),ST_GeomFromText('POINT(2.1528 41.413)',4326),ST_GeomFromText('POINT(2.165 41.391)',4326),ST_GeomFromText('POINT(2.1498 41.371)',4326),ST_GeomFromText('POINT(2.1533 41.368)',4326),ST_GeomFromText('POINT(2.131386 41.41399)',4326)] AS g
 )
 SELECT
-foo.*
+test.*
 FROM
 a0,
 a,
 b,
-CDB_SalesForce(b.g, b.id, a.g, a0.id) foo;
+CDB_SalesForce(
+    b.g,
+    b.id,
+    a.g,
+    a0.id
+) test;
 
 
