@@ -9,6 +9,7 @@ outlier|rowid
 t|16
 t|17
 (2 rows)
+ERROR:  Standard deviation of input data is zero
 outlier|rowid
 t|8
 t|11

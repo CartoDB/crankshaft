@@ -48,7 +48,7 @@ WITH a AS (
       ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]::int[] As ids
 ), b As (
   SELECT
-    (CDB_StdDevOutlier(vals, 1.0, ids)).*
+    (cdb_crankshaft.CDB_StdDevOutlier(vals, 1.0, ids)).*
   FROM a
   ORDER BY ids)
 SELECT *
