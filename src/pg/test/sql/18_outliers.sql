@@ -40,6 +40,21 @@ SELECT *
 FROM b
 WHERE outlier IS TRUE;
 
+-- With a Stddev of zero, should throw back error
+-- With a threshold of 2.0 standard deviations, id 16 is the only outlier
+WITH a AS (
+    SELECT
+      ARRAY[5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5]::numeric[] As vals,
+      ARRAY[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]::int[] As ids
+), b As (
+  SELECT
+    (CDB_StdDevOutlier(vals, 1.0, ids)).*
+  FROM a
+  ORDER BY ids)
+SELECT *
+FROM b
+WHERE outlier IS TRUE;
+
 -- With a ratio threshold of 2.0 threshold (100% above or below the mean)
 --  which is greater than ~21, which are values
 WITH a AS (
