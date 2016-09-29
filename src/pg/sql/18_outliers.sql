@@ -12,7 +12,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Find outliers by a percentage above the threshold
--- TODO: add symmetric option? `symmetric boolean DEFAULT false`
+-- TODO: add symmetric option? `is_symmetric boolean DEFAULT false`
 
 CREATE OR REPLACE FUNCTION CDB_PercentOutlier(column_values numeric[], outlier_fraction numeric, ids int[])
 RETURNS TABLE(outlier boolean, rowid int)
@@ -42,7 +42,7 @@ $$ LANGUAGE plpgsql;
 
 -- Find outliers above a given number of standard deviations from the mean
 
-CREATE OR REPLACE FUNCTION CDB_StdDevOutlier(attrs numeric[], num_deviations numeric, ids int[])
+CREATE OR REPLACE FUNCTION CDB_StdDevOutlier(attrs numeric[], num_deviations numeric, ids int[], is_symmetric boolean DEFAULT true)
 RETURNS TABLE(outlier boolean, rowid int)
 AS $$
 DECLARE
@@ -58,10 +58,15 @@ BEGIN
     RAISE EXCEPTION 'Standard deviation of input data is zero';
   END IF;
 
-  SELECT array_agg(
-           abs(i - avg_val) / stddev_val > num_deviations) INTO out_vals
-    FROM unnest(attrs) As x(i);
-
+  IF is_symmetric THEN
+    SELECT array_agg(
+             abs(i - avg_val) / stddev_val > num_deviations) INTO out_vals
+      FROM unnest(attrs) As x(i);
+  ELSE
+    SELECT array_agg(
+             (i - avg_val) / stddev_val > num_deviations) INTO out_vals
+      FROM unnest(attrs) As x(i);
+  END IF;
 
   RETURN QUERY
   SELECT unnest(out_vals) As outlier,
