@@ -19,7 +19,7 @@ WITH a AS (
       ARRAY[1,3,2,3,5,1,2,32,12, 3,57, 2, 1, 4, 2,100,-100]::numeric[] As vals, ARRAY[1,2,3,4,5,6,7, 8, 9,10,11,12,13,14,15, 16,  17]::int[] As ids
 ), b As (
   SELECT
-    (cdb_StdDevOutlier(vals, 1.0, ids)).*
+    (cdb_crankshaft.cdb_StdDevOutlier(vals, 1.0, ids)).*
   FROM a
   ORDER BY ids)
 SELECT *
@@ -33,7 +33,7 @@ WITH a AS (
       ARRAY[1,2,3,4,5,6,7, 8, 9,10,11,12,13,14,15, 16,  17]::int[] As ids
 ), b As (
   SELECT
-    (CDB_StdDevOutlier(vals, 2.0, ids)).*
+    (cdb_crankshaft.CDB_StdDevOutlier(vals, 2.0, ids)).*
   FROM a
   ORDER BY ids)
 SELECT *
@@ -63,7 +63,7 @@ WITH a AS (
       ARRAY[1,2,3,4,5,6,7, 8, 9,10,11,12,13,14,15, 16,  17]::int[] As ids
 ), b As (
   SELECT
-    (CDB_PercentOutlier(vals, 2.0, ids)).*
+    (cdb_crankshaft.CDB_PercentOutlier(vals, 2.0, ids)).*
   FROM a
   ORDER BY ids)
 SELECT *
@@ -79,7 +79,8 @@ WITH a AS (
    SELECT unnest(vals) As v, unnest(ids) as i
      FROM a
  )
-SELECT CDB_StaticOutlier(v, 11.0), i
+SELECT cdb_crankshaft.CDB_StaticOutlier(v, 11.0) As outlier, i As rowid 
   FROM b
-WHERE CDB_StaticOutlier(v, 11.0) is True
+WHERE cdb_crankshaft.CDB_StaticOutlier(v, 11.0) is True
 ORDER BY i;
+
