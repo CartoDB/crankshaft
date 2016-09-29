@@ -30,7 +30,7 @@ BEGIN
   END IF;
 
   SELECT array_agg(
-           outlier_fraction > i / avg_val) INTO out_vals
+           outlier_fraction < i / avg_val) INTO out_vals
     FROM unnest(column_values) As x(i);
 
   RETURN QUERY
