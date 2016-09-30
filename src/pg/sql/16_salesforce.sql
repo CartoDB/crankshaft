@@ -28,8 +28,8 @@ DECLARE
     s bigint;
 BEGIN
 
-    -- init salesmen weights to zero
-    we := array_fill(0, ARRAY[array_length(salesmen_id,1)]);
+    -- init salesmen weights to 1
+    we := array_fill(1, ARRAY[array_length(salesmen_id,1)]);
 
     -- init results
     results := array_fill(''::text, ARRAY[array_length(salesmen_id,1)]);
@@ -141,10 +141,12 @@ BEGIN
                 results[s] := cids[i]::text;
                 we[s] := we[s] + cws[i];
                 flag := true;
+                EXIT;
             ELSEIF (we[s] + cws[i]) <= lim::numeric THEN
                 results[s] := results[s] || ',' || cids[i]::text;
                 we[s] := we[s] + cws[i];
                 flag := true;
+                EXIT;
             ELSE
                 CONTINUE;
             END IF;
@@ -190,14 +192,14 @@ BEGIN
         d.sales_id as salesman,
         0.0 as dist
     FROM d LEFT JOIN a
-    ON d.c_id::bigint = a.id;
+    ON d.c_id::bigint = a.id::bigint;
 END;
 $$ language plpgsql;
 
 
- -- ====================== ^^^ ====================================
--- test
- -- ====================== ^^^ ====================================
+-- ====================== ^^^ ====================================
+-- test 1
+-- ====================== ^^^ ====================================
 WITH
 a0 AS (
     with gs as (SELECT generate_series(1001,1100) as g) select array_agg(g::bigint) as id from gs
@@ -223,5 +225,37 @@ CDB_SalesForce(
     a.g,
     a0.id
 ) test;
+
+-- ====================== ^^^ ====================================
+-- test 2
+-- ====================== ^^^ ====================================
+
+with
+clients as(
+    SELECT
+      array_agg(cartodb_id) as id,
+      array_agg(the_geom) as geo,
+      array_agg(plugs::numeric) as w
+      FROM abel.charging_stations
+    where cartodb_id % 8 = 0 limit 250
+),
+salesreps as(
+    SELECT
+      array_agg(cartodb_id) as id,
+      array_agg(the_geom) as geo
+      FROM abel.base where country = 'Spain' and the_geom is not null
+)
+SELECT
+    test.*
+FROM
+clients,
+salesreps,
+CDB_SalesForce(
+    salesreps.geo,
+    salesreps.id,
+    clients.geo,
+    clients.id
+) test
+
 
 
