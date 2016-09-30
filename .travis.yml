@@ -38,7 +38,7 @@ before_install:
   - sudo apt-get -y remove --purge postgis
   - sudo apt-get -y autoremove
 
-  - sudo apt-get -y install libgdal1h=1.11.0-0cdb1
+  - sudo apt-get -y install libgdal1h=1.11.0-0cdb1~precise3
   - sudo apt-get -y install postgresql-9.5=9.5.2-2ubuntu1
   - sudo apt-get -y install postgresql-server-dev-9.5=9.5.2-2ubuntu1
   - sudo apt-get -y install postgresql-plpython-9.5=9.5.2-2ubuntu1
