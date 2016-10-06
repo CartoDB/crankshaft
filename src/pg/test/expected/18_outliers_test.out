@@ -1,21 +1,21 @@
 SET client_min_messages TO WARNING;
 \set ECHO none
-outlier|rowid
+is_outlier|rowid
 t|11
 t|16
 t|17
 (3 rows)
-outlier|rowid
+is_outlier|rowid
 t|16
 t|17
 (2 rows)
 ERROR:  Standard deviation of input data is zero
-outlier|rowid
+is_outlier|rowid
 t|8
 t|11
 t|16
 (3 rows)
-outlier|rowid
+is_outlier|rowid
 t|8
 t|9
 t|11

@@ -24,7 +24,7 @@ WITH a AS (
   ORDER BY ids)
 SELECT *
 FROM b
-WHERE outlier IS TRUE;
+WHERE is_outlier IS TRUE;
 
 -- With a threshold of 2.0 standard deviations, id 16 is the only outlier
 WITH a AS (
@@ -38,7 +38,7 @@ WITH a AS (
   ORDER BY ids)
 SELECT *
 FROM b
-WHERE outlier IS TRUE;
+WHERE is_outlier IS TRUE;
 
 -- With a Stddev of zero, should throw back error
 -- With a threshold of 2.0 standard deviations, id 16 is the only outlier
@@ -53,7 +53,7 @@ WITH a AS (
   ORDER BY ids)
 SELECT *
 FROM b
-WHERE outlier IS TRUE;
+WHERE is_outlier IS TRUE;
 
 -- With a ratio threshold of 2.0 threshold (100% above or below the mean)
 --  which is greater than ~21, which are values
@@ -68,7 +68,7 @@ WITH a AS (
   ORDER BY ids)
 SELECT *
   FROM b
- WHERE outlier IS TRUE;
+ WHERE is_outlier IS TRUE;
 
 -- With a static threshold of 11, what are the outliers
 WITH a AS (
@@ -79,8 +79,7 @@ WITH a AS (
    SELECT unnest(vals) As v, unnest(ids) as i
      FROM a
  )
-SELECT cdb_crankshaft.CDB_StaticOutlier(v, 11.0) As outlier, i As rowid 
+SELECT cdb_crankshaft.CDB_StaticOutlier(v, 11.0) As is_outlier, i As rowid
   FROM b
 WHERE cdb_crankshaft.CDB_StaticOutlier(v, 11.0) is True
 ORDER BY i;
-
