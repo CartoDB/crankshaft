@@ -1,12 +1,12 @@
 
 -- Find outliers using a static threshold
 --
-CREATE OR REPLACE FUNCTION CDB_StaticOutlier(attr numeric, threshold numeric)
+CREATE OR REPLACE FUNCTION CDB_StaticOutlier(column_value numeric, threshold numeric)
 RETURNS boolean
 AS $$
 BEGIN
 
-  RETURN attr > threshold;
+  RETURN column_value > threshold;
 
 END;
 $$ LANGUAGE plpgsql;
@@ -15,7 +15,7 @@ $$ LANGUAGE plpgsql;
 -- TODO: add symmetric option? `is_symmetric boolean DEFAULT false`
 
 CREATE OR REPLACE FUNCTION CDB_PercentOutlier(column_values numeric[], outlier_fraction numeric, ids int[])
-RETURNS TABLE(outlier boolean, rowid int)
+RETURNS TABLE(is_outlier boolean, rowid int)
 AS $$
 DECLARE
   avg_val numeric;
@@ -34,7 +34,7 @@ BEGIN
     FROM unnest(column_values) As x(i);
 
   RETURN QUERY
-  SELECT unnest(out_vals) As outlier,
+  SELECT unnest(out_vals) As is_outlier,
          unnest(ids) As rowid;
 
 END;
@@ -42,8 +42,8 @@ $$ LANGUAGE plpgsql;
 
 -- Find outliers above a given number of standard deviations from the mean
 
-CREATE OR REPLACE FUNCTION CDB_StdDevOutlier(attrs numeric[], num_deviations numeric, ids int[], is_symmetric boolean DEFAULT true)
-RETURNS TABLE(outlier boolean, rowid int)
+CREATE OR REPLACE FUNCTION CDB_StdDevOutlier(column_values numeric[], num_deviations numeric, ids int[], is_symmetric boolean DEFAULT true)
+RETURNS TABLE(is_outlier boolean, rowid int)
 AS $$
 DECLARE
   stddev_val numeric;
@@ -52,7 +52,7 @@ DECLARE
 BEGIN
 
   SELECT stddev(i), avg(i) INTO stddev_val, avg_val
-    FROM unnest(attrs) As x(i);
+    FROM unnest(column_values) As x(i);
 
   IF stddev_val = 0 THEN
     RAISE EXCEPTION 'Standard deviation of input data is zero';
@@ -61,15 +61,15 @@ BEGIN
   IF is_symmetric THEN
     SELECT array_agg(
              abs(i - avg_val) / stddev_val > num_deviations) INTO out_vals
-      FROM unnest(attrs) As x(i);
+      FROM unnest(column_values) As x(i);
   ELSE
     SELECT array_agg(
              (i - avg_val) / stddev_val > num_deviations) INTO out_vals
-      FROM unnest(attrs) As x(i);
+      FROM unnest(column_values) As x(i);
   END IF;
 
   RETURN QUERY
-  SELECT unnest(out_vals) As outlier,
+  SELECT unnest(out_vals) As is_outlier,
          unnest(ids) As rowid;
 END;
 $$ LANGUAGE plpgsql;
