@@ -25,7 +25,7 @@ Returns a boolean (true/false) depending on whether a value is above or below (o
 
 #### Example Usage
 
-With a table `website_visits`:
+With a table `website_visits` and a column of the number of website visits in units of 10,000 visits:
 
 ```
 | id | visits_10k |
@@ -61,7 +61,7 @@ FROM website_visits
 | 8  | f | 2 |
 ```
 
-### CDB_PercentOutlier(column_values numeric[], ratio_threshold numeric, ids int[])
+### CDB_PercentOutlier(column_values numeric[], outlier_fraction numeric, ids int[])
 
 `CDB_PercentOutlier` calculates whether or not a value falls above a given threshold based on a percentage above the mean value of the input values.
 
@@ -79,7 +79,7 @@ Returns a table of the outlier classification with the following columns
 
 | Name | Type | Description |
 |------|------|-------------|
-| outlier | boolean  | classification of whether a row is an outlier or not |
+| is_outlier | boolean  | classification of whether a row is an outlier or not |
 | rowid | int | original row id (e.g., input `cartodb_id`) of the row which has the outlier classification |
 
 #### Example Usage
@@ -111,7 +111,7 @@ Output
 | f | 8 |
 ```
 
-### CDB_StdDevOutlier(column_values numeric[], ratio_threshold numeric, ids int[], is_symmetric boolean DEFAULT true)
+### CDB_StdDevOutlier(column_values numeric[], num_deviations numeric, ids int[], is_symmetric boolean DEFAULT true)
 
 `CDB_StdDevOutlier` calculates whether or not a value falls above or below a given threshold based on the number of standard deviations from the mean.
 
@@ -130,7 +130,7 @@ Returns a table of the outlier classification with the following columns
 
 | Name | Type | Description |
 |------|------|-------------|
-| outlier | boolean  | classification of whether a row is an outlier or not |
+| is_outlier | boolean  | classification of whether a row is an outlier or not |
 | rowid | int | original row id (e.g., input `cartodb_id`) of the row which has the outlier classification |
 
 #### Example Usage
