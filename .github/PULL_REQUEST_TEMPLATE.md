@@ -7,4 +7,4 @@
 - [ ] Analysis Documentation written [template](https://docs.google.com/a/cartodb.com/document/d/1X2KOtaiEBKWNMp8UjwcLB-kE9aIOw09aOjX3oaCjeME/edit?usp=sharing)
 - [ ] Smoke test written
 - [ ] Hand-off document for camshaft node written
-
+- [ ] If function is in Python, code conforms to [PEP8 Style Guide](https://www.python.org/dev/peps/pep-0008/)
