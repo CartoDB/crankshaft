@@ -1,6 +1,8 @@
--- 0: nearest neighbor
+-- 0: nearest neighbor(s)
 -- 1: barymetric
 -- 2: IDW
+-- 3: krigin ---> TO DO
+
 
 CREATE OR REPLACE FUNCTION CDB_SpatialInterpolation(
     IN query text,
@@ -50,12 +52,19 @@ DECLARE
     vc numeric;
     output numeric;
 BEGIN
-    output :=  -999.999;
-    -- nearest
+    -- output :=  -999.999;
+
+    -- nearest neighbors
+    -- p1: limit the number of neighbors, 0-> closest one
     IF method = 0 THEN
 
-        WITH    a as (SELECT unnest(geomin) as g, unnest(colin) as v)
-        SELECT a.v INTO output FROM a ORDER BY point<->a.g LIMIT 1;
+        IF p1 = 0 THEN
+            p1 := 1;
+        END IF;
+
+        WITH    a as (SELECT unnest(geomin) as g, unnest(colin) as v),
+                b as (SELECT a.v as v FROM a ORDER BY point<->a.g LIMIT p1::integer)
+        SELECT avg(b.v) INTO output FROM b;
         RETURN output;
 
     -- barymetric
@@ -120,6 +129,11 @@ BEGIN
                 )
         SELECT sum(b.f)/sum(b.k) INTO output FROM b;
         RETURN output;
+
+    -- krigin
+    ELSIF method = 3 THEN
+
+    --  TO DO
 
     END IF;
 
