@@ -11,7 +11,7 @@ $$ LANGUAGE plpythonu;
 -- Non-spatial k-means clustering
 -- query: sql query to retrieve all the needed data
 
-CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(query TEXT, col_names TEXT[], no_clusters INTEGER, id_col TEXT DEFAULT 'cartodb_id')
+CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(query TEXT, colnames TEXT[], num_clusters INTEGER, id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE(cluster_label text, cluster_center text, rowid bigint) AS $$
 
 from crankshaft.clustering import kmeans_nonspatial
