@@ -38,6 +38,7 @@ def kmeans_nonspatial(query, colnames, num_clusters=5, id_col='cartodb_id'):
         num_clusters (int): number of clusters (greater than zero)
         id_col (string): name of the input id_column
     """
+    import numpy as np
 
     id_colname = 'rowids'
 
@@ -53,15 +54,26 @@ def kmeans_nonspatial(query, colnames, num_clusters=5, id_col='cartodb_id'):
     try:
         data = plpy.execute(full_query)
         plpy.notice('query: %s' % full_query)
-
-        # fill array with values for kmeans clustering
-        data = np.array([d[c] for c in d if c != 'id_colname'],
-                        dtype=float).T
     except plpy.SPIError, err:
         plpy.error('KMeans cluster failed: %s' % err)
 
+    # fill array with values for kmeans clustering
+    cluster_columns = scale_data(
+                        np.array([data[0][c] for c in data.colnames()
+                                  if c != id_col],
+                                 dtype=float).T)
+
     kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(data)
 
-    # zip(ids, labels, means)
     return zip(kmeans.labels_, map(str, kmeans.cluster_centers_),
-               d[0]['rowids'])
+               data[0]['rowids'])
+
+
+def scale_data(input_data):
+    """
+        Scale all input columns from 0 to 1 so that k-means puts them on equal
+        footing
+    """
+    from sklearn.preprocessing import MinMaxScaler
+    min_max_scaler = MinMaxScaler()
+    return min_max_scaler.fit_transform(input_data)
