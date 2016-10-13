@@ -1,6 +1,6 @@
 from sklearn.cluster import KMeans
 import plpy
-
+import numpy as np
 
 def kmeans(query, no_clusters, no_init=20):
     """
@@ -39,7 +39,6 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
         num_clusters (int): number of clusters (greater than zero)
         id_col (string): name of the input id_column
     """
-    import numpy as np
     out_id_colname = 'rowids'
     # TODO: need a random seed?
 
