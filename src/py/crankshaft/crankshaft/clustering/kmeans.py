@@ -9,7 +9,7 @@ def kmeans(query, no_clusters, no_init=20):
     full_query = '''
       SELECT array_agg(cartodb_id ORDER BY cartodb_id) as ids,
              array_agg(ST_X(the_geom) ORDER BY cartodb_id) xs,
-             array_agg(ST_Y(the_geom) ORDER BY cartodb_id)
+             array_agg(ST_Y(the_geom) ORDER BY cartodb_id) ys
         FROM ({query}) As a
        WHERE the_geom IS NOT NULL
         '''.format(query=query)
@@ -87,8 +87,7 @@ def extract_columns(db_resp, id_col):
 
 def scale_data(features):
     """
-        Scale all input columns from 0 to 1 so that k-means puts them on equal
-        footing
+        Scale all input columns to center on 0 with a standard devation of 1
         input_data (numpy array): an array of dimension (n_features, n_samples)
     """
     from sklearn.preprocessing import StandardScaler
