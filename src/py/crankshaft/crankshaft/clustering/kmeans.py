@@ -60,23 +60,27 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
 
     # fill array with values for kmeans clustering
     if standarize:
-        cluster_columns = scale_data(
-          extract_columns(db_resp, id_col='cartodb_id'))
+        cluster_columns = _scale_data(
+          _extract_columns(db_resp, id_col='cartodb_id'))
     else:
-        cluster_columns = extract_columns(db_resp)
+        cluster_columns = _extract_columns(db_resp)
 
     # TODO: decide on optimal parameters for most cases
     #       Are there ways of deciding parameters based on inputs?
     kmeans = KMeans(n_clusters=num_clusters,
                     random_state=0).fit(cluster_columns)
 
-    return zip(kmeans.labels_, map(str, kmeans.cluster_centers_),
+    return zip(kmeans.predict(X),
+               map(str, kmeans.cluster_centers_[kmeans.labels_]),
                db_resp[0][out_id_colname])
 
 
-def extract_columns(db_resp, id_col):
+def _extract_columns(db_resp, id_col):
     """
         Extract the features from the query and pack them into a NumPy array
+        db_resp (plpy data object): result of the kmeans request
+        id_col (string): name of column which has the row id (not a feature of
+                         the analysis)
     """
     return np.array([db_resp[0][c] for c in db_resp.colnames()
                      if c != id_col],
@@ -85,10 +89,10 @@ def extract_columns(db_resp, id_col):
 # -- Preprocessing steps
 
 
-def scale_data(features):
+def _scale_data(features):
     """
         Scale all input columns to center on 0 with a standard devation of 1
-        input_data (numpy array): an array of dimension (n_features, n_samples)
+        features (numpy array): an array of dimension (n_features, n_samples)
     """
     from sklearn.preprocessing import StandardScaler
     return StandardScaler().fit_transform(features)
