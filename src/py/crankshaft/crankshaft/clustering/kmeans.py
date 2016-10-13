@@ -27,7 +27,8 @@ def kmeans(query, no_clusters, no_init=20):
     return zip(ids, labels)
 
 
-def kmeans_nonspatial(query, colnames, num_clusters=5, id_col='cartodb_id'):
+def kmeans_nonspatial(query, colnames, num_clusters=5,
+                      id_col='cartodb_id', standarize=True):
     """
         query (string): A SQL query to retrieve the data required to do the
                         k-means clustering analysis, like so:
@@ -39,41 +40,56 @@ def kmeans_nonspatial(query, colnames, num_clusters=5, id_col='cartodb_id'):
         id_col (string): name of the input id_column
     """
     import numpy as np
-
-    id_colname = 'rowids'
+    out_id_colname = 'rowids'
+    # TODO: need a random seed?
 
     full_query = '''
-        SELECT {cols}, array_agg({id_col}) As {id_colname}
+        SELECT {cols}, array_agg({id_col}) As {out_id_colname}
         FROM ({query}) As a
     '''.format(query=query,
                id_col=id_col,
-               id_colname=id_colname,
+               out_id_colname=out_id_colname,
                cols=', '.join(['array_agg({0}) As col{1}'.format(val, idx)
                                for idx, val in enumerate(colnames)]))
 
     try:
-        data = plpy.execute(full_query)
+        db_resp = plpy.execute(full_query)
         plpy.notice('query: %s' % full_query)
     except plpy.SPIError, err:
-        plpy.error('KMeans cluster failed: %s' % err)
+        plpy.error('k-means cluster analysis failed: %s' % err)
 
     # fill array with values for kmeans clustering
-    cluster_columns = scale_data(
-                        np.array([data[0][c] for c in data.colnames()
-                                  if c != id_col],
-                                 dtype=float).T)
+    if standarize:
+        cluster_columns = scale_data(
+          extract_columns(db_resp, id_col='cartodb_id'))
+    else:
+        cluster_columns = extract_columns(db_resp)
 
-    kmeans = KMeans(n_clusters=num_clusters, random_state=0).fit(data)
+    # TODO: decide on optimal parameters for most cases
+    #       Are there ways of deciding parameters based on inputs?
+    kmeans = KMeans(n_clusters=num_clusters,
+                    random_state=0).fit(cluster_columns)
 
     return zip(kmeans.labels_, map(str, kmeans.cluster_centers_),
-               data[0]['rowids'])
+               db_resp[0][out_id_colname])
 
 
-def scale_data(input_data):
+def extract_columns(db_resp, id_col):
+    """
+        Extract the features from the query and pack them into a NumPy array
+    """
+    return np.array([db_resp[0][c] for c in db_resp.colnames()
+                     if c != id_col],
+                    dtype=float).T
+
+# -- Preprocessing steps
+
+
+def scale_data(features):
     """
         Scale all input columns from 0 to 1 so that k-means puts them on equal
         footing
+        input_data (numpy array): an array of dimension (n_features, n_samples)
     """
-    from sklearn.preprocessing import MinMaxScaler
-    min_max_scaler = MinMaxScaler()
-    return min_max_scaler.fit_transform(input_data)
+    from sklearn.preprocessing import StandardScaler
+    return StandardScaler().fit_transform(features)
