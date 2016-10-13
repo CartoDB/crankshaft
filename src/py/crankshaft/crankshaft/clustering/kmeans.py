@@ -53,14 +53,13 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
 
     try:
         db_resp = plpy.execute(full_query)
-        plpy.notice('query: %s' % full_query)
     except plpy.SPIError, err:
         plpy.error('k-means cluster analysis failed: %s' % err)
 
     # fill array with values for kmeans clustering
     if standarize:
         cluster_columns = scale_data(
-          extract_columns(db_resp, id_col='cartodb_id'))
+          extract_columns(db_resp, id_col=out_id_colname))
     else:
         cluster_columns = extract_columns(db_resp)
 
@@ -69,7 +68,8 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
     kmeans = KMeans(n_clusters=num_clusters,
                     random_state=0).fit(cluster_columns)
 
-    return zip(kmeans.labels_, map(str, kmeans.cluster_centers_),
+    return zip(kmeans.labels_,
+               map(str, kmeans.cluster_centers_[kmeans.labels_]),
                db_resp[0][out_id_colname])
 
 
