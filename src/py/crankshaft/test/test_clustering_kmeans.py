@@ -27,7 +27,7 @@ class KMeansTest(unittest.TestCase):
         """
         data = [{'xs': d['xs'],
                  'ys': d['ys'],
-                 'id': d['id']} for d in self.cluster_data]
+                 'ids': d['ids']} for d in self.cluster_data]
 
         plpy._define_result('select', data)
         clusters = cc.kmeans('subquery', 2)
