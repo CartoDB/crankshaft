@@ -8,15 +8,12 @@ import numpy as np
 # import sys
 # sys.modules['plpy'] = plpy
 from helper import plpy, fixture_file
-import numpy as np
 import crankshaft.clustering as cc
-import crankshaft.pysal_utils as pu
-from crankshaft import random_seeds
 import json
 
 
 class KMeansTest(unittest.TestCase):
-    """Testing class for Moran's I functions"""
+    """Testing class for k-means spatial"""
 
     def setUp(self):
         plpy._reset()
