@@ -7,13 +7,11 @@ def kmeans(query, no_clusters, no_init=20):
     """
 
     """
-    full_query = '''
-      SELECT array_agg(cartodb_id ORDER BY cartodb_id) as ids,
-             array_agg(ST_X(the_geom) ORDER BY cartodb_id) xs,
-             array_agg(ST_Y(the_geom) ORDER BY cartodb_id) ys
-        FROM ({query}) As a
-       WHERE the_geom IS NOT NULL
-        '''.format(query=query)
+    full_query = ("SELECT array_agg(cartodb_id ORDER BY cartodb_id) as ids,"
+                  "array_agg(ST_X(the_geom) ORDER BY cartodb_id) xs,"
+                  "array_agg(ST_Y(the_geom) ORDER BY cartodb_id) ys "
+                  "FROM ({query}) As a "
+                  "WHERE the_geom IS NOT NULL").format(query=query)
     try:
         data = plpy.execute(full_query)
     except plpy.SPIError, err:
