@@ -5,7 +5,8 @@ import numpy as np
 
 def kmeans(query, no_clusters, no_init=20):
     """
-
+        find centers based on clusteres of latitude/longitude pairs
+        query: SQL query that has a WGS84 geometry (the_geom)
     """
     full_query = '''
       SELECT array_agg(cartodb_id ORDER BY cartodb_id) as ids,
@@ -17,8 +18,9 @@ def kmeans(query, no_clusters, no_init=20):
     try:
         data = plpy.execute(full_query)
     except plpy.SPIError, err:
-        plpy.error("KMeans cluster failed: %s" % err)
+        plpy.error("k-means (spatial) cluster analysis failed: %s" % err)
 
+    # Unpack query response
     xs = data[0]['xs']
     ys = data[0]['ys']
     ids = data[0]['ids']
@@ -55,9 +57,9 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
     try:
         db_resp = plpy.execute(full_query)
     except plpy.SPIError, err:
-        plpy.error('k-means cluster analysis failed: %s' % err)
+        plpy.error("k-means (non-spatial) cluster analysis failed: %s" % err)
 
-    # fill array with values for kmeans clustering
+    # fill array with values for k-means clustering
     if standarize:
         cluster_columns = _scale_data(
           _extract_columns(db_resp, id_col=out_id_colname))
