@@ -74,15 +74,15 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
                db_resp[0][out_id_colname])
 
 
-def _extract_columns(db_resp, id_col):
+def _extract_columns(db_resp, id_col_name):
     """
         Extract the features from the query and pack them into a NumPy array
         db_resp (plpy data object): result of the kmeans request
-        id_col (string): name of column which has the row id (not a feature of
-                         the analysis)
+        id_col_name (string): name of column which has the row id (not a
+                              feature of the analysis)
     """
     return np.array([db_resp[0][c] for c in db_resp.colnames()
-                     if c != id_col],
+                     if c != id_col_name],
                     dtype=float).T
 
 # -- Preprocessing steps
@@ -91,7 +91,8 @@ def _extract_columns(db_resp, id_col):
 def _scale_data(features):
     """
         Scale all input columns to center on 0 with a standard devation of 1
-        features (numpy array): an array of dimension (n_features, n_samples)
+
+        features (numpy matrix): features of dimension (n_features, n_samples)
     """
     from sklearn.preprocessing import StandardScaler
     return StandardScaler().fit_transform(features)
