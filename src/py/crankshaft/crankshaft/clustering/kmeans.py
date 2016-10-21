@@ -62,7 +62,7 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
         cluster_columns = _scale_data(
           _extract_columns(db_resp, id_col=out_id_colname))
     else:
-        cluster_columns = _extract_columns(db_resp)
+        cluster_columns = _extract_columns(db_resp, id_col=out_id_colname)
 
     # TODO: decide on optimal parameters for most cases
     #       Are there ways of deciding parameters based on inputs?
