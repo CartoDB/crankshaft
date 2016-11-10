@@ -15,14 +15,14 @@ CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(
   query TEXT,
   colnames TEXT[],
   num_clusters INTEGER,
-  id_col TEXT DEFAULT 'cartodb_id',
+  id_colname TEXT DEFAULT 'cartodb_id',
   standarize BOOLEAN DEFAULT true
 )
-RETURNS TABLE(cluster_label text, cluster_center text, rowid bigint) AS $$
+RETURNS TABLE(cluster_label text, cluster_center json, rowid bigint) AS $$
 
     from crankshaft.clustering import kmeans_nonspatial
     return kmeans_nonspatial(query, colnames, num_clusters,
-                             id_col, standarize)
+                             id_colname, standarize)
 $$ LANGUAGE plpythonu;
 
 
