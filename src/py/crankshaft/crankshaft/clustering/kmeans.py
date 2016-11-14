@@ -76,11 +76,12 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
                for c in kmeans.cluster_centers_[kmeans.labels_]]
 
     silhouettes = metrics.silhouette_samples(cluster_columns,
-                                             labels,
+                                             kmeans.labels_,
                                              metric='sqeuclidean')
 
     return zip(kmeans.labels_,
                centers,
+               silhouettes,
                db_resp[0][out_id_colname])
 
 

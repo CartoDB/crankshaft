@@ -18,7 +18,7 @@ CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(
   id_colname TEXT DEFAULT 'cartodb_id',
   standarize BOOLEAN DEFAULT true
 )
-RETURNS TABLE(cluster_label text, cluster_center json, rowid bigint) AS $$
+RETURNS TABLE(cluster_label text, cluster_center json, silhouettes numeric, rowid bigint) AS $$
 
     from crankshaft.clustering import kmeans_nonspatial
     return kmeans_nonspatial(query, colnames, num_clusters,
