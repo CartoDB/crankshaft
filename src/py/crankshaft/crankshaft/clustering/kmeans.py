@@ -41,6 +41,8 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
         id_col (string): name of the input id_column
     """
     import json
+    from sklearn import metrics
+
     out_id_colname = 'rowids'
     # TODO: need a random seed?
 
@@ -70,7 +72,13 @@ def kmeans_nonspatial(query, colnames, num_clusters=5,
     kmeans = KMeans(n_clusters=num_clusters,
                     random_state=0).fit(cluster_columns)
 
-    centers = [json.dumps(dict(zip(colnames, c))) for c in kmeans.cluster_centers_[kmeans.labels_]]
+    centers = [json.dumps(dict(zip(colnames, c)))
+               for c in kmeans.cluster_centers_[kmeans.labels_]]
+
+    silhouettes = metrics.silhouette_samples(cluster_columns,
+                                             labels,
+                                             metric='sqeuclidean')
+
     return zip(kmeans.labels_,
                centers,
                db_resp[0][out_id_colname])
