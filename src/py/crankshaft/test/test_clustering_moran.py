@@ -7,13 +7,13 @@ import numpy as np
 #
 # import sys
 # sys.modules['plpy'] = plpy
-from helper import plpy, fixture_file
+from helper import plpy, fixture_file, MockDBResponse
 
 import crankshaft.clustering as cc
 import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
 import json
-
+from collections import OrderedDict
 
 class MoranTest(unittest.TestCase):
     """Testing class for Moran's I functions"""
@@ -58,11 +58,14 @@ class MoranTest(unittest.TestCase):
 
     def test_moran_local(self):
         """Test Moran's I local"""
-        data = [{'id': d['id'],
-                 'attr1': d['value'],
-                 'neighbors': d['neighbors']} for d in self.neighbors_data]
+        data = [OrderedDict([('id', d['id']),
+                             ('attr1', d['value']),
+                             ('neighbors', d['neighbors'])])
+                for d in self.neighbors_data]
 
-        plpy._define_result('select', data)
+        db_resp = MockDBResponse(data)
+
+        plpy._define_result('select', db_resp)
         random_seeds.set_random_seeds(1234)
         result = cc.moran_local('subquery', 'value',
                                 'knn', 5, 99, 'the_geom', 'cartodb_id')
