@@ -92,7 +92,9 @@ def _extract_columns(db_resp, id_col_name):
         id_col_name (string): name of column which has the row id (not a
                               feature of the analysis)
     """
-    return np.array([db_resp[0][c] for c in db_resp.colnames()
+    keys = [k for k in db_resp[0].keys()]
+
+    return np.array([db_resp[0][c] for c in keys
                      if c != id_col_name],
                     dtype=float).T
 
