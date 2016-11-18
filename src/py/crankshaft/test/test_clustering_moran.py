@@ -7,19 +7,30 @@ import numpy as np
 #
 # import sys
 # sys.modules['plpy'] = plpy
-from helper import plpy, fixture_file, MockDBResponse
-
-import crankshaft.clustering as cc
+from helper import fixture_file
+from crankshaft.clustering import Moran
+from crankshaft.clustering import QueryRunner
 import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
 import json
 from collections import OrderedDict
 
+
+class FakeQueryRunner(QueryRunner):
+    def __init__(self, mocked_result):
+        self.mocked_result = mocked_result
+
+    def get_result(self, query):
+        return self.mocked_result
+
+    def get_columns(self, query):
+        return self.mocked_result
+
+
 class MoranTest(unittest.TestCase):
     """Testing class for Moran's I functions"""
 
     def setUp(self):
-        plpy._reset()
         self.params = {"id_col": "cartodb_id",
                        "attr1": "andy",
                        "attr2": "jay_z",
@@ -39,36 +50,36 @@ class MoranTest(unittest.TestCase):
 
     def test_map_quads(self):
         """Test map_quads"""
-        self.assertEqual(cc.map_quads(1), 'HH')
-        self.assertEqual(cc.map_quads(2), 'LH')
-        self.assertEqual(cc.map_quads(3), 'LL')
-        self.assertEqual(cc.map_quads(4), 'HL')
-        self.assertEqual(cc.map_quads(33), None)
-        self.assertEqual(cc.map_quads('andy'), None)
+        from crankshaft.clustering import map_quads
+        self.assertEqual(map_quads(1), 'HH')
+        self.assertEqual(map_quads(2), 'LH')
+        self.assertEqual(map_quads(3), 'LL')
+        self.assertEqual(map_quads(4), 'HL')
+        self.assertEqual(map_quads(33), None)
+        self.assertEqual(map_quads('andy'), None)
 
     def test_quad_position(self):
         """Test lisa_sig_vals"""
+        from crankshaft.clustering import quad_position
 
         quads = np.array([1, 2, 3, 4], np.int)
 
         ans = np.array(['HH', 'LH', 'LL', 'HL'])
-        test_ans = cc.quad_position(quads)
+        test_ans = quad_position(quads)
 
         self.assertTrue((test_ans == ans).all())
 
-    def test_moran_local(self):
+    def test_local_stat(self):
         """Test Moran's I local"""
         data = [OrderedDict([('id', d['id']),
                              ('attr1', d['value']),
                              ('neighbors', d['neighbors'])])
                 for d in self.neighbors_data]
 
-        db_resp = MockDBResponse(data)
-
-        plpy._define_result('select', db_resp)
+        moran = Moran(FakeQueryRunner(data))
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local('subquery', 'value',
-                                'knn', 5, 99, 'the_geom', 'cartodb_id')
+        result = moran.local_stat('subquery', 'value',
+                                  'knn', 5, 99, 'the_geom', 'cartodb_id')
         result = [(row[0], row[1]) for row in result]
         zipped_values = zip(result, self.moran_data)
 
@@ -83,10 +94,10 @@ class MoranTest(unittest.TestCase):
                  'attr2': 1,
                  'neighbors': d['neighbors']} for d in self.neighbors_data]
 
-        plpy._define_result('select', data)
         random_seeds.set_random_seeds(1234)
-        result = cc.moran_local_rate('subquery', 'numerator', 'denominator',
-                                     'knn', 5, 99, 'the_geom', 'cartodb_id')
+        moran = Moran(FakeQueryRunner(data))
+        result = moran.local_rate_stat('subquery', 'numerator', 'denominator',
+                                       'knn', 5, 99, 'the_geom', 'cartodb_id')
         result = [(row[0], row[1]) for row in result]
 
         zipped_values = zip(result, self.moran_data)
@@ -99,10 +110,11 @@ class MoranTest(unittest.TestCase):
         data = [{'id': d['id'],
                  'attr1': d['value'],
                  'neighbors': d['neighbors']} for d in self.neighbors_data]
-        plpy._define_result('select', data)
         random_seeds.set_random_seeds(1235)
-        result = cc.moran('table', 'value',
-                          'knn', 5, 99, 'the_geom', 'cartodb_id')
+        moran = Moran(FakeQueryRunner(data))
+        result = moran.global_stat('table', 'value',
+                                   'knn', 5, 99, 'the_geom',
+                                   'cartodb_id')
 
         result_moran = result[0][0]
         expected_moran = np.array([row[0] for row in self.moran_data]).mean()

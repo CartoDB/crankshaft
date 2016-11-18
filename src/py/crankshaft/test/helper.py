@@ -2,7 +2,6 @@ import unittest
 
 from mock_plpy import MockPlPy
 plpy = MockPlPy()
-from mock_plpy import MockDBResponse
 
 import sys
 sys.modules['plpy'] = plpy

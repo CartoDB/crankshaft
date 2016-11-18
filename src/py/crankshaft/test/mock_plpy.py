@@ -52,16 +52,3 @@ class MockPlPy:
             if result[0].match(query):
                 return result[1]
         return []
-
-
-class MockDBResponse:
-    def __init__(self, data, colnames=None):
-        self.data = data
-        if colnames is None:
-            self.colnames = data[0].keys()
-        else:
-            self.colnames = colnames
-
-
-    def colnames(self):
-        return self.colnames

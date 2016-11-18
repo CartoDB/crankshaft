@@ -7,7 +7,7 @@ import numpy as np
 #
 # import sys
 # sys.modules['plpy'] = plpy
-from helper import plpy, fixture_file
+from helper import fixture_file
 from crankshaft.clustering import Kmeans
 from crankshaft.clustering import QueryRunner
 import crankshaft.clustering as cc
@@ -60,8 +60,6 @@ class KMeansNonspatialTest(unittest.TestCase):
     """Testing class for k-means non-spatial"""
 
     def setUp(self):
-        plpy._reset()
-
         self.params = {"subquery": "SELECT * FROM TABLE",
                        "n_clusters": 5}
 
