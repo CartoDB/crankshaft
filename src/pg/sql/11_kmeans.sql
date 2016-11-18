@@ -3,8 +3,9 @@
 CREATE OR REPLACE FUNCTION CDB_KMeans(query text, no_clusters integer, no_init integer default 20)
 RETURNS table (cartodb_id integer, cluster_no integer) as $$
 
-    from crankshaft.clustering import kmeans
-    return kmeans(query, no_clusters, no_init)
+    from crankshaft.clustering import Kmeans
+    kmeans = Kmeans()
+    return kmeans.spatial(query, no_clusters, no_init)
 
 $$ LANGUAGE plpythonu;
 
@@ -20,8 +21,9 @@ CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(
 )
 RETURNS TABLE(cluster_label text, cluster_center json, silhouettes numeric, rowid bigint) AS $$
 
-    from crankshaft.clustering import kmeans_nonspatial
-    return kmeans_nonspatial(query, colnames, num_clusters,
+    from crankshaft.clustering import Kmeans
+    kmeans = Kmeans()
+    return kmeans.nonspatial(query, colnames, num_clusters,
                              id_colname, standarize)
 $$ LANGUAGE plpythonu;
 
