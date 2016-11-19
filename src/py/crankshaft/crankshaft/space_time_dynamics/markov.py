@@ -7,19 +7,7 @@ import numpy as np
 import pysal as ps
 import plpy
 import crankshaft.pysal_utils as pu
-
-
-class QueryRunner:
-    def get_result(self, query):
-        try:
-            data = plpy.execute(query)
-
-            if len(data) == 0:
-                return zip([None], [None], [None], [None], [None])
-
-            return data
-        except plpy.SPIError, err:
-            plpy.error('Analysis failed: %s' % err)
+from crankshaft.query_runner import QueryRunner
 
 
 class Markov:
@@ -74,7 +62,7 @@ class Markov:
 
         query = pu.construct_neighbor_query(w_type, qvals)
 
-        query_result = self.query_runner.get_result(query)
+        query_result = self.query_runner.get_markov(query)
 
         # build weight
         weights = pu.get_weight(query_result, w_type)

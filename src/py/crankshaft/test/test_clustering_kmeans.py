@@ -9,7 +9,7 @@ import numpy as np
 # sys.modules['plpy'] = plpy
 from helper import fixture_file
 from crankshaft.clustering import Kmeans
-from crankshaft.clustering import QueryRunner
+from crankshaft.query_runner import QueryRunner
 import crankshaft.clustering as cc
 
 from crankshaft import random_seeds
@@ -21,10 +21,10 @@ class FakeQueryRunner(QueryRunner):
     def __init__(self, mocked_result):
         self.mocked_result = mocked_result
 
-    def get_result(self, query):
+    def get_spatial_kmeans(self, query):
         return self.mocked_result
 
-    def get_columns(self, query, standarize):
+    def get_nonspatial_kmeans(self, query, standarize):
         return self.mocked_result
 
 

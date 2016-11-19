@@ -1,36 +1,7 @@
 from sklearn.cluster import KMeans
-import plpy
 import numpy as np
 
-
-class QueryRunner:
-    def get_moran(self, query):
-        """fetch data for moran's i analyses"""
-        try:
-            result = plpy.execute(query)
-            # if there are no neighbors, exit
-            if len(result) == 0:
-                return pu.empty_zipped_array(2)
-        except plpy.SPIError, e:
-            plpy.error('Analysis failed: %s' % e)
-            return pu.empty_zipped_array(2)
-
-    def get_columns(self, query, standarize):
-        """fetch data for non-spatial kmeans"""
-        try:
-            db_resp = plpy.execute(query)
-        except plpy.SPIError, err:
-            plpy.error('Analysis failed: %s' % err)
-
-        return db_resp
-
-    def get_result(self, query):
-        """fetch data for spatial kmeans"""
-        try:
-            data = plpy.execute(query)
-        except plpy.SPIError, err:
-            plpy.error("Analysis failed: %s" % err)
-        return data
+from crankshaft.query_runner import QueryRunner
 
 
 class Kmeans:
@@ -52,7 +23,7 @@ class Kmeans:
                       "FROM ({query}) As a "
                       "WHERE the_geom IS NOT NULL").format(query=query)
 
-        data = self.query_runner.get_result(full_query)
+        data = self.query_runner.get_spatial_kmeans(full_query)
 
         # Unpack query response
         xs = data[0]['xs']
@@ -92,7 +63,7 @@ class Kmeans:
                    cols=', '.join(['array_agg({0}) As col{1}'.format(val, idx)
                                    for idx, val in enumerate(colnames)]))
 
-        db_resp = self.query_runner.get_columns(full_query, standarize)
+        db_resp = self.query_runner.get_nonspatial_kmeans(full_query, standarize)
 
         # fill array with values for k-means clustering
         if standarize:

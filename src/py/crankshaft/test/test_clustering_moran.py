@@ -1,12 +1,6 @@
 import unittest
 import numpy as np
 
-
-# from mock_plpy import MockPlPy
-# plpy = MockPlPy()
-#
-# import sys
-# sys.modules['plpy'] = plpy
 from helper import fixture_file
 from crankshaft.clustering import Moran
 from crankshaft.clustering import QueryRunner
@@ -17,14 +11,11 @@ from collections import OrderedDict
 
 
 class FakeQueryRunner(QueryRunner):
-    def __init__(self, mocked_result):
-        self.mocked_result = mocked_result
+    def __init__(self, mock_data):
+        self.mock_result = mock_data
 
-    def get_result(self, query):
-        return self.mocked_result
-
-    def get_columns(self, query):
-        return self.mocked_result
+    def get_moran(self, query):
+        return self.mock_result
 
 
 class MoranTest(unittest.TestCase):

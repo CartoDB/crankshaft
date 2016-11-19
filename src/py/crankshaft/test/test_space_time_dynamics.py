@@ -4,17 +4,12 @@ import numpy as np
 import unittest
 
 
-# from mock_plpy import MockPlPy
-# plpy = MockPlPy()
-#
-# import sys
-# sys.modules['plpy'] = plpy
 from helper import fixture_file
 
 from crankshaft.space_time_dynamics import Markov
 import crankshaft.space_time_dynamics as std
 from crankshaft import random_seeds
-from crankshaft.clustering import QueryRunner
+from crankshaft.query_runner import QueryRunner
 import json
 
 
@@ -22,7 +17,7 @@ class FakeQueryRunner(QueryRunner):
     def __init__(self, data):
         self.mock_result = data
 
-    def get_result(self, query):
+    def get_markov(self, query):
         return self.mock_result
 
 
@@ -30,7 +25,6 @@ class SpaceTimeTests(unittest.TestCase):
     """Testing class for Markov Functions."""
 
     def setUp(self):
-        # plpy._reset()
         self.params = {"id_col": "cartodb_id",
                        "time_cols": ['dec_2013', 'jan_2014', 'feb_2014'],
                        "subquery": "SELECT * FROM a_list",
