@@ -8,92 +8,104 @@ import pysal as ps
 import plpy
 import crankshaft.pysal_utils as pu
 
-def spatial_markov_trend(subquery, time_cols, num_classes=7,
-                         w_type='knn', num_ngbrs=5, permutations=0,
-                         geom_col='the_geom', id_col='cartodb_id'):
-    """
-        Predict the trends of a unit based on:
-        1. history of its transitions to different classes (e.g., 1st quantile -> 2nd quantile)
-        2. average class of its neighbors
 
-        Inputs:
-        @param subquery string: e.g., SELECT the_geom, cartodb_id,
-          interesting_time_column FROM table_name
-        @param time_cols list of strings: list of strings of column names
-        @param num_classes (optional): number of classes to break distribution
-          of values into. Currently uses quantile bins.
-        @param w_type string (optional): weight type ('knn' or 'queen')
-        @param num_ngbrs int (optional): number of neighbors (if knn type)
-        @param permutations int (optional): number of permutations for test
-          stats
-        @param geom_col string (optional): name of column which contains the
-          geometries
-        @param id_col string (optional): name of column which has the ids of
-          the table
+class QueryRunner:
+    def get_result(self, query):
+        try:
+            data = plpy.execute(query)
 
-        Outputs:
-        @param trend_up float: probablity that a geom will move to a higher
-          class
-        @param trend_down float: probablity that a geom will move to a lower
-          class
-        @param trend float: (trend_up - trend_down) / trend_static
-        @param volatility float: a measure of the volatility based on
-          probability stddev(prob array)
-    """
+            if len(data) == 0:
+                return zip([None], [None], [None], [None], [None])
 
-    if len(time_cols) < 2:
-        plpy.error('More than one time column needs to be passed')
+            return data
+        except plpy.SPIError, err:
+            plpy.error('Analysis failed: %s' % err)
 
-    qvals = {"id_col": id_col,
-             "time_cols": time_cols,
-             "geom_col": geom_col,
-             "subquery": subquery,
-             "num_ngbrs": num_ngbrs}
 
-    try:
-        query_result = plpy.execute(
-            pu.construct_neighbor_query(w_type, qvals)
-        )
-        if len(query_result) == 0:
-            return zip([None], [None], [None], [None], [None])
-    except plpy.SPIError, e:
-        plpy.debug('Query failed with exception %s: %s' % (err, pu.construct_neighbor_query(w_type, qvals)))
-        plpy.error('Analysis failed: %s' % e)
-        return zip([None], [None], [None], [None], [None])
+class Markov:
+    def __init__(self, query_runner=None):
+        if query_runner is None:
+            self.query_runner = QueryRunner()
+        else:
+            self.query_runner = query_runner
 
-    ## build weight
-    weights = pu.get_weight(query_result, w_type)
-    weights.transform = 'r'
+    def spatial_trend(self, subquery, time_cols, num_classes=7,
+                      w_type='knn', num_ngbrs=5, permutations=0,
+                      geom_col='the_geom', id_col='cartodb_id'):
+        """
+            Predict the trends of a unit based on:
+            1. history of its transitions to different classes (e.g., 1st
+               quantile -> 2nd quantile)
+            2. average class of its neighbors
 
-    ## prep time data
-    t_data = get_time_data(query_result, time_cols)
+            Inputs:
+            @param subquery string: e.g., SELECT the_geom, cartodb_id,
+              interesting_time_column FROM table_name
+            @param time_cols list of strings: list of strings of column names
+            @param num_classes (optional): number of classes to break
+              distribution of values into. Currently uses quantile bins.
+            @param w_type string (optional): weight type ('knn' or 'queen')
+            @param num_ngbrs int (optional): number of neighbors (if knn type)
+            @param permutations int (optional): number of permutations for test
+              stats
+            @param geom_col string (optional): name of column which contains
+              the geometries
+            @param id_col string (optional): name of column which has the ids
+              of the table
 
-    plpy.debug('shape of t_data %d, %d' % t_data.shape)
-    plpy.debug('number of weight objects: %d, %d' % (weights.sparse).shape)
-    plpy.debug('first num elements: %f' % t_data[0, 0])
+            Outputs:
+            @param trend_up float: probablity that a geom will move to a higher
+              class
+            @param trend_down float: probablity that a geom will move to a
+              lower class
+            @param trend float: (trend_up - trend_down) / trend_static
+            @param volatility float: a measure of the volatility based on
+              probability stddev(prob array)
+        """
 
-    sp_markov_result = ps.Spatial_Markov(t_data,
-                                         weights,
-                                         k=num_classes,
-                                         fixed=False,
-                                         permutations=permutations)
+        if len(time_cols) < 2:
+            plpy.error('More than one time column needs to be passed')
 
-    ## get lag classes
-    lag_classes = ps.Quantiles(
-        ps.lag_spatial(weights, t_data[:, -1]),
-        k=num_classes).yb
+        qvals = {"id_col": id_col,
+                 "time_cols": time_cols,
+                 "geom_col": geom_col,
+                 "subquery": subquery,
+                 "num_ngbrs": num_ngbrs}
 
-    ## look up probablity distribution for each unit according to class and lag class
-    prob_dist = get_prob_dist(sp_markov_result.P,
-                              lag_classes,
-                              sp_markov_result.classes[:, -1])
+        query = pu.construct_neighbor_query(w_type, qvals)
 
-    ## find the ups and down and overall distribution of each cell
-    trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist,
-                                                             sp_markov_result.classes[:, -1])
+        query_result = self.query_runner.get_result(query)
 
-    ## output the results
-    return zip(trend, trend_up, trend_down, volatility, weights.id_order)
+        # build weight
+        weights = pu.get_weight(query_result, w_type)
+        weights.transform = 'r'
+
+        # prep time data
+        t_data = get_time_data(query_result, time_cols)
+
+        sp_markov_result = ps.Spatial_Markov(t_data,
+                                             weights,
+                                             k=num_classes,
+                                             fixed=False,
+                                             permutations=permutations)
+
+        # get lag classes
+        lag_classes = ps.Quantiles(
+            ps.lag_spatial(weights, t_data[:, -1]),
+            k=num_classes).yb
+
+        # look up probablity distribution for each unit according to class and
+        #  lag class
+        prob_dist = get_prob_dist(sp_markov_result.P,
+                                  lag_classes,
+                                  sp_markov_result.classes[:, -1])
+
+        # find the ups and down and overall distribution of each cell
+        trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist, sp_markov_result.classes[:, -1])
+
+        # output the results
+        return zip(trend, trend_up, trend_down, volatility, weights.id_order)
+
 
 def get_time_data(markov_data, time_cols):
     """
@@ -103,7 +115,8 @@ def get_time_data(markov_data, time_cols):
     return np.array([[x['attr' + str(i)] for x in markov_data]
                      for i in range(1, num_attrs+1)], dtype=float).transpose()
 
-## not currently used
+
+# not currently used
 def rebin_data(time_data, num_time_per_bin):
     """
         Convert an n x l matrix into an (n/m) x l matrix where the values are
@@ -131,14 +144,16 @@ def rebin_data(time_data, num_time_per_bin):
     """
 
     if time_data.shape[1] % num_time_per_bin == 0:
-        ## if fit is perfect, then use it
+        # if fit is perfect, then use it
         n_max = time_data.shape[1] / num_time_per_bin
     else:
-        ## fit remainders into an additional column
+        # fit remainders into an additional column
         n_max = time_data.shape[1] / num_time_per_bin + 1
 
-    return np.array([time_data[:, num_time_per_bin * i:num_time_per_bin * (i+1)].mean(axis=1)
-                     for i in range(n_max)]).T
+    return np.array(
+      [time_data[:, num_time_per_bin * i:num_time_per_bin * (i+1)].mean(axis=1)
+       for i in range(n_max)]).T
+
 
 def get_prob_dist(transition_matrix, lag_indices, unit_indices):
     """
@@ -156,6 +171,7 @@ def get_prob_dist(transition_matrix, lag_indices, unit_indices):
 
     return np.array([transition_matrix[(lag_indices[i], unit_indices[i])]
                      for i in range(len(lag_indices))])
+
 
 def get_prob_stats(prob_dist, unit_indices):
     """
@@ -179,11 +195,12 @@ def get_prob_stats(prob_dist, unit_indices):
         trend_up[i] = prob_dist[i, (unit_indices[i]+1):].sum()
         trend_down[i] = prob_dist[i, :unit_indices[i]].sum()
         if prob_dist[i, unit_indices[i]] > 0.0:
-            trend[i] = (trend_up[i] - trend_down[i]) / prob_dist[i, unit_indices[i]]
+            trend[i] = (trend_up[i] - trend_down[i]) / (
+              prob_dist[i, unit_indices[i]])
         else:
             trend[i] = None
 
-    ## calculate volatility of distribution
+    # calculate volatility of distribution
     volatility = prob_dist.std(axis=1)
 
     return trend_up, trend_down, trend, volatility
