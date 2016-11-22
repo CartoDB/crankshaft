@@ -3,4 +3,4 @@ import crankshaft.random_seeds
 import crankshaft.clustering
 import crankshaft.space_time_dynamics
 import crankshaft.segmentation
-import query_runner
+import analysis_data_provider

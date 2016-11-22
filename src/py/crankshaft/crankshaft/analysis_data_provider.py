@@ -2,7 +2,7 @@
 import plpy
 
 
-class QueryRunner:
+class AnalysisDataProvider:
     def get_markov(self, query):
         try:
             data = plpy.execute(query)

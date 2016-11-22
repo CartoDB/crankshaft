@@ -7,15 +7,15 @@ import numpy as np
 import pysal as ps
 import plpy
 import crankshaft.pysal_utils as pu
-from crankshaft.query_runner import QueryRunner
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 
 class Markov:
-    def __init__(self, query_runner=None):
-        if query_runner is None:
-            self.query_runner = QueryRunner()
+    def __init__(self, data_provider=None):
+        if data_provider is None:
+            self.data_provider = AnalysisDataProvider()
         else:
-            self.query_runner = query_runner
+            self.data_provider = data_provider
 
     def spatial_trend(self, subquery, time_cols, num_classes=7,
                       w_type='knn', num_ngbrs=5, permutations=0,
@@ -62,7 +62,7 @@ class Markov:
 
         query = pu.construct_neighbor_query(w_type, qvals)
 
-        query_result = self.query_runner.get_markov(query)
+        query_result = self.data_provider.get_markov(query)
 
         # build weight
         weights = pu.get_weight(query_result, w_type)

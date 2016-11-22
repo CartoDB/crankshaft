@@ -8,7 +8,7 @@ Moran's I geostatistics (global clustering & outliers presence)
 import pysal as ps
 import plpy
 from collections import OrderedDict
-from crankshaft.query_runner import QueryRunner
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 # crankshaft module
 import crankshaft.pysal_utils as pu
@@ -17,11 +17,11 @@ import crankshaft.pysal_utils as pu
 
 
 class Moran:
-    def __init__(self, query_runner=None):
-        if query_runner is None:
-            self.query_runner = QueryRunner()
+    def __init__(self, data_provider=None):
+        if data_provider is None:
+            self.data_provider = AnalysisDataProvider()
         else:
-            self.query_runner = query_runner
+            self.data_provider = data_provider
 
     def global_stat(self, subquery, attr_name,
                     w_type, num_ngbrs, permutations, geom_col, id_col):
@@ -39,7 +39,7 @@ class Moran:
 
         query = pu.construct_neighbor_query(w_type, qvals)
 
-        result = self.query_runner.get_moran(query)
+        result = self.data_provider.get_moran(query)
 
         # collect attributes
         attr_vals = pu.get_attributes(result)
@@ -71,7 +71,7 @@ class Moran:
 
         query = pu.construct_neighbor_query(w_type, qvals)
 
-        result = self.query_runner.get_moran(query)
+        result = self.data_provider.get_moran(query)
 
         attr_vals = pu.get_attributes(result)
         weight = pu.get_weight(result, w_type, num_ngbrs)
@@ -100,7 +100,7 @@ class Moran:
 
         query = pu.construct_neighbor_query(w_type, qvals)
 
-        result = self.query_runner.get_moran(query)
+        result = self.data_provider.get_moran(query)
 
         # collect attributes
         numer = pu.get_attributes(result, 1)
@@ -132,7 +132,7 @@ class Moran:
 
         query = pu.construct_neighbor_query(w_type, qvals)
 
-        result = self.query_runner.get_moran(query)
+        result = self.data_provider.get_moran(query)
 
         # collect attributes
         numer = pu.get_attributes(result, 1)
@@ -165,7 +165,7 @@ class Moran:
 
         query = pu.construct_neighbor_query(w_type, qvals)
 
-        result = self.query_runner.get_moran(query)
+        result = self.data_provider.get_moran(query)
 
         # collect attributes
         attr1_vals = pu.get_attributes(result, 1)

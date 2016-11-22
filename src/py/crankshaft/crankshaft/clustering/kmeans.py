@@ -1,15 +1,15 @@
 from sklearn.cluster import KMeans
 import numpy as np
 
-from crankshaft.query_runner import QueryRunner
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 
 class Kmeans:
-    def __init__(self, query_runner=None):
-        if query_runner is None:
-            self.query_runner = QueryRunner()
+    def __init__(self, data_provider=None):
+        if data_provider is None:
+            self.data_provider = AnalysisDataProvider()
         else:
-            self.query_runner = query_runner
+            self.data_provider = data_provider
 
     def spatial(self, query, no_clusters, no_init=20):
         """
@@ -23,7 +23,7 @@ class Kmeans:
                       "FROM ({query}) As a "
                       "WHERE the_geom IS NOT NULL").format(query=query)
 
-        data = self.query_runner.get_spatial_kmeans(full_query)
+        data = self.data_provider.get_spatial_kmeans(full_query)
 
         # Unpack query response
         xs = data[0]['xs']
