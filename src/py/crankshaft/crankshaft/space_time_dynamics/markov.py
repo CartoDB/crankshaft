@@ -54,15 +54,13 @@ class Markov:
         if len(time_cols) < 2:
             plpy.error('More than one time column needs to be passed')
 
-        qvals = {"id_col": id_col,
-                 "time_cols": time_cols,
-                 "geom_col": geom_col,
-                 "subquery": subquery,
-                 "num_ngbrs": num_ngbrs}
+        params = {"id_col": id_col,
+                  "time_cols": time_cols,
+                  "geom_col": geom_col,
+                  "subquery": subquery,
+                  "num_ngbrs": num_ngbrs}
 
-        query = pu.construct_neighbor_query(w_type, qvals)
-
-        query_result = self.data_provider.get_markov(query)
+        query_result = self.data_provider.get_markov(w_type, params)
 
         # build weight
         weights = pu.get_weight(query_result, w_type)

@@ -21,7 +21,7 @@ class FakeDataProvider(AnalysisDataProvider):
     def __init__(self, mocked_result):
         self.mocked_result = mocked_result
 
-    def get_spatial_kmeans(self, w_type, params):
+    def get_spatial_kmeans(self, query):
         return self.mocked_result
 
     def get_nonspatial_kmeans(self, query, standarize):

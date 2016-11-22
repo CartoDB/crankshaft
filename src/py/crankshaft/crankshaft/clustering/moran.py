@@ -31,15 +31,13 @@ class Moran:
          core clusters with PySAL.
         Andy Eschbacher
         """
-        qvals = OrderedDict([("id_col", id_col),
-                             ("attr1", attr_name),
-                             ("geom_col", geom_col),
-                             ("subquery", subquery),
-                             ("num_ngbrs", num_ngbrs)])
+        params = OrderedDict([("id_col", id_col),
+                              ("attr1", attr_name),
+                              ("geom_col", geom_col),
+                              ("subquery", subquery),
+                              ("num_ngbrs", num_ngbrs)])
 
-        query = pu.construct_neighbor_query(w_type, qvals)
-
-        result = self.data_provider.get_moran(query)
+        result = self.data_provider.get_moran(w_type, params)
 
         # collect attributes
         attr_vals = pu.get_attributes(result)
@@ -63,15 +61,13 @@ class Moran:
         # geometries with attributes that are null are ignored
         # resulting in a collection of not as near neighbors
 
-        qvals = OrderedDict([("id_col", id_col),
-                             ("attr1", attr),
-                             ("geom_col", geom_col),
-                             ("subquery", subquery),
-                             ("num_ngbrs", num_ngbrs)])
+        params = OrderedDict([("id_col", id_col),
+                              ("attr1", attr),
+                              ("geom_col", geom_col),
+                              ("subquery", subquery),
+                              ("num_ngbrs", num_ngbrs)])
 
-        query = pu.construct_neighbor_query(w_type, qvals)
-
-        result = self.data_provider.get_moran(query)
+        result = self.data_provider.get_moran(w_type, params)
 
         attr_vals = pu.get_attributes(result)
         weight = pu.get_weight(result, w_type, num_ngbrs)
@@ -91,16 +87,14 @@ class Moran:
         Moran's I Rate (global)
         Andy Eschbacher
         """
-        qvals = OrderedDict([("id_col", id_col),
-                             ("attr1", numerator),
-                             ("attr2", denominator)
-                             ("geom_col", geom_col),
-                             ("subquery", subquery),
-                             ("num_ngbrs", num_ngbrs)])
+        params = OrderedDict([("id_col", id_col),
+                              ("attr1", numerator),
+                              ("attr2", denominator)
+                              ("geom_col", geom_col),
+                              ("subquery", subquery),
+                              ("num_ngbrs", num_ngbrs)])
 
-        query = pu.construct_neighbor_query(w_type, qvals)
-
-        result = self.data_provider.get_moran(query)
+        result = self.data_provider.get_moran(w_type, params)
 
         # collect attributes
         numer = pu.get_attributes(result, 1)
@@ -123,16 +117,14 @@ class Moran:
         # geometries with values that are null are ignored
         # resulting in a collection of not as near neighbors
 
-        qvals = OrderedDict([("id_col", id_col),
-                             ("numerator", numerator),
-                             ("denominator", denominator),
-                             ("geom_col", geom_col),
-                             ("subquery", subquery),
-                             ("num_ngbrs", num_ngbrs)])
+        params = OrderedDict([("id_col", id_col),
+                              ("numerator", numerator),
+                              ("denominator", denominator),
+                              ("geom_col", geom_col),
+                              ("subquery", subquery),
+                              ("num_ngbrs", num_ngbrs)])
 
-        query = pu.construct_neighbor_query(w_type, qvals)
-
-        result = self.data_provider.get_moran(query)
+        result = self.data_provider.get_moran(w_type, params)
 
         # collect attributes
         numer = pu.get_attributes(result, 1)
@@ -156,16 +148,14 @@ class Moran:
             Moran's I (local) Bivariate (untested)
         """
 
-        qvals = OrderedDict([("id_col", id_col),
-                             ("attr1", attr1),
-                             ("attr2", attr2),
-                             ("geom_col", geom_col),
-                             ("subquery", subquery),
-                             ("num_ngbrs", num_ngbrs)])
+        params = OrderedDict([("id_col", id_col),
+                              ("attr1", attr1),
+                              ("attr2", attr2),
+                              ("geom_col", geom_col),
+                              ("subquery", subquery),
+                              ("num_ngbrs", num_ngbrs)])
 
-        query = pu.construct_neighbor_query(w_type, qvals)
-
-        result = self.data_provider.get_moran(query)
+        result = self.data_provider.get_moran(w_type, params)
 
         # collect attributes
         attr1_vals = pu.get_attributes(result, 1)
