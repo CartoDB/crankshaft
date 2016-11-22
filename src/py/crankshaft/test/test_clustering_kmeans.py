@@ -9,7 +9,7 @@ import numpy as np
 # sys.modules['plpy'] = plpy
 from helper import fixture_file
 from crankshaft.clustering import Kmeans
-from crankshaft.query_runner import QueryRunner
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 import crankshaft.clustering as cc
 
 from crankshaft import random_seeds
@@ -17,11 +17,11 @@ import json
 from collections import OrderedDict
 
 
-class FakeQueryRunner(QueryRunner):
+class FakeDataProvider(AnalysisDataProvider):
     def __init__(self, mocked_result):
         self.mocked_result = mocked_result
 
-    def get_spatial_kmeans(self, query):
+    def get_spatial_kmeans(self, w_type, params):
         return self.mocked_result
 
     def get_nonspatial_kmeans(self, query, standarize):
@@ -45,7 +45,7 @@ class KMeansTest(unittest.TestCase):
                  'ids': d['ids']} for d in self.cluster_data]
 
         random_seeds.set_random_seeds(1234)
-        kmeans = Kmeans(FakeQueryRunner(data))
+        kmeans = Kmeans(FakeDataProvider(data))
         clusters = kmeans.spatial('subquery', 2)
         labels = [a[1] for a in clusters]
         c1 = [a for a in clusters if a[1] == 0]

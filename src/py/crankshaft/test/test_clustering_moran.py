@@ -3,18 +3,18 @@ import numpy as np
 
 from helper import fixture_file
 from crankshaft.clustering import Moran
-from crankshaft.clustering import QueryRunner
+from crankshaft.clustering import AnalysisDataProvider
 import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
 import json
 from collections import OrderedDict
 
 
-class FakeQueryRunner(QueryRunner):
+class FakeDataProvider(AnalysisDataProvider):
     def __init__(self, mock_data):
         self.mock_result = mock_data
 
-    def get_moran(self, query):
+    def get_moran(self, w_type, params):
         return self.mock_result
 
 
@@ -67,7 +67,7 @@ class MoranTest(unittest.TestCase):
                              ('neighbors', d['neighbors'])])
                 for d in self.neighbors_data]
 
-        moran = Moran(FakeQueryRunner(data))
+        moran = Moran(FakeDataProvider(data))
         random_seeds.set_random_seeds(1234)
         result = moran.local_stat('subquery', 'value',
                                   'knn', 5, 99, 'the_geom', 'cartodb_id')
@@ -86,7 +86,7 @@ class MoranTest(unittest.TestCase):
                  'neighbors': d['neighbors']} for d in self.neighbors_data]
 
         random_seeds.set_random_seeds(1234)
-        moran = Moran(FakeQueryRunner(data))
+        moran = Moran(FakeDataProvider(data))
         result = moran.local_rate_stat('subquery', 'numerator', 'denominator',
                                        'knn', 5, 99, 'the_geom', 'cartodb_id')
         result = [(row[0], row[1]) for row in result]
@@ -102,7 +102,7 @@ class MoranTest(unittest.TestCase):
                  'attr1': d['value'],
                  'neighbors': d['neighbors']} for d in self.neighbors_data]
         random_seeds.set_random_seeds(1235)
-        moran = Moran(FakeQueryRunner(data))
+        moran = Moran(FakeDataProvider(data))
         result = moran.global_stat('table', 'value',
                                    'knn', 5, 99, 'the_geom',
                                    'cartodb_id')

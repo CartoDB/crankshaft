@@ -9,11 +9,11 @@ from helper import fixture_file
 from crankshaft.space_time_dynamics import Markov
 import crankshaft.space_time_dynamics as std
 from crankshaft import random_seeds
-from crankshaft.query_runner import QueryRunner
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 import json
 
 
-class FakeQueryRunner(QueryRunner):
+class FakeDataProvider(AnalysisDataProvider):
     def __init__(self, data):
         self.mock_result = data
 
@@ -85,7 +85,7 @@ class SpaceTimeTests(unittest.TestCase):
                  'attr15': d['y2009'],
                  'neighbors': d['neighbors']} for d in self.neighbors_data]
         # print(str(data[0]))
-        markov = Markov(FakeQueryRunner(data))
+        markov = Markov(FakeDataProvider(data))
         random_seeds.set_random_seeds(1234)
 
         result = markov.spatial_trend('subquery',
