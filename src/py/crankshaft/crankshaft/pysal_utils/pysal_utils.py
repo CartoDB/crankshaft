@@ -59,6 +59,8 @@ def query_attr_select(params, table_ref=True):
         # if markov or gwr analysis
         attrs = (params['time_cols'] if 'time_cols' in params
                  else params['ind_vars'])
+        if 'ind_vars' in params:
+            template = "array_agg(\"%(col)s\"::numeric) As attr%(alias_num)s, "
 
         for idx, val in enumerate(attrs):
             attr_string += template % {"col": val, "alias_num": idx + 1}
@@ -187,6 +189,7 @@ def queen(params):
 
     return query.format(**params)
 
+
 def gwr_query(params):
     """
     GWR query
@@ -199,8 +202,8 @@ def gwr_query(params):
 
     query = '''
       SELECT
-        array_agg(ST_X({geom_col})) As x,
-        array_agg(ST_Y({geom_col})) As y,
+        array_agg(ST_X(ST_Centroid({geom_col}))) As x,
+        array_agg(ST_Y(ST_Centroid({geom_col}))) As y,
         array_agg({dep_var}) As dep_var,
         %(ind_vars_select)s
         array_agg({id_col}) As rowid
