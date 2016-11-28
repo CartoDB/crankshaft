@@ -10,10 +10,10 @@ from scipy.stats import t
 from kernels import *
 from diagnostics import get_AIC, get_AICc, get_BIC
 import pysal.spreg.user_output as USER
-from pysal.contrib.glm.family import Gaussian, Binomial, Poisson
-from pysal.contrib.glm.glm import GLM, GLMResults
-from pysal.contrib.glm.iwls import iwls
-from pysal.contrib.glm.utils import cache_readonly
+from crankshaft.regression.glm.family import Gaussian, Binomial, Poisson
+from crankshaft.regression.glm.glm import GLM, GLMResults
+from crankshaft.regression.glm.iwls import iwls
+from crankshaft.regression.glm.utils import cache_readonly
 
 fk = {'gaussian': fix_gauss, 'bisquare': fix_bisquare, 'exponential': fix_exp}
 ak = {'gaussian': adapt_gauss, 'bisquare': adapt_bisquare, 'exponential': adapt_exp}

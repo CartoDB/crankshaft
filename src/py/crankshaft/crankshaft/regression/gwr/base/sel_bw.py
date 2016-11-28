@@ -11,7 +11,7 @@ __author__ = "Taylor Oshan Tayoshan@gmail.com"
 from kernels import *
 from search import golden_section, equal_interval, flexible_bw
 from gwr import GWR
-from pysal.contrib.glm.family import Gaussian, Poisson, Binomial
+from crankshaft.regression.glm.family import Gaussian, Poisson, Binomial
 import pysal.spreg.user_output as USER
 from diagnostics import get_AICc, get_AIC, get_BIC, get_CV
 from scipy.spatial.distance import pdist, squareform
