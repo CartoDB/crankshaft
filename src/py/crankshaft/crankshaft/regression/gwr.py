@@ -16,14 +16,14 @@ def gwr(subquery, dep_var, ind_vars, fixed=False, kernel='bisquare'):
 
     x = np.array(query_result[0]['x'])
     y = np.array(query_result[0]['y'])
-    coords = zip(x,y)
-        
-    Y = query_result[0]['dep'].reshape((-1,1))
+    coords = zip(x, y)
+
+    Y = query_result[0]['dep'].reshape((-1, 1))
     n = Y.shape[0]
     k = len(ind_vars)
     X = np.zeros((n, k))
 
-    for attr in range(0,k):
+    for attr in range(0, k):
         attr_name = 'attr' + str(attr+1)
         X[:, attr] = np.array(query_result[0][attr_name]).flatten()
 
