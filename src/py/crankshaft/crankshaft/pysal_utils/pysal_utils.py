@@ -202,7 +202,7 @@ def gwr_query(params):
         array_agg(ST_X({geom_col})) As x,
         array_agg(ST_Y({geom_col})) As y,
         array_agg({dep_var}) As dep_var,
-        %(ind_vars_select)s,
+        %(ind_vars_select)s
         array_agg({id_col}) As rowid
       FROM ({subquery}) As q
       WHERE

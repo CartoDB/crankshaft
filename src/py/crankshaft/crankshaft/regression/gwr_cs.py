@@ -1,6 +1,8 @@
 import numpy as np
 from gwr.base.gwr import GWR
 from gwr.base.sel_bw import Sel_BW
+import plpy
+import crankshaft.pysal_utils as pu
 
 
 def gwr(subquery, dep_var, ind_vars,
@@ -22,8 +24,11 @@ def gwr(subquery, dep_var, ind_vars,
               'ind_vars': ind_vars}
 
     try:
-        query_result = plpy.execute(pu.gwr_query(params))
+        query = pu.gwr_query(params)
+        plpy.notice(query)
+        query_result = plpy.execute(query)
     except plpy.SPIError, err:
+        plpy.notice(query)
         plpy.error('Analysis failed: %s' % err)
 
     # TODO: should x, y be centroids? point on surface?

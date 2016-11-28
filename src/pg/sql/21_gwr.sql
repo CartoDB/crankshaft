@@ -4,8 +4,8 @@ CDB_GWR(subquery text, dep_var text, ind_vars text[],
 RETURNS table(v1 numeric, v2 numeric, v3 numeric, v4 numeric, v5 numeric, v6 numeric, rowid bigint)
 AS $$
 
-from crankshaft.regression import gwr
+from crankshaft.regression import gwr_cs
 
-return gwr(subquery, dep_var, ind_vars, fixed, kernel)
+return gwr_cs.gwr(subquery, dep_var, ind_vars, fixed, kernel)
 
 $$ LANGUAGE plpythonu;
