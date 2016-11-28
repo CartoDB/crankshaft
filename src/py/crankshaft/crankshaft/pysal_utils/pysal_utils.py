@@ -42,7 +42,7 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
     return built_weight
 
 
-def query_attr_select(params, table_ref="i"):
+def query_attr_select(params, table_ref=True):
     """
         Create portion of SELECT statement for attributes inolved in query.
         @param params: dict of information used in query (column names,
@@ -52,8 +52,8 @@ def query_attr_select(params, table_ref="i"):
     attr_string = ""
     template = "\"%(col)s\"::numeric As attr%(alias_num)s, "
 
-    if table_ref is not None:
-        template = "{table_ref}.".format(table_ref=table_ref) + template
+    if table_ref:
+        template = "i." + template
 
     if ('time_cols' in params) or ('ind_vars' in params):
         # if markov or gwr analysis
@@ -75,7 +75,7 @@ def query_attr_select(params, table_ref="i"):
     return attr_string
 
 
-def query_attr_where(params, table_ref=None):
+def query_attr_where(params, table_ref=True):
     """
       Construct where conditions when building neighbors query
         Create portion of WHERE clauses for weeding out NULL-valued geometries
@@ -95,7 +95,7 @@ def query_attr_where(params, table_ref=None):
     """
     attr_string = []
     template = "\"%s\" IS NOT NULL"
-    if table_ref is not None:
+    if table_ref:
         template = "idx_replace." + template
 
     if ('time_cols' in params) or ('ind_vars' in params):
@@ -132,8 +132,8 @@ def knn(params):
         @param vars: dict of values to fill template
     """
 
-    attr_select = query_attr_select(params)
-    attr_where = query_attr_where(params)
+    attr_select = query_attr_select(params, table_ref=True)
+    attr_where = query_attr_where(params, table_ref=True)
 
     replacements = {"attr_select": attr_select,
                     "attr_where_i": attr_where.replace("idx_replace", "i"),
