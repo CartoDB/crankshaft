@@ -59,9 +59,8 @@ def gwr(subquery, dep_var, ind_vars,
     stand_errs = model.bse.reshape((-1))
     predicted = np.repeat(model.predy.reshape((-1,)), k+1)
     residuals = np.repeat(model.resid_response.reshape((-1,)), k+1)
-    r_squared = np.tile(model.localR2.reshape((-1,)), k+1)
+    r_squared = np.repeat(model.localR2.reshape((-1,)), k+1)
     rowid = np.tile(rowid, k+1).reshape((-1,))
-    var_name = np.tile(ind_vars, k+1).reshape((-1,))
-
-    return zip(coefficients, stand_errs, t_vals, predicted,
-               residuals, r_squared, rowid)
+    ind_vars.insert(0, 'intercept')
+    var_name = np.tile(ind_vars, n).reshape((-1,))
+    return zip(coefficients, stand_errs, t_vals, predicted, residuals, r_squared, rowid, var_name)
