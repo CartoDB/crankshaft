@@ -36,12 +36,12 @@ def gwr(subquery, dep_var, ind_vars,
 
     # TODO: should x, y be centroids? point on surface?
     #       lat, long coordinates
-    x = np.array(query_result[0]['x'])
-    y = np.array(query_result[0]['y'])
+    x = np.array(query_result[0]['x'], dtype=float)
+    y = np.array(query_result[0]['y'], dtype=float)
     coords = zip(x, y)
 
     # extract dependent variable
-    Y = np.array(query_result[0]['dep_var']).reshape((-1, 1))
+    Y = np.array(query_result[0]['dep_var'], dtype=float).reshape((-1, 1))
 
     n = Y.shape[0]
     k = len(ind_vars)
@@ -50,7 +50,7 @@ def gwr(subquery, dep_var, ind_vars,
     for attr in range(0, k):
         attr_name = 'attr' + str(attr + 1)
         X[:, attr] = np.array(
-          query_result[0][attr_name]).flatten()
+          query_result[0][attr_name], dtype=float).flatten()
 
     # add intercept variable name
     ind_vars.insert(0, 'intercept')
