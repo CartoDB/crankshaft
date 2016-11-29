@@ -1,7 +1,7 @@
 CREATE OR REPLACE FUNCTION
 CDB_GWR(subquery text, dep_var text, ind_vars text[],
        fixed boolean default False, kernel text default 'bisquare')
-RETURNS table(v1 numeric, v2 numeric, v3 numeric, v4 numeric, v5 numeric, v6 numeric, rowid bigint)
+RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, residuals numeric, r_squared numeric, rowid bigint)
 AS $$
 
 from crankshaft.regression import gwr_cs
