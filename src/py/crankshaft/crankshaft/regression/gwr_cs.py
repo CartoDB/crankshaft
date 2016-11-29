@@ -69,9 +69,9 @@ def gwr(subquery, dep_var, ind_vars,
     coefficients = []
     stand_errs = []
     t_vals = []
-    predicted = model.predy
+    predicted = model.predy.flatten()
     residuals = model.resid_response
-    r_squared = model.localR2
+    r_squared = model.localR2.flatten()
 
     for idx in xrange(n):
         coefficients.append(json.dumps({var: model.params[idx, k]
