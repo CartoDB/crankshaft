@@ -3,6 +3,7 @@ from gwr.base.gwr import GWR
 from gwr.base.sel_bw import Sel_BW
 import plpy
 import crankshaft.pysal_utils as pu
+import json
 
 
 def gwr(subquery, dep_var, ind_vars,
@@ -72,10 +73,13 @@ def gwr(subquery, dep_var, ind_vars,
     residuals = model.resid_response
     r_squared = model.localR2
 
-    for n, row in enumerate(Y):
-        coefficients.append({var: model.params[n,k] for k, var in enumerate(ind_vars)})
-        stand_errs.append({var: model.bse[n,k] for k, var in enumerate(ind_vars)})
-        t_vals.append({var: model.tvalues[n,k] for k, var in enumerate(ind_vars)})
+    for idx in xrange(n):
+        coefficients.append(json.dumps({var: model.params[idx,k] for k, var in
+            enumerate(ind_vars)}))
+        stand_errs.append(json.dumps({var: model.bse[idx,k] for k, var in
+            enumerate(ind_vars)}))
+        t_vals.append(json.dumps({var: model.tvalues[idx,k] for k, var in
+            enumerate(ind_vars)}))
         
     plpy.notice(str(zip(coefficients, stand_errs, t_vals, predicted, residuals, r_squared, rowid)))
     return zip(coefficients, stand_errs, t_vals, predicted, residuals, r_squared, rowid)
