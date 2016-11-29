@@ -72,6 +72,7 @@ def gwr(subquery, dep_var, ind_vars,
     predicted = model.predy.flatten()
     residuals = model.resid_response
     r_squared = model.localR2.flatten()
+    bw = np.repeat(bw, n)
 
     for idx in xrange(n):
         coefficients.append(json.dumps({var: model.params[idx, k]
@@ -82,6 +83,6 @@ def gwr(subquery, dep_var, ind_vars,
                                   for k, var in enumerate(ind_vars)}))
 
     plpy.notice(str(zip(coefficients, stand_errs, t_vals,
-                        predicted, residuals, r_squared, rowid)))
+                        predicted, residuals, r_squared, rowid, bw)))
     return zip(coefficients, stand_errs, t_vals,
-               predicted, residuals, r_squared, rowid)
+               predicted, residuals, r_squared, rowid, bw)
