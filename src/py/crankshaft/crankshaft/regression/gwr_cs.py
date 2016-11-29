@@ -6,12 +6,13 @@ import crankshaft.pysal_utils as pu
 import json
 
 
-def gwr(subquery, dep_var, ind_vars,
+def gwr(subquery, dep_var, ind_vars, bw=None,
         fixed=False, kernel='bisquare'):
     """
     subquery: 'select * from demographics'
     dep_var: 'pctbachelor'
     ind_vars: ['intercept', 'pctpov', 'pctrural', 'pctblack']
+    bw: value of bandwidth, if None then select optimal
     fixed: False (kNN) or True ('distance')
     kernel: 'bisquare' (default), or 'exponential', 'gaussian'
     """
@@ -55,9 +56,12 @@ def gwr(subquery, dep_var, ind_vars,
     # add intercept variable name
     ind_vars.insert(0, 'intercept')
 
-    # calculate bandwidth
-    bw = Sel_BW(coords, Y, X,
-                fixed=fixed, kernel=kernel).search()
+    # calculate bandwidth if none is supplied
+    plpy.notice(str(bw))
+    if bw is None:
+        bw = Sel_BW(coords, Y, X,
+                    fixed=fixed, kernel=kernel).search()
+    plpy.notice(str(bw))
     model = GWR(coords, Y, X, bw,
                 fixed=fixed, kernel=kernel).fit()
 
@@ -72,6 +76,7 @@ def gwr(subquery, dep_var, ind_vars,
     predicted = model.predy.flatten()
     residuals = model.resid_response
     r_squared = model.localR2.flatten()
+    bw = np.repeat(float(bw), n)
 
     for idx in xrange(n):
         coefficients.append(json.dumps({var: model.params[idx, k]
@@ -82,6 +87,6 @@ def gwr(subquery, dep_var, ind_vars,
                                   for k, var in enumerate(ind_vars)}))
 
     plpy.notice(str(zip(coefficients, stand_errs, t_vals,
-                        predicted, residuals, r_squared, rowid)))
+                        predicted, residuals, r_squared, rowid, bw)))
     return zip(coefficients, stand_errs, t_vals,
-               predicted, residuals, r_squared, rowid)
+               predicted, residuals, r_squared, rowid, bw)
