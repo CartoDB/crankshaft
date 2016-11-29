@@ -16,7 +16,6 @@ def gwr(subquery, dep_var, ind_vars,
     """
 
     # query_result = subquery
-    # rowid = np.array(query_result[0]['rowid'])
     params = {'geom_col': 'the_geom',
               'id_col': 'cartodb_id',
               'subquery': subquery,
@@ -31,6 +30,9 @@ def gwr(subquery, dep_var, ind_vars,
         plpy.notice(query)
         plpy.error('Analysis failed: %s' % err)
 
+    #unique ids and variable names list 
+    rowid = np.array(query_result[0]['rowid'], dtype=np.int)
+    
     # TODO: should x, y be centroids? point on surface?
     #       lat, long coordinates
     x = np.array(query_result[0]['x'])
@@ -38,7 +40,7 @@ def gwr(subquery, dep_var, ind_vars,
     coords = zip(x, y)
 
     # extract dependent variable
-    Y = query_result[0]['dep_var'].reshape((-1, 1))
+    Y = np.array(query_result[0]['dep_var']).reshape((-1, 1))
 
     n = Y.shape[0]
     k = len(ind_vars)
@@ -48,7 +50,10 @@ def gwr(subquery, dep_var, ind_vars,
         attr_name = 'attr' + str(attr + 1)
         X[:, attr] = np.array(
           query_result[0][attr_name]).flatten()
-
+    
+    #add intercept variable name
+    ind_vars.insert(0, 'intercept')
+    
     # calculate bandwidth
     bw = Sel_BW(coords, Y, X,
                 fixed=fixed, kernel=kernel).search()
@@ -59,13 +64,18 @@ def gwr(subquery, dep_var, ind_vars,
     #       column called coeffs:
     #       {'pctrural': ..., 'pctpov': ..., ...}
     #       Follow the same structure for other outputs
-    coefficients = model.params.reshape((-1,))
-    t_vals = model.tvalues.reshape((-1,))
-    stand_errs = model.bse.reshape((-1))
-    predicted = np.repeat(model.predy.reshape((-1,)), k+1)
-    residuals = np.repeat(model.resid_response.reshape((-1,)), k+1)
-    r_squared = np.repeat(model.localR2.reshape((-1,)), k+1)
-    rowid = np.tile(rowid, k+1).reshape((-1,))
-    ind_vars.insert(0, 'intercept')
-    var_name = np.tile(ind_vars, n).reshape((-1,))
-    return zip(coefficients, stand_errs, t_vals, predicted, residuals, r_squared, rowid, var_name)
+    
+    coefficients = []
+    stand_errs = []
+    t_vals = []
+    predicted = model.predy
+    residuals = model.resid_response
+    r_squared = model.localR2
+
+    for n, row in enumerate(Y):
+        coefficients.append({var: model.params[n,k] for k, var in enumerate(ind_vars)})
+        stand_errs.append({var: model.bse[n,k] for k, var in enumerate(ind_vars)})
+        t_vals.append({var: model.tvalues[n,k] for k, var in enumerate(ind_vars)})
+        
+    plpy.notice(str(zip(coefficients, stand_errs, t_vals, predicted, residuals, r_squared, rowid)))
+    return zip(coefficients, stand_errs, t_vals, predicted, residuals, r_squared, rowid)
