@@ -31,9 +31,9 @@ def gwr(subquery, dep_var, ind_vars,
         plpy.notice(query)
         plpy.error('Analysis failed: %s' % err)
 
-    #unique ids and variable names list 
+    # unique ids and variable names list
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
-    
+
     # TODO: should x, y be centroids? point on surface?
     #       lat, long coordinates
     x = np.array(query_result[0]['x'])
@@ -51,10 +51,10 @@ def gwr(subquery, dep_var, ind_vars,
         attr_name = 'attr' + str(attr + 1)
         X[:, attr] = np.array(
           query_result[0][attr_name]).flatten()
-    
-    #add intercept variable name
+
+    # add intercept variable name
     ind_vars.insert(0, 'intercept')
-    
+
     # calculate bandwidth
     bw = Sel_BW(coords, Y, X,
                 fixed=fixed, kernel=kernel).search()
@@ -65,7 +65,7 @@ def gwr(subquery, dep_var, ind_vars,
     #       column called coeffs:
     #       {'pctrural': ..., 'pctpov': ..., ...}
     #       Follow the same structure for other outputs
-    
+
     coefficients = []
     stand_errs = []
     t_vals = []
@@ -74,12 +74,14 @@ def gwr(subquery, dep_var, ind_vars,
     r_squared = model.localR2
 
     for idx in xrange(n):
-        coefficients.append(json.dumps({var: model.params[idx,k] for k, var in
-            enumerate(ind_vars)}))
-        stand_errs.append(json.dumps({var: model.bse[idx,k] for k, var in
-            enumerate(ind_vars)}))
-        t_vals.append(json.dumps({var: model.tvalues[idx,k] for k, var in
-            enumerate(ind_vars)}))
-        
-    plpy.notice(str(zip(coefficients, stand_errs, t_vals, predicted, residuals, r_squared, rowid)))
-    return zip(coefficients, stand_errs, t_vals, predicted, residuals, r_squared, rowid)
+        coefficients.append(json.dumps({var: model.params[idx, k]
+                                        for k, var in enumerate(ind_vars)}))
+        stand_errs.append(json.dumps({var: model.bse[idx, k]
+                                      for k, var in enumerate(ind_vars)}))
+        t_vals.append(json.dumps({var: model.tvalues[idx, k]
+                                  for k, var in enumerate(ind_vars)}))
+
+    plpy.notice(str(zip(coefficients, stand_errs, t_vals,
+                        predicted, residuals, r_squared, rowid)))
+    return zip(coefficients, stand_errs, t_vals,
+               predicted, residuals, r_squared, rowid)
