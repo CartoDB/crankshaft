@@ -217,6 +217,57 @@ def gwr_query(params):
 
 # to add more weight methods open a ticket or pull request
 
+def gravity_query(params):
+    """
+    gravity spatial interaction  query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg({dep_var}) As dep_var,
+        %(ind_vars_select)s
+        array_agg({id_col}) As rowid,
+        array_agg({cost}) As cost
+      FROM ({subquery}) As q
+      WHERE
+        {dep_var} IS NOT NULL AND
+        {cost} IS NOT NULL AND
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
+
+def production_query(params):
+    """
+    production-constrained spatial interaction  query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg({dep_var}) As dep_var,
+        %(ind_vars_select)s
+        array_agg({id_col}) As rowid,
+        array_agg({origins}) As origins,
+        array_agg({cost}) As cost
+      FROM ({subquery}) As q
+      WHERE
+        {dep_var} IS NOT NULL AND
+        {origins} IS NOT NULL AND
+        {cost} IS NOT NULL AND
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
 
 def get_attributes(query_res, attr_num=1):
     """
