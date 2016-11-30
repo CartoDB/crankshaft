@@ -16,6 +16,7 @@ CREATE OR REPLACE FUNCTION CDB_DotDensity(g geometry, no_points integer, max_ite
 AS $$
  DECLARE
      extent GEOMETRY;
+     eq_area_geom GEOMETRY;
      test_point Geometry;
      width    NUMERIC;
      height   NUMERIC;
@@ -25,8 +26,8 @@ AS $$
      sample_points GEOMETRY[];
      points   GEOMETRY[];
  BEGIN        
- 
-   extent   := ST_Envelope(g);
+   eq_area_geom := ST_TRANSFORM(g,2163);
+   extent   := ST_Envelope(eq_area_geom);
    max_iter := 0;
    width    := ST_XMax(extent) - ST_XMIN(extent);
    height   := ST_YMax(extent) - ST_YMIN(extent);
@@ -38,16 +39,17 @@ AS $$
      IF(no_left<=0 or max_iter=1000) THEN
        RETURN;
      END IF;
+
     
-     with random_points as( 
-        SELECT CDB_LATLNG(y0 + height*random(), x0 + width*random()) as p
+    with random_points as( 
+        SELECT ST_SetSRID(ST_MAKEPOINT( x0 + width*random(),y0 + height*random()), 2163) as p
         FROM generate_series(1,no_left)
      )
      SELECT array_agg(p) from random_points
-     WHERE ST_WITHIN(p, g)
+     WHERE ST_WITHIN(p, eq_area_geom)
      into sample_points;
      
-     RETURN QUERY select * from unnest(sample_points);
+     RETURN QUERY select ST_TRANSFORM(a,4236) from unnest(sample_points) as a;
      
      IF sample_points IS NOT null THEN 
         no_left = no_left - array_length(sample_points,1);
@@ -168,6 +170,7 @@ CREATE OR REPLACE FUNCTION CDB_DasymetricDotDensity(geom GEOMETRY, no_points NUM
 RETURNS setof GEOMETRY 
 AS $$
   BEGIN
+    RAISE NOTICE 'running Dasymetric';
     RETURN QUERY 
         SELECT cdb_crankshaft._CDB_WeightedDD(no_points, array_agg( ST_INTERSECTION(geom,g)), array_agg(ST_AREA(ST_INTERSECTION(geom,g))*w)::NUMERIC[]) 
         FROM unnest(targetGeoms) as g , unnest(weights) as w 
