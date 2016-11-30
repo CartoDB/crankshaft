@@ -16,14 +16,11 @@ class Kmeans:
             find centers based on clusters of latitude/longitude pairs
             query: SQL query that has a WGS84 geometry (the_geom)
         """
-        full_query = ("SELECT "
-                      "array_agg(cartodb_id ORDER BY cartodb_id) as ids,"
-                      "array_agg(ST_X(the_geom) ORDER BY cartodb_id) xs,"
-                      "array_agg(ST_Y(the_geom) ORDER BY cartodb_id) ys "
-                      "FROM ({query}) As a "
-                      "WHERE the_geom IS NOT NULL").format(query=query)
+        params = {"subquery": query,
+                  "geom_col": "the_geom",
+                  "id_col": "cartodb_id"}
 
-        data = self.data_provider.get_spatial_kmeans(full_query)
+        data = self.data_provider.get_spatial_kmeans(params)
 
         # Unpack query response
         xs = data[0]['xs']

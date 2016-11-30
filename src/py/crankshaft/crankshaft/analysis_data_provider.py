@@ -38,8 +38,14 @@ class AnalysisDataProvider:
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
 
-    def get_spatial_kmeans(self, query):
+    def get_spatial_kmeans(self, params):
         """fetch data for spatial kmeans"""
+        query = ("SELECT "
+                 "array_agg({id_col} ORDER BY {id_col}) as ids,"
+                 "array_agg(ST_X({geom_col}) ORDER BY {id_col}) As xs,"
+                 "array_agg(ST_Y({geom_col}) ORDER BY {id_col}) As ys "
+                 "FROM ({subquery}) As a "
+                 "WHERE {geom_col} IS NOT NULL").format(**params)
         try:
             data = plpy.execute(query)
             return data
