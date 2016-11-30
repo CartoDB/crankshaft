@@ -10,7 +10,7 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (moran NUMERIC, significance NUMERIC)
 AS $$
-  from crankshaft.clustering import moran_local
+  from crankshaft.clustering import moran
   # TODO: use named parameters or a dictionary
   return moran(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;

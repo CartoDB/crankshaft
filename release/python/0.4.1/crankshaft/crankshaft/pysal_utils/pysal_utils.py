@@ -6,7 +6,6 @@
 import numpy as np
 import pysal as ps
 
-
 def construct_neighbor_query(w_type, query_vals):
     """Return query (a string) used for finding neighbors
         @param w_type text: type of neighbors to calculate ('knn' or 'queen')
@@ -18,8 +17,7 @@ def construct_neighbor_query(w_type, query_vals):
     else:
         return queen(query_vals)
 
-
-# Build weight object
+## Build weight object
 def get_weight(query_res, w_type='knn', num_ngbrs=5):
     """
         Construct PySAL weight from return value of query
@@ -41,7 +39,6 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
 
     return built_weight
 
-
 def query_attr_select(params):
     """
         Create portion of SELECT statement for attributes inolved in query.
@@ -53,23 +50,20 @@ def query_attr_select(params):
     template = "i.\"%(col)s\"::numeric As attr%(alias_num)s, "
 
     if 'time_cols' in params:
-        # if markov analysis
+        ## if markov analysis
         attrs = params['time_cols']
 
         for idx, val in enumerate(attrs):
             attr_string += template % {"col": val, "alias_num": idx + 1}
     else:
-        # if moran's analysis
+        ## if moran's analysis
         attrs = [k for k in params
-                 if k not in ('id_col', 'geom_col', 'subquery',
-                              'num_ngbrs', 'subquery')]
+                 if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')]
 
         for idx, val in enumerate(sorted(attrs)):
-            attr_string += template % {"col": params[val],
-                                       "alias_num": idx + 1}
+            attr_string += template % {"col": params[val], "alias_num": idx + 1}
 
     return attr_string
-
 
 def query_attr_where(params):
     """
@@ -80,8 +74,7 @@ def query_attr_where(params):
              'numerator': 'data1',
              'denominator': 'data2',
              '': ...}
-        Output: 'idx_replace."data1" IS NOT NULL AND idx_replace."data2"
-                IS NOT NULL'
+        Output: 'idx_replace."data1" IS NOT NULL AND idx_replace."data2" IS NOT NULL'
         Input:
         {'subquery': ...,
          'time_cols': ['time1', 'time2', 'time3'],
@@ -93,18 +86,17 @@ def query_attr_where(params):
     template = "idx_replace.\"%s\" IS NOT NULL"
 
     if 'time_cols' in params:
-        # markov where clauses
+        ## markov where clauses
         attrs = params['time_cols']
         # add values to template
         for attr in attrs:
             attr_string.append(template % attr)
     else:
-        # moran where clauses
+        ## moran where clauses
 
         # get keys
         attrs = sorted([k for k in params
-                        if k not in ('id_col', 'geom_col', 'subquery',
-                                     'num_ngbrs', 'subquery')])
+                        if k not in ('id_col', 'geom_col', 'subquery', 'num_ngbrs', 'subquery')])
         # add values to template
         for attr in attrs:
             attr_string.append(template % params[attr])
@@ -115,7 +107,6 @@ def query_attr_where(params):
     out = " AND ".join(attr_string)
 
     return out
-
 
 def knn(params):
     """SQL query for k-nearest neighbors.
@@ -148,8 +139,7 @@ def knn(params):
 
     return query.format(**params)
 
-
-# SQL query for finding queens neighbors (all contiguous polygons)
+## SQL query for finding queens neighbors (all contiguous polygons)
 def queen(params):
     """SQL query for queen neighbors.
         @param params dict: information to fill query
@@ -177,17 +167,14 @@ def queen(params):
 
     return query.format(**params)
 
-# to add more weight methods open a ticket or pull request
-
+## to add more weight methods open a ticket or pull request
 
 def get_attributes(query_res, attr_num=1):
     """
         @param query_res: query results with attributes and neighbors
         @param attr_num: attribute number (1, 2, ...)
     """
-    return np.array([x['attr' + str(attr_num)] for x in query_res],
-                    dtype=np.float)
-
+    return np.array([x['attr' + str(attr_num)] for x in query_res], dtype=np.float)
 
 def empty_zipped_array(num_nones):
     """
