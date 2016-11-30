@@ -34,7 +34,10 @@ def gravity(subquery, flows, o_vars, d_vars, cost, cost_func, Quasi=False):
         plpy.notice(query)
         plpy.error('Analysis failed: %s' % err)
 
-    #unique ids and variable names list 
+    # add cost name in var name list
+    ind_vars.insert(len(ind_vars), cost)
+
+    # unique ids and variable names list 
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
     
     # extract dependent variable
@@ -113,6 +116,9 @@ def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
         plpy.notice(query)
         plpy.error('Analysis failed: %s' % err)
 
+    # add cost name in var name list
+    ind_vars.insert(len(ind_vars), cost)
+    
     #unique ids and variable names list 
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
     
@@ -142,11 +148,6 @@ def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
     ind_vars.pop(0)
     ind_vars.insert(0, 'intercept')
     
-    plpy.notice(str(flows))
-    plpy.notice(str(origins))
-    plpy.notice(str(d_vars))
-    plpy.notice(str(cost))
-
     model = Production(flows, origins, d_vars, cost, cost_func, Quasi=Quasi).fit()
     plpy.notice(str(model.params)) 
     coefficients = []
@@ -166,7 +167,7 @@ def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
         
     return zip(coefficients, stand_errs, t_vals, predicted, r_squared, aic, rowid)
 
-def attraction(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
+def attraction(subquery, flows, destinations, o_vars, cost, cost_func, Quasi=False):
     """
     subquery: 'select * from demographics'
     flows: 'flow_count'
@@ -177,7 +178,7 @@ def attraction(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
     Quasi: boolean with True for estimate QuasiPoisson model
     """
     # variable names list
-    ind_vars = d_vars[:]
+    ind_vars = o_vars[:]
 
     # query_result = subquery
     params = {'id_col': 'cartodb_id',
@@ -188,18 +189,21 @@ def attraction(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
               'cost': cost}
 
     try:
-        query = pu.production_query(params)
+        query = pu.attraction_query(params)
         plpy.notice(query)
         query_result = plpy.execute(query)
     except plpy.SPIError, err:
         plpy.notice(query)
         plpy.error('Analysis failed: %s' % err)
 
+    # add cost name in var name list
+    ind_vars.insert(len(ind_vars), cost)
+    
     #unique ids and variable names list 
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
     
     # dest names variable for fixed effects (constraints)
-    destinations = np.array(query_result[0]['origins'])
+    destinations = np.array(query_result[0]['destinations'])
 
     # extract dependent variable
     flows = np.array(query_result[0]['dep_var']).reshape((-1, 1))
@@ -212,7 +216,7 @@ def attraction(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
     # then dests
     for attr in range(0, o):
         attr_name = 'attr' + str(attr + 1)
-        d_vars[:, attr] = np.array(
+        o_vars[:, attr] = np.array(
           query_result[0][attr_name]).flatten() 
 
     # finally cost
@@ -220,16 +224,85 @@ def attraction(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
 
     #add fixed effects and intercept variable name list
     for x, var in enumerate(np.unique(destinations)):
-    	ind_vars.insert(x, 'origin_' + str(var))
+    	ind_vars.insert(x, 'dest_' + str(var))
     ind_vars.pop(0)
     ind_vars.insert(0, 'intercept')
     
-    plpy.notice(str(flows))
-    plpy.notice(str(destinations))
-    plpy.notice(str(o_vars))
-    plpy.notice(str(cost))
-
     model = Attraction(flows, destinations, o_vars, cost, cost_func, Quasi=Quasi).fit()
+    plpy.notice(str(model.params)) 
+    coefficients = []
+    stand_errs = []
+    t_vals = []
+    predicted = model.yhat
+    r_squared = np.repeat(model.pseudoR2, n)
+    aic = np.repeat(model.AIC, n)
+   
+    for idx in xrange(n):
+        coefficients.append(json.dumps({var: model.params[k] for k, var in
+            enumerate(ind_vars)}))
+        stand_errs.append(json.dumps({var: model.std_err[k] for k, var in
+            enumerate(ind_vars)}))
+        t_vals.append(json.dumps({var: model.tvalues[k] for k, var in
+            enumerate(ind_vars)}))
+        
+    return zip(coefficients, stand_errs, t_vals, predicted, r_squared, aic, rowid)
+
+def doubly(subquery, flows, origins, destinations, cost, cost_func, Quasi=False):
+    """
+    subquery: 'select * from demographics'
+    flows: 'flow_count'
+    origins: ['origin_name1', 'origin_name_2', 'origin_name_3']
+    destinations: ['dest_name1', 'dest_name_2', 'dest_name_3']
+    cost: 'distance' | 'time'
+    cost_func: 'exp' for exponential decay | 'pow' for power decay
+    Quasi: boolean with True for estimate QuasiPoisson model
+    """
+    
+    # query_result = subquery
+    params = {'id_col': 'cartodb_id',
+              'subquery': subquery,
+              'dep_var': flows,
+              'origins': origins,
+              'destinations': destinations,
+              'cost': cost}
+
+    try:
+        query = pu.doubly_query(params)
+        plpy.notice(query)
+        query_result = plpy.execute(query)
+    except plpy.SPIError, err:
+        plpy.notice(query)
+        plpy.error('Analysis failed: %s' % err)
+
+    # add cost name in var name list
+    ind_vars = [cost]
+    
+    # unique ids and variable names list 
+    rowid = np.array(query_result[0]['rowid'], dtype=np.int)
+    
+    # dest names variable for fixed effects (constraints)
+    origins = np.array(query_result[0]['origins'])
+    destinations = np.array(query_result[0]['destinations'])
+
+    # extract dependent variable
+    flows = np.array(query_result[0]['dep_var']).reshape((-1, 1))
+
+    # extract origin variables, dest variables and cost variable
+    n = flows.shape[0]
+
+    # finally cost
+    cost = np.array(query_result[0]['cost'], dtype=np.float).flatten()
+
+    #add fixed effects and intercept to variable name list
+    for x, var in enumerate(np.unique(destinations)):
+    	ind_vars.insert(x, 'dest_' + str(var))
+    ind_vars.pop(0)
+    for x, var in enumerate(np.unique(origins)):
+    	ind_vars.insert(x, 'origin_' + str(var))
+    ind_vars.pop(0)
+    ind_vars.insert(0, 'intercept')
+   
+    model = Doubly(flows, origins, destinations, cost, cost_func, Quasi=Quasi).fit()
     plpy.notice(str(model.params)) 
     coefficients = []
     stand_errs = []

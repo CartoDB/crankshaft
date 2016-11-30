@@ -296,6 +296,33 @@ def attraction_query(params):
 
     return query.format(**params).strip()
 
+def doubly_query(params):
+    """
+    attraction-constrained spatial interaction  query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg({dep_var}) As dep_var,
+        array_agg({id_col}) As rowid,
+        array_agg({origins}) As origins,
+        array_agg({destinations}) As destinations,
+        array_agg({cost}) As cost
+      FROM ({subquery}) As q
+      WHERE
+        {dep_var} IS NOT NULL AND
+        {origins} IS NOT NULL AND
+        {destinations} IS NOT NULL AND
+        {cost} IS NOT NULL 
+        '''
+
+    return query.format(**params).strip()
+
 def get_attributes(query_res, attr_num=1):
     """
         @param query_res: query results with attributes and neighbors
