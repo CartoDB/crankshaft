@@ -8,12 +8,14 @@ import pysal as ps
 import plpy
 import crankshaft.pysal_utils as pu
 
+
 def spatial_markov_trend(subquery, time_cols, num_classes=7,
                          w_type='knn', num_ngbrs=5, permutations=0,
                          geom_col='the_geom', id_col='cartodb_id'):
     """
         Predict the trends of a unit based on:
-        1. history of its transitions to different classes (e.g., 1st quantile -> 2nd quantile)
+        1. history of its transitions to different classes (e.g., 1st quantile
+             -> 2nd quantile)
         2. average class of its neighbors
 
         Inputs:
@@ -56,16 +58,15 @@ def spatial_markov_trend(subquery, time_cols, num_classes=7,
         )
         if len(query_result) == 0:
             return zip([None], [None], [None], [None], [None])
-    except plpy.SPIError, e:
-        plpy.debug('Query failed with exception %s: %s' % (err, pu.construct_neighbor_query(w_type, qvals)))
-        plpy.error('Analysis failed: %s' % e)
+    except plpy.SPIError, err:
+        plpy.error('Analysis failed: %s' % err)
         return zip([None], [None], [None], [None], [None])
 
-    ## build weight
+    # build weight
     weights = pu.get_weight(query_result, w_type)
     weights.transform = 'r'
 
-    ## prep time data
+    # prep time data
     t_data = get_time_data(query_result, time_cols)
 
     plpy.debug('shape of t_data %d, %d' % t_data.shape)
@@ -78,22 +79,25 @@ def spatial_markov_trend(subquery, time_cols, num_classes=7,
                                          fixed=False,
                                          permutations=permutations)
 
-    ## get lag classes
+    # get lag classes
     lag_classes = ps.Quantiles(
         ps.lag_spatial(weights, t_data[:, -1]),
         k=num_classes).yb
 
-    ## look up probablity distribution for each unit according to class and lag class
+    # look up probablity distribution for each unit according to class and lag
+    #  class
     prob_dist = get_prob_dist(sp_markov_result.P,
                               lag_classes,
                               sp_markov_result.classes[:, -1])
 
-    ## find the ups and down and overall distribution of each cell
-    trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist,
-                                                             sp_markov_result.classes[:, -1])
+    # find the ups and down and overall distribution of each cell
+    trend_up, trend_down, trend, volatility = get_prob_stats(
+      prob_dist,
+      sp_markov_result.classes[:, -1])
 
-    ## output the results
+    # output the results
     return zip(trend, trend_up, trend_down, volatility, weights.id_order)
+
 
 def get_time_data(markov_data, time_cols):
     """
@@ -103,7 +107,8 @@ def get_time_data(markov_data, time_cols):
     return np.array([[x['attr' + str(i)] for x in markov_data]
                      for i in range(1, num_attrs+1)], dtype=float).transpose()
 
-## not currently used
+
+# not currently used
 def rebin_data(time_data, num_time_per_bin):
     """
         Convert an n x l matrix into an (n/m) x l matrix where the values are
@@ -131,14 +136,16 @@ def rebin_data(time_data, num_time_per_bin):
     """
 
     if time_data.shape[1] % num_time_per_bin == 0:
-        ## if fit is perfect, then use it
+        # if fit is perfect, then use it
         n_max = time_data.shape[1] / num_time_per_bin
     else:
-        ## fit remainders into an additional column
+        # fit remainders into an additional column
         n_max = time_data.shape[1] / num_time_per_bin + 1
 
-    return np.array([time_data[:, num_time_per_bin * i:num_time_per_bin * (i+1)].mean(axis=1)
-                     for i in range(n_max)]).T
+    return np.array(
+      [time_data[:, num_time_per_bin * i:num_time_per_bin * (i+1)].mean(axis=1)
+       for i in range(n_max)]).T
+
 
 def get_prob_dist(transition_matrix, lag_indices, unit_indices):
     """
@@ -156,6 +163,7 @@ def get_prob_dist(transition_matrix, lag_indices, unit_indices):
 
     return np.array([transition_matrix[(lag_indices[i], unit_indices[i])]
                      for i in range(len(lag_indices))])
+
 
 def get_prob_stats(prob_dist, unit_indices):
     """
@@ -179,11 +187,12 @@ def get_prob_stats(prob_dist, unit_indices):
         trend_up[i] = prob_dist[i, (unit_indices[i]+1):].sum()
         trend_down[i] = prob_dist[i, :unit_indices[i]].sum()
         if prob_dist[i, unit_indices[i]] > 0.0:
-            trend[i] = (trend_up[i] - trend_down[i]) / prob_dist[i, unit_indices[i]]
+            trend[i] = ((trend_up[i] - trend_down[i]) /
+                        (prob_dist[i, unit_indices[i]]))
         else:
             trend[i] = None
 
-    ## calculate volatility of distribution
+    # calculate volatility of distribution
     volatility = prob_dist.std(axis=1)
 
     return trend_up, trend_down, trend, volatility
