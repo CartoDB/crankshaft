@@ -93,6 +93,7 @@ class Markov:
         return zip(trend, trend_up, trend_down, volatility, weights.id_order)
 
 
+
 def get_time_data(markov_data, time_cols):
     """
         Extract the time columns and bin appropriately
