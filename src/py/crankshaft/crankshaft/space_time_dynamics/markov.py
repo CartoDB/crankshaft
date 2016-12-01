@@ -2,6 +2,7 @@
 Spatial dynamics measurements using Spatial Markov
 """
 
+# TODO: remove all plpy dependencies
 
 import numpy as np
 import pysal as ps

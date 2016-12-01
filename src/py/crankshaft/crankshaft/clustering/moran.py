@@ -6,7 +6,6 @@ Moran's I geostatistics (global clustering & outliers presence)
 #       average of the their neighborhood
 
 import pysal as ps
-import plpy
 from collections import OrderedDict
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 

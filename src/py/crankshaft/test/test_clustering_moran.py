@@ -3,7 +3,7 @@ import numpy as np
 
 from helper import fixture_file
 from crankshaft.clustering import Moran
-from crankshaft.clustering import AnalysisDataProvider
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
 import json

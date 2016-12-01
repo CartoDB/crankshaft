@@ -4,7 +4,21 @@ import pysal_utils as pu
 
 
 class AnalysisDataProvider:
+    def get_getis(self, w_type, params):
+        """fetch data for getis ord's g"""
+        try:
+            query = pu.construct_neighbor_query(w_type, params)
+            result = plpy.execute(query)
+            # if there are no neighbors, exit
+            if len(result) == 0:
+                return pu.empty_zipped_array(4)
+            else:
+                return result
+        except plpy.SPIError, err:
+            plpy.error('Analysis failed: %s' % err)
+
     def get_markov(self, w_type, params):
+        """fetch data for spatial markov"""
         try:
             query = pu.construct_neighbor_query(w_type, params)
             data = plpy.execute(query)
@@ -50,4 +64,4 @@ class AnalysisDataProvider:
             data = plpy.execute(query)
             return data
         except plpy.SPIError, err:
-            plpy.error("Analysis failed: %s" % err)
+            plpy.error('Analysis failed: %s' % err)

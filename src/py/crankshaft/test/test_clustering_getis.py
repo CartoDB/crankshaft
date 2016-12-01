@@ -1,18 +1,13 @@
 import unittest
 import numpy as np
 
+from helper import fixture_file
 
-# from mock_plpy import MockPlPy
-# plpy = MockPlPy()
-#
-# import sys
-# sys.modules['plpy'] = plpy
-from helper import plpy, fixture_file
-
-import crankshaft.clustering as cc
+from crankshaft.clustering import Getis
 import crankshaft.pysal_utils as pu
 from crankshaft import random_seeds
 import json
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 # Fixture files produced as follows
 #
@@ -42,6 +37,14 @@ import json
 #                     lgstar_queen.p_sim, lgstar_queen.p_z_sim)))
 
 
+class FakeDataProvider(AnalysisDataProvider):
+    def __init__(self, mock_data):
+        self.mock_result = mock_data
+
+    def get_getis(self, w_type, param):
+        return self.mock_result
+
+
 class GetisTest(unittest.TestCase):
     """Testing class for Getis-Ord's G* funtion
        This test replicates the work done in PySAL documentation:
@@ -49,8 +52,6 @@ class GetisTest(unittest.TestCase):
     """
 
     def setUp(self):
-        plpy._reset()
-
         # load raw data for analysis
         self.neighbors_data = json.loads(
           open(fixture_file('neighbors_getis.json')).read())
@@ -64,10 +65,13 @@ class GetisTest(unittest.TestCase):
         data = [{'id': d['id'],
                  'attr1': d['value'],
                  'neighbors': d['neighbors']} for d in self.neighbors_data]
-        plpy._define_result('select', data)
+
         random_seeds.set_random_seeds(1234)
-        result = cc.getis_ord('subquery', 'value',
-                              'queen', None, 999, 'the_geom', 'cartodb_id')
+        getis = Getis(FakeDataProvider(data))
+
+        result = getis.getis_ord('subquery', 'value',
+                                 'queen', None, 999, 'the_geom',
+                                 'cartodb_id')
         result = [(row[0], row[1]) for row in result]
         expected = np.array(self.getis_data)[:, 0:2]
         for ([res_z, res_p], [exp_z, exp_p]) in zip(result, expected):
