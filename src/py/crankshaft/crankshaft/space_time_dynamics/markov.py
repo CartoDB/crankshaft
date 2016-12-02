@@ -2,101 +2,97 @@
 Spatial dynamics measurements using Spatial Markov
 """
 
+# TODO: remove all plpy dependencies
 
 import numpy as np
 import pysal as ps
 import plpy
 import crankshaft.pysal_utils as pu
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 
-def spatial_markov_trend(subquery, time_cols, num_classes=7,
-                         w_type='knn', num_ngbrs=5, permutations=0,
-                         geom_col='the_geom', id_col='cartodb_id'):
-    """
-        Predict the trends of a unit based on:
-        1. history of its transitions to different classes (e.g., 1st quantile
-             -> 2nd quantile)
-        2. average class of its neighbors
+class Markov:
+    def __init__(self, data_provider=None):
+        if data_provider is None:
+            self.data_provider = AnalysisDataProvider()
+        else:
+            self.data_provider = data_provider
 
-        Inputs:
-        @param subquery string: e.g., SELECT the_geom, cartodb_id,
-          interesting_time_column FROM table_name
-        @param time_cols list of strings: list of strings of column names
-        @param num_classes (optional): number of classes to break distribution
-          of values into. Currently uses quantile bins.
-        @param w_type string (optional): weight type ('knn' or 'queen')
-        @param num_ngbrs int (optional): number of neighbors (if knn type)
-        @param permutations int (optional): number of permutations for test
-          stats
-        @param geom_col string (optional): name of column which contains the
-          geometries
-        @param id_col string (optional): name of column which has the ids of
-          the table
+    def spatial_trend(self, subquery, time_cols, num_classes=7,
+                      w_type='knn', num_ngbrs=5, permutations=0,
+                      geom_col='the_geom', id_col='cartodb_id'):
+        """
+            Predict the trends of a unit based on:
+            1. history of its transitions to different classes (e.g., 1st
+               quantile -> 2nd quantile)
+            2. average class of its neighbors
 
-        Outputs:
-        @param trend_up float: probablity that a geom will move to a higher
-          class
-        @param trend_down float: probablity that a geom will move to a lower
-          class
-        @param trend float: (trend_up - trend_down) / trend_static
-        @param volatility float: a measure of the volatility based on
-          probability stddev(prob array)
-    """
+            Inputs:
+            @param subquery string: e.g., SELECT the_geom, cartodb_id,
+              interesting_time_column FROM table_name
+            @param time_cols list of strings: list of strings of column names
+            @param num_classes (optional): number of classes to break
+              distribution of values into. Currently uses quantile bins.
+            @param w_type string (optional): weight type ('knn' or 'queen')
+            @param num_ngbrs int (optional): number of neighbors (if knn type)
+            @param permutations int (optional): number of permutations for test
+              stats
+            @param geom_col string (optional): name of column which contains
+              the geometries
+            @param id_col string (optional): name of column which has the ids
+              of the table
 
-    if len(time_cols) < 2:
-        plpy.error('More than one time column needs to be passed')
+            Outputs:
+            @param trend_up float: probablity that a geom will move to a higher
+              class
+            @param trend_down float: probablity that a geom will move to a
+              lower class
+            @param trend float: (trend_up - trend_down) / trend_static
+            @param volatility float: a measure of the volatility based on
+              probability stddev(prob array)
+        """
 
-    qvals = {"id_col": id_col,
-             "time_cols": time_cols,
-             "geom_col": geom_col,
-             "subquery": subquery,
-             "num_ngbrs": num_ngbrs}
+        if len(time_cols) < 2:
+            plpy.error('More than one time column needs to be passed')
 
-    try:
-        query_result = plpy.execute(
-            pu.construct_neighbor_query(w_type, qvals)
-        )
-        if len(query_result) == 0:
-            return zip([None], [None], [None], [None], [None])
-    except plpy.SPIError, err:
-        plpy.error('Analysis failed: %s' % err)
-        return zip([None], [None], [None], [None], [None])
+        params = {"id_col": id_col,
+                  "time_cols": time_cols,
+                  "geom_col": geom_col,
+                  "subquery": subquery,
+                  "num_ngbrs": num_ngbrs}
 
-    # build weight
-    weights = pu.get_weight(query_result, w_type)
-    weights.transform = 'r'
+        query_result = self.data_provider.get_markov(w_type, params)
 
-    # prep time data
-    t_data = get_time_data(query_result, time_cols)
+        # build weight
+        weights = pu.get_weight(query_result, w_type)
+        weights.transform = 'r'
 
-    plpy.debug('shape of t_data %d, %d' % t_data.shape)
-    plpy.debug('number of weight objects: %d, %d' % (weights.sparse).shape)
-    plpy.debug('first num elements: %f' % t_data[0, 0])
+        # prep time data
+        t_data = get_time_data(query_result, time_cols)
 
-    sp_markov_result = ps.Spatial_Markov(t_data,
-                                         weights,
-                                         k=num_classes,
-                                         fixed=False,
-                                         permutations=permutations)
+        sp_markov_result = ps.Spatial_Markov(t_data,
+                                             weights,
+                                             k=num_classes,
+                                             fixed=False,
+                                             permutations=permutations)
 
-    # get lag classes
-    lag_classes = ps.Quantiles(
-        ps.lag_spatial(weights, t_data[:, -1]),
-        k=num_classes).yb
+        # get lag classes
+        lag_classes = ps.Quantiles(
+            ps.lag_spatial(weights, t_data[:, -1]),
+            k=num_classes).yb
 
-    # look up probablity distribution for each unit according to class and lag
-    #  class
-    prob_dist = get_prob_dist(sp_markov_result.P,
-                              lag_classes,
-                              sp_markov_result.classes[:, -1])
+        # look up probablity distribution for each unit according to class and
+        #  lag class
+        prob_dist = get_prob_dist(sp_markov_result.P,
+                                  lag_classes,
+                                  sp_markov_result.classes[:, -1])
 
-    # find the ups and down and overall distribution of each cell
-    trend_up, trend_down, trend, volatility = get_prob_stats(
-      prob_dist,
-      sp_markov_result.classes[:, -1])
+        # find the ups and down and overall distribution of each cell
+        trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist, sp_markov_result.classes[:, -1])
 
-    # output the results
-    return zip(trend, trend_up, trend_down, volatility, weights.id_order)
+        # output the results
+        return zip(trend, trend_up, trend_down, volatility, weights.id_order)
+
 
 
 def get_time_data(markov_data, time_cols):
@@ -187,8 +183,8 @@ def get_prob_stats(prob_dist, unit_indices):
         trend_up[i] = prob_dist[i, (unit_indices[i]+1):].sum()
         trend_down[i] = prob_dist[i, :unit_indices[i]].sum()
         if prob_dist[i, unit_indices[i]] > 0.0:
-            trend[i] = ((trend_up[i] - trend_down[i]) /
-                        (prob_dist[i, unit_indices[i]]))
+            trend[i] = (trend_up[i] - trend_down[i]) / (
+              prob_dist[i, unit_indices[i]])
         else:
             trend[i] = None
 

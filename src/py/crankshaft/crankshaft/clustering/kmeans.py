@@ -1,18 +1,32 @@
 from sklearn.cluster import KMeans
-import plpy
+import numpy as np
 
-def kmeans(query, no_clusters, no_init=20):
-    data = plpy.execute('''select array_agg(cartodb_id order by cartodb_id) as ids,
-        array_agg(ST_X(the_geom) order by cartodb_id) xs,
-        array_agg(ST_Y(the_geom) order by cartodb_id) ys from ({query}) a
-        where the_geom is not null
-    '''.format(query=query))
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 
-    xs  = data[0]['xs']
-    ys  = data[0]['ys']
-    ids = data[0]['ids']
 
-    km = KMeans(n_clusters= no_clusters, n_init=no_init)
-    labels = km.fit_predict(zip(xs,ys))
-    return zip(ids,labels)
+class Kmeans:
+    def __init__(self, data_provider=None):
+        if data_provider is None:
+            self.data_provider = AnalysisDataProvider()
+        else:
+            self.data_provider = data_provider
 
+    def spatial(self, query, no_clusters, no_init=20):
+        """
+            find centers based on clusters of latitude/longitude pairs
+            query: SQL query that has a WGS84 geometry (the_geom)
+        """
+        params = {"subquery": query,
+                  "geom_col": "the_geom",
+                  "id_col": "cartodb_id"}
+
+        data = self.data_provider.get_spatial_kmeans(params)
+
+        # Unpack query response
+        xs = data[0]['xs']
+        ys = data[0]['ys']
+        ids = data[0]['ids']
+
+        km = KMeans(n_clusters=no_clusters, n_init=no_init)
+        labels = km.fit_predict(zip(xs, ys))
+        return zip(ids, labels)
