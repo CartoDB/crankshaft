@@ -44,8 +44,15 @@ class AnalysisDataProvider:
             plpy.error('Analysis failed: %s' % e)
             return pu.empty_zipped_array(2)
 
-    def get_nonspatial_kmeans(self, query):
+    def get_nonspatial_kmeans(self, params):
         """fetch data for non-spatial kmeans"""
+        query = '''
+            SELECT {cols}, array_agg({id_col}) As rowid
+            FROM ({subquery}) As a
+        '''.format(subquery=subquery,
+                   id_col=id_col,
+                   cols=', '.join(['array_agg({0}) As arr_{0}'.format(c)
+                                   for c in params[colnames]]))
         try:
             data = plpy.execute(query)
             return data
