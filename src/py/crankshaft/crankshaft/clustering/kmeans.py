@@ -54,7 +54,7 @@ class Kmeans:
                   "subquery": subquery,
                   "id_col": id_col}
 
-        data = self.query_runner.get_nonspatial_kmeans(params, standarize)
+        data = self.data_provider.get_nonspatial_kmeans(params, standarize)
 
         # fill array with values for k-means clustering
         if standarize:
