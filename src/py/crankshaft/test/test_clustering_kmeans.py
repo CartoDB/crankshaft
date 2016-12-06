@@ -64,8 +64,8 @@ class KMeansNonspatialTest(unittest.TestCase):
         """
         # data from:
         # http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html#sklearn-cluster-kmeans
-        data_raw = [OrderedDict([("col1", [1, 1, 1, 4, 4, 4]),
-                                 ("col2", [2, 4, 0, 2, 4, 0]),
+        data_raw = [OrderedDict([("arr_col1", [1, 1, 1, 4, 4, 4]),
+                                 ("arr_col2", [2, 4, 0, 2, 4, 0]),
                                  ("rowids", [1, 2, 3, 4, 5, 6])])]
 
         random_seeds.set_random_seeds(1234)
