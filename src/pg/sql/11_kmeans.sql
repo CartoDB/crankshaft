@@ -9,6 +9,25 @@ RETURNS table (cartodb_id integer, cluster_no integer) as $$
 
 $$ LANGUAGE plpythonu;
 
+-- Non-spatial k-means clustering
+-- query: sql query to retrieve all the needed data
+
+CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(
+  query TEXT,
+  colnames TEXT[],
+  num_clusters INTEGER,
+  id_colname TEXT DEFAULT 'cartodb_id',
+  standarize BOOLEAN DEFAULT true
+)
+RETURNS TABLE(cluster_label text, cluster_center json, silhouettes numeric, rowid bigint) AS $$
+
+    from crankshaft.clustering import Kmeans
+    kmeans = Kmeans()
+    return kmeans.nonspatial(query, colnames, num_clusters,
+                             id_colname, standarize)
+$$ LANGUAGE plpythonu;
+
+
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(state Numeric[],the_geom GEOMETRY(Point, 4326), weight NUMERIC)
 RETURNS Numeric[] AS
