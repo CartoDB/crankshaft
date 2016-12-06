@@ -46,13 +46,15 @@ class AnalysisDataProvider:
 
     def get_nonspatial_kmeans(self, params):
         """fetch data for non-spatial kmeans"""
+        agg_cols = ', '.join(['array_agg({0}) As arr_col{1}'.format(idx+1, val)
+                              for idx, val in enumerate(params['colnames'])])
+
         query = '''
             SELECT {cols}, array_agg({id_col}) As rowid
             FROM ({subquery}) As a
         '''.format(subquery=params['subquery'],
                    id_col=params['id_col'],
-                   cols=', '.join(['array_agg({0}) As arr_{0}'.format(c)
-                                   for c in params['colnames']]))
+                   cols=agg_cols)
         try:
             data = plpy.execute(query)
             return data

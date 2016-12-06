@@ -59,9 +59,9 @@ class Kmeans:
         # fill array with values for k-means clustering
         if standarize:
             cluster_columns = _scale_data(
-              _extract_columns(data, colnames))
+              _extract_columns(data, len(colnames)))
         else:
-            cluster_columns = _extract_columns(data, colnames)
+            cluster_columns = _extract_columns(data, len(colnames))
 
         print str(cluster_columns)
         # TODO: decide on optimal parameters for most cases
@@ -84,14 +84,15 @@ class Kmeans:
 
 # -- Preprocessing steps
 
-def _extract_columns(data, colnames):
+def _extract_columns(data, n_cols):
     """
         Extract the features from the query and pack them into a NumPy array
         data (list of dicts): result of the kmeans request
         id_col_name (string): name of column which has the row id (not a
                               feature of the analysis)
     """
-    return np.array([data[0]['arr_{}'.format(c)] for c in colnames],
+    return np.array([data[0]['arr_col{0}'.format(i+1)]
+                     for i in xrange(n_cols)],
                     dtype=float).T
 
 
