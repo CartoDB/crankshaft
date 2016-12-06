@@ -49,10 +49,10 @@ class AnalysisDataProvider:
         query = '''
             SELECT {cols}, array_agg({id_col}) As rowid
             FROM ({subquery}) As a
-        '''.format(subquery=subquery,
-                   id_col=id_col,
+        '''.format(subquery=params['subquery'],
+                   id_col=params['id_col'],
                    cols=', '.join(['array_agg({0}) As arr_{0}'.format(c)
-                                   for c in params[colnames]]))
+                                   for c in params['colnames']]))
         try:
             data = plpy.execute(query)
             return data
