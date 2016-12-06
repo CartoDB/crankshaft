@@ -69,7 +69,7 @@ class KMeansNonspatialTest(unittest.TestCase):
                                  ("rowids", [1, 2, 3, 4, 5, 6])])]
 
         random_seeds.set_random_seeds(1234)
-        kmeans = Kmeans(FakeQueryRunner(data_raw))
+        kmeans = Kmeans(FakeDataProvider(data_raw))
         clusters = kmeans.nonspatial('subquery', ['col1', 'col2'], 2)
         print str([c[0] for c in clusters])
 
