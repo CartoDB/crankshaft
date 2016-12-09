@@ -387,6 +387,7 @@ def local_production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=Fa
     
     coefficients = []
     t_vals = []
+    stand_errs = []
     r_squared = local_model['pseudoR2']
    
     plpy.notice(str(local_model['param0']))
@@ -395,8 +396,10 @@ def local_production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=Fa
             enumerate(ind_vars)}))
         t_vals.append(json.dumps({var: local_model['tvalue' + str(k)] for k, var in
             enumerate(ind_vars)}))
+        stand_errs.append(json.dumps({var: local_model['stde' + str(k)] for k, var in
+            enumerate(ind_vars)}))
     
-    return zip(coefficients, t_vals, r_squared, rowid)
+    return zip(coefficients, stand_errs, t_vals, r_squared, rowid)
 
 def local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, Quasi=False):
     """
@@ -464,6 +467,7 @@ def local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, Qua
         
     coefficients = []
     t_vals = []
+    stand_errs = []
     r_squared = local_model['pseudoR2']
    
     plpy.notice(str(local_model['param0']))
@@ -472,8 +476,10 @@ def local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, Qua
             enumerate(ind_vars)}))
         t_vals.append(json.dumps({var: local_model['tvalue' + str(k)] for k, var in
             enumerate(ind_vars)}))
+        stand_errs.append(json.dumps({var: local_model['stde' + str(k)] for k, var in
+            enumerate(ind_vars)}))
     
-    return zip(coefficients, t_vals, r_squared, rowid)
+    return zip(coefficients, stand_errs, t_vals, r_squared, rowid)
 
 def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=False):
     """
@@ -555,6 +561,7 @@ def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=
     plpy.notice(str(local_model['param2']))
     coefficients = []
     t_vals = []
+    standd_errs = []
     r_squared = local_model['pseudoR2']
    
     for idx in xrange(n):
@@ -562,6 +569,8 @@ def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=
             enumerate(ind_vars)}))
         t_vals.append(json.dumps({var: local_model['tvalue' + str(k)] for k, var in
             enumerate(ind_vars)}))
+        stand_errs.append(json.dumps({var: local_model['stde' + str(k)] for k, var in
+            enumerate(ind_vars)}))
     
-    return zip(coefficients, t_vals, r_squared, rowid)
+    return zip(coefficients, stand_errs, t_vals, r_squared, rowid)
 
