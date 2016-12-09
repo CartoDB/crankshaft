@@ -391,12 +391,12 @@ def local_production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=Fa
     r_squared = local_model['pseudoR2']
    
     plpy.notice(str(local_model['param0']))
-    for idx in xrange(n):
-        coefficients.append(json.dumps({var: local_model['param' + str(k)] for k, var in
+    for idx in xrange(len(np.unique(origins))):
+        coefficients.append(json.dumps({var: local_model['param' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-        t_vals.append(json.dumps({var: local_model['tvalue' + str(k)] for k, var in
+        t_vals.append(json.dumps({var: local_model['tvalue' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-        stand_errs.append(json.dumps({var: local_model['stde' + str(k)] for k, var in
+        stand_errs.append(json.dumps({var: local_model['stde' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
     
     return zip(coefficients, stand_errs, t_vals, r_squared, rowid)
@@ -471,12 +471,12 @@ def local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, Qua
     r_squared = local_model['pseudoR2']
    
     plpy.notice(str(local_model['param0']))
-    for idx in xrange(n):
-        coefficients.append(json.dumps({var: local_model['param' + str(k)] for k, var in
+    for idx in xrange(len(np.unique(destinations))):
+        coefficients.append(json.dumps({var: local_model['param' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-        t_vals.append(json.dumps({var: local_model['tvalue' + str(k)] for k, var in
+        t_vals.append(json.dumps({var: local_model['tvalue' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-        stand_errs.append(json.dumps({var: local_model['stde' + str(k)] for k, var in
+        stand_errs.append(json.dumps({var: local_model['stde' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
     
     return zip(coefficients, stand_errs, t_vals, r_squared, rowid)
@@ -564,12 +564,13 @@ def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=
     stand_errs = []
     r_squared = local_model['pseudoR2']
    
-    for idx in xrange(n):
-        coefficients.append(json.dumps({var: local_model['param' + str(k)] for k, var in
+    for idx in xrange(len(np.unique(locs))):
+        plpy.notice(str(idx))
+        coefficients.append(json.dumps({var: local_model['param' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-        t_vals.append(json.dumps({var: local_model['tvalue' + str(k)] for k, var in
+        t_vals.append(json.dumps({var: local_model['tvalue' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-        stand_errs.append(json.dumps({var: local_model['stde' + str(k)] for k, var in
+        stand_errs.append(json.dumps({var: local_model['stde' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
     
     return zip(coefficients, stand_errs, t_vals, r_squared, rowid)
