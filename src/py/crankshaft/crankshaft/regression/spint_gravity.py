@@ -561,7 +561,7 @@ def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=
     plpy.notice(str(local_model['param2']))
     coefficients = []
     t_vals = []
-    standd_errs = []
+    stand_errs = []
     r_squared = local_model['pseudoR2']
    
     for idx in xrange(n):
