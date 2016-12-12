@@ -1,3 +1,11 @@
+0.5.0 (2016-12-15)
+------------------
+* Updated PULL_REQUEST_TEMPLATE
+* Fixed a bug that flips the order of the numerator in denominator for calculating using Moran Local Rate because previously the code sorted the keys alphabetically.
+* Add new CDB_GetisOrdsG functions. Getis-Ord's G\* is a geo-statistical measurement of the intensity of clustering of high or low values
+* Add new outlier detection functions: CDB_StaticOutlier, CDB_PercentOutlier and CDB_StdDevOutlier
+* Updates in the framework for accessing the Python functions.
+
 0.4.2 (2016-09-22)
 ------------------
 * Bugfix for cdb_areasofinterestglobal: import correct modules
