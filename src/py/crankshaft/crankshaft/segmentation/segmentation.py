@@ -12,14 +12,16 @@ from sklearn.cross_validation import train_test_split
 # Lower level functions
 # ---------------------
 
-
-def replace_nan_with_mean(array):
+# NOTE: added optional param here
+def replace_nan_with_mean(array, avgs=None):
     """
         Input:
             @param array: an array of floats which may have null-valued entries
         Output:
             array with nans filled in with the mean of the dataset
     """
+    # TODO: update code to take in avgs parameter
+
     # returns an array of rows and column indices
     indices = np.where(np.isnan(array))
 
@@ -122,8 +124,17 @@ def create_and_predict_segment(query, variable, target_query, model_params):
     target, features = get_data(variable, feature_columns, query)
 
     model, accuracy = train_model(target, features, model_params, 0.2)
-    cartodb_ids, result = predict_segment(model, feature_columns, target_query)
-    accuracy_array = [accuracy]*result.shape[0]
+    result = predict_segment(model, feature_columns, target_query)
+    accuracy_array = [accuracy] * result.shape[0]
+
+    # cartodb_id plpy.execute code here instead of in predict_segment
+    try:
+        cartodb_ids = plpy.execute('''
+          SELECT array_agg(cartodb_id ORDER BY cartodb_id) As cartodb_ids
+          FROM ({0}) As a'''.format(target_query))[0]['cartodb_ids']
+    except Exception, err:
+        plpy.error('Failed to build segmentation model: %s' % err)
+
     return zip(cartodb_ids, result, accuracy_array)
 
 
@@ -183,14 +194,20 @@ def predict_segment(model, features_col, target_query):
     try:
         cursor = plpy.cursor('''
           SELECT Array[{joined_features}] As features
-          FROM ({target_query}) As a'''
-                             .format(
-                                joined_features=joined_features,
-                                target_query=target_query)
-                             )
-    except Exception, e:
-        plpy.error('Failed to build segmentation model: %s' % e)
+          FROM ({target_query}) As a'''.format(
+            joined_features=joined_features,
+            target_query=target_query))
+    except Exception, err:
+        plpy.error('Failed to build segmentation model: %s' % err)
 
+    # TODO: is this a good solution for finding the averages?
+    # r = plpy.execute('''
+    #   SELECT {cols}
+    #   FROM ({target_query}) As a
+    # '''.format(cols=', '.join(['avg({c}) As {c}'.format(c=c)
+    #                            for c in joined_features]),
+    #            target_query=target_query))
+    # avgs = [r[0][c] for c in joined_features]
     results = []
 
     while True:
@@ -198,20 +215,12 @@ def predict_segment(model, features_col, target_query):
         if not rows:
             break
         batch = np.row_stack([np.array(row['features'], dtype=float)
-                             for row in rows])
+                              for row in rows])
 
         # Need to fix this to global mean. This will cause weird effects
         batch = replace_nan_with_mean(batch)
         prediction = model.predict(batch)
         results.append(prediction)
 
-    try:
-        cartodb_ids = plpy.execute('''
-          SELECT array_agg(cartodb_id
-          ORDER BY cartodb_id) As cartodb_ids
-          FROM ({0}) As a'''
-                                   .format(target_query))[0]['cartodb_ids']
-    except Exception, e:
-        plpy.error('Failed to build segmentation model: %s' % e)
-
-    return cartodb_ids, np.concatenate(results)
+    # NOTE: we removed the cartodb_ids calculation in here
+    return np.concatenate(results)
