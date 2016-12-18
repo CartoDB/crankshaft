@@ -215,6 +215,29 @@ def gwr_query(params):
 
     return query.format(**params).strip()
 
+def gwr_predict_query(params):
+    """
+    GWR query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg(ST_X(ST_Centroid({geom_col}))) As x,
+        array_agg(ST_Y(ST_Centroid({geom_col}))) As y,
+        array_agg({dep_var}) As dep_var,
+        %(ind_vars_select)s
+        array_agg({id_col}) As rowid
+      FROM ({subquery}) As q
+      WHERE
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
 # to add more weight methods open a ticket or pull request
 
 
