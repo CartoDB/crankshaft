@@ -29,6 +29,12 @@ A table with the following columns.
 | vals | NUMERIC | Values from `'column_name'`. |
 
 
+#### Notes
+
+*   Rows will null values will be omitted from this analysis. To ensure they are added to the analysis, fill the null-valued cells with an appropriate value such as the mean of a column, the mean of the most recent two time steps, or use a `LEFT JOIN` to get null outputs from the analysis.
+*   Input query can only accept tables (datasets) in the users database account. Common table expressions (CTEs) do not work as an input unless specified in the `subquery` parameter.
+
+
 #### Example Usage
 
 ```sql
@@ -37,8 +43,8 @@ SELECT
   aoi.quads,
   aoi.significance,
   c.num_cyclists_per_total_population
-FROM CDB_AreasOfInterestLocal('SELECT * FROM commute_data'
-                                 'num_cyclists_per_total_population') As aoi
+FROM CDB_AreasOfInterestLocal('SELECT * FROM commute_data',
+                              'num_cyclists_per_total_population') As aoi
 JOIN commute_data As c
 ON c.cartodb_id = aoi.rowid;
 ```
@@ -105,6 +111,12 @@ A table with the following columns.
 | vals | NUMERIC | Values from `'column_name'`. |
 
 
+#### Notes
+
+*   Rows will null values will be omitted from this analysis. To ensure they are added to the analysis, fill the null-valued cells with an appropriate value such as the mean of a column, the mean of the most recent two time steps, or use a `LEFT JOIN` to get null outputs from the analysis.
+*   Input query can only accept tables (datasets) in the users database account. Common table expressions (CTEs) do not work as an input unless specified in the `subquery` parameter.
+
+
 #### Example Usage
 
 ```sql
@@ -114,8 +126,8 @@ SELECT
   aoi.significance,
   c.cyclists_per_total_population
 FROM CDB_AreasOfInterestLocalRate('SELECT * FROM commute_data'
-                                     'num_cyclists',
-                                     'total_population') As aoi
+                                  'num_cyclists',
+                                  'total_population') As aoi
 JOIN commute_data As c
 ON c.cartodb_id = aoi.rowid;
 ```
