@@ -2,20 +2,18 @@
     Geographically weighted regression
 """
 import numpy as np
-from gwr.base.gwr import GWR
+from gwr.base.gwr import GWR as pysal_GWR
 from gwr.base.sel_bw import Sel_BW
-import plpy
-import crankshaft.pysal_utils as pu
 import json
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 
 class GWR:
-    def __init__(self, analysis_provider=None):
-        if analysis_provider:
-            self.analysis_provider = analysis_provider
+    def __init__(self, data_provider=None):
+        if data_provider:
+            self.data_provider = data_provider
         else:
-            self.analysis_provider = AnalysisDataProvider()
+            self.data_provider = AnalysisDataProvider()
 
     def gwr(self, subquery, dep_var, ind_vars,
             bw=None, fixed=False, kernel='bisquare',
@@ -36,7 +34,7 @@ class GWR:
                   'ind_vars': ind_vars}
 
         # retrieve data
-        query_result = self.analysis_data_provider.get_gwr(params)
+        query_result = self.data_provider.get_gwr(params)
 
         # unique ids and variable names list
         rowid = np.array(query_result[0]['rowid'], dtype=np.int)
@@ -64,13 +62,11 @@ class GWR:
         ind_vars.insert(0, 'intercept')
 
         # calculate bandwidth if none is supplied
-        plpy.notice(str(bw))
         if bw is None:
             bw = Sel_BW(coords, Y, X,
                         fixed=fixed, kernel=kernel).search()
-        plpy.notice(str(bw))
-        model = GWR(coords, Y, X, bw,
-                    fixed=fixed, kernel=kernel).fit()
+        model = pysal_GWR(coords, Y, X, bw,
+                          fixed=fixed, kernel=kernel).fit()
 
         # containers for outputs
         coeffs = []
