@@ -10,9 +10,11 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (moran NUMERIC, significance NUMERIC)
 AS $$
-  from crankshaft.clustering import moran
+  from crankshaft.clustering import Moran
   # TODO: use named parameters or a dictionary
-  return moran(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
+  moran = Moran()
+  return moran.global_stat(subquery, column_name, w_type,
+                           num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;
 
 -- Moran's I Local (internal function)
@@ -27,9 +29,11 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT)
 RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, vals NUMERIC)
 AS $$
-  from crankshaft.clustering import moran_local
+  from crankshaft.clustering import Moran
+  moran = Moran()
   # TODO: use named parameters or a dictionary
-  return moran_local(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
+  return moran.local_stat(subquery, column_name, w_type,
+                          num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;
 
 -- Moran's I Local (public-facing function)
@@ -120,9 +124,11 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (moran FLOAT, significance FLOAT)
 AS $$
-  from crankshaft.clustering import moran_local
+  from crankshaft.clustering import Moran
+  moran = Moran()
   # TODO: use named parameters or a dictionary
-  return moran_rate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
+  return moran.global_rate_stat(subquery, numerator, denominator, w_type,
+                                num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;
 
 
@@ -140,9 +146,10 @@ CREATE OR REPLACE FUNCTION
 RETURNS
 TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, vals NUMERIC)
 AS $$
-  from crankshaft.clustering import moran_local_rate
+  from crankshaft.clustering import Moran
+  moran = Moran()
   # TODO: use named parameters or a dictionary
-  return moran_local_rate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
+  return moran.local_rate_stat(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;
 
 -- Moran's I Local Rate (public-facing function)

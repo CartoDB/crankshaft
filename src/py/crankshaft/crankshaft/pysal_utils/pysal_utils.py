@@ -45,8 +45,16 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
 def query_attr_select(params, table_ref=True):
     """
         Create portion of SELECT statement for attributes inolved in query.
+        Defaults to order in the params
         @param params: dict of information used in query (column names,
                        table name, etc.)
+            Example:
+            OrderedDict([('numerator', 'price'),
+                         ('denominator', 'sq_meters'),
+                         ('subquery', 'SELECT * FROM interesting_data')])
+        Output:
+          "i.\"price\"::numeric As attr1, " \
+          "i.\"sq_meters\"::numeric As attr2, "
     """
 
     attr_string = ""
@@ -70,7 +78,7 @@ def query_attr_select(params, table_ref=True):
                  if k not in ('id_col', 'geom_col', 'subquery',
                               'num_ngbrs', 'subquery')]
 
-        for idx, val in enumerate(sorted(attrs)):
+        for idx, val in enumerate(attrs):
             attr_string += template % {"col": params[val],
                                        "alias_num": idx + 1}
 
@@ -86,8 +94,8 @@ def query_attr_where(params, table_ref=True):
              'numerator': 'data1',
              'denominator': 'data2',
              '': ...}
-        Output: 'idx_replace."data1" IS NOT NULL AND idx_replace."data2"
-                IS NOT NULL'
+        Output:
+          'idx_replace."data1" IS NOT NULL AND idx_replace."data2" IS NOT NULL'
         Input:
         {'subquery': ...,
          'time_cols': ['time1', 'time2', 'time3'],
@@ -111,18 +119,17 @@ def query_attr_where(params, table_ref=True):
         # moran where clauses
 
         # get keys
-        attrs = sorted([k for k in params
-                        if k not in ('id_col', 'geom_col', 'subquery',
-                                     'num_ngbrs', 'ind_vars')])
+        attrs = [k for k in params
+                 if k not in ('id_col', 'geom_col', 'subquery',
+                              'num_ngbrs', 'subquery')]
+
         # add values to template
         for attr in attrs:
             attr_string.append(template % params[attr])
 
-        if len(attrs) == 2:
-            check_zero = "\"%s\" <> 0" % params[attrs[1]]
-            if table_ref is not None:
-                check_zero = "idx_replace." + check_zero
-            attr_string.append(check_zero)
+        if 'denominator' in attrs:
+            attr_string.append(
+              "idx_replace.\"%s\" <> 0" % params['denominator'])
 
     out = " AND ".join(attr_string)
 

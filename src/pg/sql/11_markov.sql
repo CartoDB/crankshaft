@@ -22,10 +22,11 @@ CREATE OR REPLACE FUNCTION
 RETURNS TABLE (trend NUMERIC, trend_up NUMERIC, trend_down NUMERIC, volatility NUMERIC, rowid INT)
 AS $$
 
-  from crankshaft.space_time_dynamics import spatial_markov_trend
+  from crankshaft.space_time_dynamics import Markov
+  markov = Markov()
 
   ## TODO: use named parameters or a dictionary
-  return spatial_markov_trend(subquery, time_cols, num_classes, w_type, num_ngbrs, permutations, geom_col, id_col)
+  return markov.spatial_trend(subquery, time_cols, num_classes, w_type, num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu;
 
 -- input table format: identical to above but in a predictable format
