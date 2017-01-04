@@ -65,3 +65,12 @@ class AnalysisDataProvider:
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
+
+    def get_gwr(self, params):
+        """fetch data for gwr analysis"""
+        query = pu.gwr_query(params)
+        try:
+            query_result = plpy.execute(query)
+            return query_result
+        except plpy.SPIError, err:
+            plpy.error('Analysis failed: %s' % err)
