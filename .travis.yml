@@ -35,7 +35,11 @@ before_install:
   - sudo apt-get -y remove --purge postgresql-9.2
   - sudo apt-get -y remove --purge postgresql-9.3
   - sudo apt-get -y remove --purge postgresql-9.4
-  - sudo apt-get -y remove --purge postgis
+  - sudo apt-get -y remove --purge postgresql-9.5
+  - sudo rm -rf /var/lib/postgresql/
+  - sudo rm -rf /var/log/postgresql/
+  - sudo rm -rf /etc/postgresql/
+  - sudo apt-get -y remove --purge postgis-2.2
   - sudo apt-get -y autoremove
 
   - sudo apt-get -y install postgresql-9.5=9.5.2-3cdb2
