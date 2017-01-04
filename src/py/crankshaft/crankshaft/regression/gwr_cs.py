@@ -89,4 +89,4 @@ class GWR:
                                       for k, var in enumerate(ind_vars)}))
 
         return zip(coeffs, stand_errs, t_vals,
-                   predicted, residuals, r_squared, rowid, bw)
+                   predicted, residuals, r_squared, bw, rowid)
