@@ -222,6 +222,7 @@ def gwr_query(params):
 
     return query.format(**params).strip()
 
+
 def gwr_predict_query(params):
     """
     GWR query
