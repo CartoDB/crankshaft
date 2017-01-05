@@ -32,7 +32,7 @@ class GWRTest(unittest.TestCase):
                        array_agg(pctrural) As attr3,
                        array_agg(pctfb) As attr4,
                        array_agg(pctblack) As attr5,
-                       array_agg(cartodb_id) As rowid
+                       array_agg(area_key) As rowid
                 FROM g_utm
                 WHERE pctbach is not NULL AND
                       pctpov IS NOT NULL AND
@@ -75,12 +75,12 @@ class GWRTest(unittest.TestCase):
                 [json.loads(coeffs[i])['pctpov']
                  for i in xrange(len(coeffs))][:10])
 
-        for idx, val in enumerate(pctpov_coeff):
+        for idx, val in enumerate(pctpov_se):
             print idx, val, ids[idx], rowids[rowids.index(ids[idx])]
             resp_idx = rowids.index(ids[idx])
             if resp_idx is None:
                 print('missed lookup on {0}'.format(ids[idx]))
-            print('comparison: %f, %f' % (val, json.loads(coeffs[resp_idx])['pctpov']))
+            print('comparison: %f, %f' % (val, json.loads(stand_errs[resp_idx])['pctpov']))
             # print('comparison: %f, %f' % (pctpov_se[idx], ))
             # self.assertAlmostEquals(val, coeffs[resp_idx])
 
