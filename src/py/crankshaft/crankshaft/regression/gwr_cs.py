@@ -2,10 +2,11 @@
     Geographically weighted regression
 """
 import numpy as np
-from gwr.base.gwr import GWR as pysal_GWR
+from gwr.base.gwr import GWR as PySAL_GWR
 from gwr.base.sel_bw import Sel_BW
 import json
 from crankshaft.analysis_data_provider import AnalysisDataProvider
+import plpy
 
 
 class GWR:
@@ -33,8 +34,13 @@ class GWR:
                   'dep_var': dep_var,
                   'ind_vars': ind_vars}
 
-        # retrieve data
+        # get data from data provider
         query_result = self.data_provider.get_gwr(params)
+
+        # exit if data to analyze is empty
+        if len(query_result) == 0:
+            plpy.error('No data passed to analysis or independent variables '
+                       'are all null-valued')
 
         # unique ids and variable names list
         rowid = np.array(query_result[0]['rowid'], dtype=np.int)
@@ -64,7 +70,7 @@ class GWR:
         if bw is None:
             bw = Sel_BW(coords, Y, X,
                         fixed=fixed, kernel=kernel).search()
-        model = pysal_GWR(coords, Y, X, bw,
+        model = PySAL_GWR(coords, Y, X, bw,
                           fixed=fixed, kernel=kernel).fit()
 
         # containers for outputs
@@ -108,26 +114,32 @@ class GWR:
                   'dep_var': dep_var,
                   'ind_vars': ind_vars}
 
+        # get data from data provider
         query_result = self.data_provider.get_gwr_predict(params)
+
+        # exit if data to analyze is empty
+        if len(query_result) == 0:
+            plpy.error('No data passed to analysis or independent variables '
+                       'are all null-valued')
 
         # unique ids and variable names list
         rowid = np.array(query_result[0]['rowid'], dtype=np.int)
 
-        x = np.array(query_result[0]['x'])
-        y = np.array(query_result[0]['y'])
-        coords = np.array(zip(x, y))
+        x = np.array(query_result[0]['x'], dtype=float)
+        y = np.array(query_result[0]['y'], dtype=float)
+        coords = np.array(zip(x, y), dtype=float)
 
         # extract dependent variable
         Y = np.array(query_result[0]['dep_var']).reshape((-1, 1))
 
         n = Y.shape[0]
         k = len(ind_vars)
-        X = np.zeros((n, k))
+        X = np.empty((n, k), dtype=float)
 
         for attr in range(0, k):
             attr_name = 'attr' + str(attr + 1)
             X[:, attr] = np.array(
-              query_result[0][attr_name]).flatten()
+              query_result[0][attr_name], dtype=float).flatten()
 
         # add intercept variable name
         ind_vars.insert(0, 'intercept')
@@ -137,10 +149,11 @@ class GWR:
         train = np.where(Y != np.array(None))[0]
         test = np.where(Y == np.array(None))[0]
 
+        # report error if there is no data to predict
         if len(test) < 1:
             plpy.error('No rows flagged for prediction: verify that rows '
                        'denoting prediction locations have a dependent '
-                       'variable value of null')
+                       'variable value of `null`')
 
         # split dependent variable (only need training which is non-Null's)
         Y_train = Y[train].reshape((-1, 1))
@@ -160,8 +173,9 @@ class GWR:
                         fixed=fixed, kernel=kernel).search()
 
         # estimate model and predict at new locations
-        model = GWR(coords_train, Y_train, X_train, bw,
-                    fixed=fixed, kernel=kernel).predict(coords_test, X_test)
+        model = PySAL_GWR(coords_train, Y_train, X_train, bw,
+                          fixed=fixed,
+                          kernel=kernel).predict(coords_test, X_test)
 
         coefficients = []
         stand_errs = []
