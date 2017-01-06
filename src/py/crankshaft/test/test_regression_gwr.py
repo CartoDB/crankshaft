@@ -24,31 +24,27 @@ class GWRTest(unittest.TestCase):
         """
             fixture packed from canonical GWR georgia dataset using the
             following query:
-                SELECT array_agg(ST_X(ST_Centroid(the_geom))) As x,
-                       array_agg(ST_Y(ST_Centroid(the_geom))) As y,
+                SELECT array_agg(x) As x,
+                       array_agg(x) As y,
                        array_agg(pctbach) As dep_var,
-                       array_agg(pctpov) As attr1,
-                       array_agg(pcteld) As attr2,
-                       array_agg(pctrural) As attr3,
-                       array_agg(pctfb) As attr4,
-                       array_agg(pctblack) As attr5,
-                       array_agg(area_key) As rowid
+                       array_agg(pctrural) As attr1,
+                       array_agg(pctpov) As attr2,
+                       array_agg(pctblack) As attr3,
+                       array_agg(areakey) As rowid
                 FROM g_utm
                 WHERE pctbach is not NULL AND
                       pctpov IS NOT NULL AND
-                      pcteld IS NOT NULL AND
                       pctrural IS NOT NULL AND
-                      pctfb IS NOT NULL AND
                       pctblack IS NOT NULL
         """
         self.data = json.loads(
               open(fixture_file('gwr_packed_data.json')).read())
         self.knowns = json.loads(
               open(fixture_file('gwr_packed_knowns.json')).read())
+        # params, with ind_vars in same ordering as query above
         self.params = {'subquery': 'select * from table',
                        'dep_var': 'pctbach',
-                       'ind_vars': ['pctpov', 'pcteld', 'pctrural', 'pctfb',
-                                    'pctblack'],
+                       'ind_vars': ['pctrural', 'pctpov', 'pctblack'],
                        'bw': 90.000,
                        'fixed': False}
 
@@ -65,23 +61,35 @@ class GWRTest(unittest.TestCase):
         coeffs, stand_errs, t_vals, predicteds, residuals, r_squareds, bws, rowids = zip(*gwr_resp)
 
         # known_coeffs = self.knowns['coeffs']
-        pctpov_coeff = self.knowns['est_pctpov']
+        # data packed from https://github.com/TaylorOshan/pysal/blob/a44c5541e2e0d10a99ff05edc1b7f81b70f5a82f/pysal/examples/georgia/georgia_BS_NN_listwise.csv
+        coeff_known_inter = self.knowns['est_intercept']
+        coeff_known_pctpov = self.knowns['est_pctpov']
+        coeff_known_pctrural = self.knowns['est_pctrural']
+        coeff_known_pctblack = self.knowns['est_pctblack']
+        # coeff_known_pcteld = self.knowns['est_pcteld']
         pctpov_se = self.knowns['se_pctpov']
         ids = self.knowns['area_key']
         resp_idx = None
 
-        print sorted(pctpov_coeff[:10])
+        print sorted(coeff_known_pctpov[:10])
         print sorted(
                 [json.loads(coeffs[i])['pctpov']
                  for i in xrange(len(coeffs))][:10])
-
-        for idx, val in enumerate(pctpov_se):
+        with open('gwr_test_data.json', 'w') as f:
+            print("writing to file")
+            f.write(str(zip(rowids, coeffs)))
+        for idx, val in enumerate(coeff_known_pctpov):
             print idx, val, ids[idx], rowids[rowids.index(ids[idx])]
             resp_idx = rowids.index(ids[idx])
             if resp_idx is None:
                 print('missed lookup on {0}'.format(ids[idx]))
-            print('comparison: %f, %f' % (val, json.loads(stand_errs[resp_idx])['pctpov']))
-            # print('comparison: %f, %f' % (pctpov_se[idx], ))
+            print('comparison: %f, %f, %f, %f, | Intercepts: (%f, %f)' % (
+                val,
+                json.loads(coeffs[resp_idx])['pctpov'],
+                json.loads(coeffs[resp_idx])['pctrural'],
+                json.loads(coeffs[resp_idx])['pctblack'],
+                coeff_known_inter[idx],
+                json.loads(coeffs[resp_idx])['intercept']))
             # self.assertAlmostEquals(val, coeffs[resp_idx])
 
         assert False
