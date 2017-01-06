@@ -177,7 +177,7 @@ class GWR:
                           fixed=fixed,
                           kernel=kernel).predict(coords_test, X_test)
 
-        coefficients = []
+        coeffs = []
         stand_errs = []
         t_vals = []
         r_squared = model.localR2.flatten()
@@ -185,12 +185,12 @@ class GWR:
 
         m = len(model.predy)
         for idx in xrange(m):
-            coefficients.append(json.dumps({var: model.params[idx, k]
-                                            for k, var in enumerate(ind_vars)}))
+            coeffs.append(json.dumps({var: model.params[idx, k]
+                                      for k, var in enumerate(ind_vars)}))
             stand_errs.append(json.dumps({var: model.bse[idx, k]
                                           for k, var in enumerate(ind_vars)}))
             t_vals.append(json.dumps({var: model.tvalues[idx, k]
                                       for k, var in enumerate(ind_vars)}))
 
-        return zip(coefficients, stand_errs, t_vals,
+        return zip(coeffs, stand_errs, t_vals,
                    r_squared, predicted, rowid)
