@@ -2,18 +2,18 @@
 
 ### Predictive geographically weighted regression (GWR)
 
--- add description here
+Predictive GWR builds a spatially-varying regression model to predict unknown values from other known values. Similar to traditional linear regression, GWR takes a linear combination of independent variables and known dependent variables to calculate the best fit of a model. The model coefficients are spatially varying (controlled by the bandwidth parameter), so the model fit varies from geometry to geometry. GWR exposes places where non-stationarity is taking places--that is, where local behavior differs from what would be seen by doing a model without spatial variation.
 
 #### Arguments
 
 | Name | Type | Description |
 |------|------|-------------|
-| subquery | text | SQL query that expose the data to be analyzed (e.g., `SELECT * FROM regression_inputs`). This query must have the geometry column name (see the optional `geom_col` for default), the id column name (see `id_col`), dependent and independent column names. |
-| dep_var | text | name of the dependent variable in the regression model |
-| ind_vars | text[] | Text array of independent used in the model to describe the dependent variable |
-| bw (optional) | numeric | bandwidth value consisting of either a distance or N nearest neighbors. Defaults to calculate an optimal bandwidth. |
-| fixed (optional) | boolean | True for distance based kernel function and False for adaptive (nearest neighbor) kernel function (default). Defaults to false. |
-| kernel | text | Type of kernel function used to weight observations. One of gaussian, bisquare (default), or exponential. |
+| subquery | TEXT | SQL query that expose the data to be analyzed (e.g., `SELECT * FROM regression_inputs`). This query must have the geometry column name (see the optional `geom_col` for default), the id column name (see `id_col`), and the dependent (`dep_var`) and independent (`ind_vars`) column names. |
+| dep_var | TEXT | Name of the dependent variable in the regression model |
+| ind_vars | TEXT[] | Text array of independent variable column names used in the model to describe the dependent variable. |
+| bw (optional) | NUMERIC | Value of bandwidth. If `NULL` then select optimal (default). |
+| fixed (optional) | BOOLEAN | True for distance based kernel function and False (default) for adaptive (nearest neighbor) kernel function. Defaults to `False`. |
+| kernel (optional)| TEXT | Type of kernel function used to weight observations. One of `gaussian`, `bisquare` (default), or `exponential`. |
 
 
 #### Returns
@@ -23,11 +23,11 @@
 | coeffs | JSON | JSON object with parameter estimates for each of the dependent variables. The keys of the JSON object are the dependent variables, with values corresponding to the parameter estimate. |
 | stand_errs | JSON | Standard errors for each of the dependent variables. The keys of the JSON object are the dependent variables, with values corresponding to the respective standard errors. |
 | t_vals | JSON | T-values for each of the dependent variables. The keys of the JSON object are the dependent variable names, with values corresponding to the respective t-value. |
-| predicted | numeric | predicted value of y |
-| residuals | numeric | residuals of the response |
-| r_squared | numeric | R-squared for the parameter fit |
-| bandwidth | numeric | bandwidth value consisting of either a distance or N nearest neighbors |
-| rowid | int | row id of the original row |
+| predicted | NUMERIC | predicted value of y |
+| residuals | NUMERIC | residuals of the response |
+| r_squared | NUMERIC | R-squared for the parameter fit |
+| bandwidth | NUMERIC | bandwidth value consisting of either a distance or N nearest neighbors |
+| rowid | INTEGER | row id of the original row |
 
 
 #### Example Usage
@@ -42,27 +42,29 @@ SELECT
   (gwr.coeffs->>'pcteld')::numeric as coeff_pcteld,
   (gwr.coeffs->>'pctpov')::numeric as coeff_pctpov,
   gwr.residuals
-FROM cdb_crankshaft.CDB_GWR('select * from g_utm'::text, 'pctbach'::text, Array['pctblack', 'pctrural', 'pcteld', 'pctpov']) As gwr
+FROM cdb_crankshaft.CDB_GWR_Predict('select * from g_utm'::text,   
+  'pctbach'::text,
+  Array['pctblack', 'pctrural', 'pcteld', 'pctpov']) As gwr
 JOIN g_utm as g
 on g.cartodb_id = gwr.rowid
 ```
 
 Note: See [PostgreSQL syntax for parsing JSON objects](https://www.postgresql.org/docs/9.5/static/functions-json.html).
 
-### Descriptive geographically weighted regression
+### Geographically weighted regression model estimation
 
--- add description here
+Similar to the prediction-based GWR, this analysis generates the model coefficients for a spatially-varying regression. The model coefficients, along with their respective statistics, allow one to make inferences or describe a dependent variable based on the independent variables that make up the model.
 
 #### Arguments
 
 | Name | Type | Description |
 |------|------|-------------|
-| subquery | text | SQL query that expose the data to be analyzed (e.g., `SELECT * FROM regression_inputs`). This query must have the geometry column name (see the optional `geom_col` for default), the id column name (see `id_col`), dependent and independent column names. |
-| dep_var | text | name of the dependent variable in the regression model |
-| ind_vars | text[] | Text array of independent used in the model to describe the dependent variable |
-| bw (optional) | numeric | bandwidth value consisting of either a distance or N nearest neighbors. Defaults to calculate an optimal bandwidth. |
-| fixed (optional) | boolean | True for distance based kernel function and False for adaptive (nearest neighbor) kernel function (default). Defaults to false. |
-| kernel | text | Type of kernel function used to weight observations. One of gaussian, bisquare (default), or exponential. |
+| subquery | TEXT | SQL query that expose the data to be analyzed (e.g., `SELECT * FROM regression_inputs`). This query must have the geometry column name (see the optional `geom_col` for default), the id column name (see `id_col`), dependent and independent column names. |
+| dep_var | TEXT | name of the dependent variable in the regression model |
+| ind_vars | TEXT[] | Text array of independent variables used in the model to describe the dependent variable |
+| bw (optional) | NUMERIC | Value of bandwidth. If `NULL` then select optimal (default). |
+| fixed (optional) | BOOLEAN | True for distance based kernel function and False for adaptive (nearest neighbor) kernel function (default). Defaults to false. |
+| kernel | TEXT | Type of kernel function used to weight observations. One of `gaussian`, `bisquare` (default), or `exponential`. |
 
 
 #### Returns
@@ -72,11 +74,11 @@ Note: See [PostgreSQL syntax for parsing JSON objects](https://www.postgresql.or
 | coeffs | JSON | JSON object with parameter estimates for each of the dependent variables. The keys of the JSON object are the dependent variables, with values corresponding to the parameter estimate. |
 | stand_errs | JSON | Standard errors for each of the dependent variables. The keys of the JSON object are the dependent variables, with values corresponding to the respective standard errors. |
 | t_vals | JSON | T-values for each of the dependent variables. The keys of the JSON object are the dependent variable names, with values corresponding to the respective t-value. |
-| predicted | numeric | predicted value of y |
-| residuals | numeric | residuals of the response |
-| r_squared | numeric | R-squared for the parameter fit |
-| bandwidth | numeric | bandwidth value consisting of either a distance or N nearest neighbors |
-| rowid | int | row id of the original row |
+| predicted | NUMERIC | predicted value of y |
+| residuals | NUMERIC | residuals of the response |
+| r_squared | NUMERIC | R-squared for the parameter fit |
+| bandwidth | NUMERIC | bandwidth value consisting of either a distance or N nearest neighbors |
+| rowid | INTEGER | row id of the original row |
 
 
 #### Example Usage
