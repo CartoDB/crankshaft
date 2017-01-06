@@ -79,17 +79,21 @@ class GWRTest(unittest.TestCase):
             print("writing to file")
             f.write(str(zip(rowids, coeffs)))
         for idx, val in enumerate(coeff_known_pctpov):
-            print idx, val, ids[idx], rowids[rowids.index(ids[idx])]
+            # print idx, val, ids[idx], rowids[rowids.index(ids[idx])]
             resp_idx = rowids.index(ids[idx])
             if resp_idx is None:
                 print('missed lookup on {0}'.format(ids[idx]))
-            print('comparison: %f, %f, %f, %f, | Intercepts: (%f, %f)' % (
+            print('comparison: %d: %f, %f' % (
+                rowids[resp_idx],
                 val,
-                json.loads(coeffs[resp_idx])['pctpov'],
-                json.loads(coeffs[resp_idx])['pctrural'],
-                json.loads(coeffs[resp_idx])['pctblack'],
-                coeff_known_inter[idx],
-                json.loads(coeffs[resp_idx])['intercept']))
+                json.loads(coeffs[resp_idx])['pctpov']))
+            # print('comparison: %f, %f, %f, %f, | Intercepts: (%f, %f)' % (
+            #     val,
+            #     json.loads(coeffs[resp_idx])['pctpov'],
+            #     json.loads(coeffs[resp_idx])['pctrural'],
+            #     json.loads(coeffs[resp_idx])['pctblack'],
+            #     coeff_known_inter[idx],
+            #     json.loads(coeffs[resp_idx])['intercept']))
             # self.assertAlmostEquals(val, coeffs[resp_idx])
 
         assert False
