@@ -95,8 +95,9 @@ class GWR:
                                           for k, var in enumerate(ind_vars)}))
             t_vals.append(json.dumps({var: model.tvalues[idx, k]
                                       for k, var in enumerate(ind_vars)}))
-            filtered_t_vals.append(json.dumps({var: filtered_t[idx, k]
-                                               for k, var in enumerate(ind_vars)}))
+            filtered_t_vals.append(
+                    json.dumps({var: filtered_t[idx, k]
+                                for k, var in enumerate(ind_vars)}))
 
         return zip(coeffs, stand_errs, t_vals, filtered_t_vals,
                    predicted, residuals, r_squared, bw, rowid)
@@ -178,8 +179,8 @@ class GWR:
                         fixed=fixed, kernel=kernel).search()
 
         # estimate model and predict at new locations
-        model = PySAL_GWR(coords_train, Y_train, X_train, bw,
-                          fixed=fixed,
+        model = PySAL_GWR(coords_train, Y_train, X_train,
+                          bw, fixed=fixed,
                           kernel=kernel).predict(coords_test, X_test)
 
         coeffs = []
@@ -198,4 +199,4 @@ class GWR:
                                       for k, var in enumerate(ind_vars)}))
 
         return zip(coeffs, stand_errs, t_vals,
-                   r_squared, predicted, rowid)
+                   r_squared, predicted, rowid[test])
