@@ -46,12 +46,12 @@ class GWR:
         rowid = np.array(query_result[0]['rowid'], dtype=np.int)
 
         # x, y are centroids of input geometries
-        x = np.array(query_result[0]['x'], dtype=float)
-        y = np.array(query_result[0]['y'], dtype=float)
+        x = np.array(query_result[0]['x'], dtype=np.float)
+        y = np.array(query_result[0]['y'], dtype=np.float)
         coords = zip(x, y)
 
         # extract dependent variable
-        Y = np.array(query_result[0]['dep_var'], dtype=float).reshape((-1, 1))
+        Y = np.array(query_result[0]['dep_var'], dtype=np.float).reshape((-1, 1))
 
         n = Y.shape[0]
         k = len(ind_vars)
@@ -61,7 +61,7 @@ class GWR:
         for attr in range(0, k):
             attr_name = 'attr' + str(attr + 1)
             X[:, attr] = np.array(
-              query_result[0][attr_name], dtype=float).flatten()
+              query_result[0][attr_name], dtype=np.float).flatten()
 
         # add intercept variable name
         ind_vars.insert(0, 'intercept')
@@ -131,21 +131,21 @@ class GWR:
         # unique ids and variable names list
         rowid = np.array(query_result[0]['rowid'], dtype=np.int)
 
-        x = np.array(query_result[0]['x'], dtype=float)
-        y = np.array(query_result[0]['y'], dtype=float)
-        coords = np.array(zip(x, y), dtype=float)
+        x = np.array(query_result[0]['x'], dtype=np.float)
+        y = np.array(query_result[0]['y'], dtype=np.float)
+        coords = np.array(zip(x, y), dtype=np.float)
 
         # extract dependent variable
         Y = np.array(query_result[0]['dep_var']).reshape((-1, 1))
 
         n = Y.shape[0]
         k = len(ind_vars)
-        X = np.empty((n, k), dtype=float)
+        X = np.empty((n, k), dtype=np.float)
 
         for attr in range(0, k):
             attr_name = 'attr' + str(attr + 1)
             X[:, attr] = np.array(
-              query_result[0][attr_name], dtype=float).flatten()
+              query_result[0][attr_name], dtype=np.float).flatten()
 
         # add intercept variable name
         ind_vars.insert(0, 'intercept')
