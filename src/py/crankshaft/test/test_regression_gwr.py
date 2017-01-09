@@ -58,7 +58,7 @@ class GWRTest(unittest.TestCase):
                            fixed=self.params['fixed'])
 
         # unpack response
-        coeffs, stand_errs, t_vals, predicteds, residuals, r_squareds, bws, rowids = zip(*gwr_resp)
+        coeffs, stand_errs, t_vals, t_vals_filtered, predicteds, residuals, r_squareds, bws, rowids = zip(*gwr_resp)
 
         # known_coeffs = self.knowns['coeffs']
         # data packed from https://github.com/TaylorOshan/pysal/blob/a44c5541e2e0d10a99ff05edc1b7f81b70f5a82f/pysal/examples/georgia/georgia_BS_NN_listwise.csv

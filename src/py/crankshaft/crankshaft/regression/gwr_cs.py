@@ -77,8 +77,11 @@ class GWR:
         coeffs = []
         stand_errs = []
         t_vals = []
+        filtered_t_vals = []
 
         # extracted model information
+        c_alpha = model.adj_alpha
+        filtered_t = model.filter_tvals(c_alpha[1])
         predicted = model.predy.flatten()
         residuals = model.resid_response
         r_squared = model.localR2.flatten()
@@ -92,8 +95,10 @@ class GWR:
                                           for k, var in enumerate(ind_vars)}))
             t_vals.append(json.dumps({var: model.tvalues[idx, k]
                                       for k, var in enumerate(ind_vars)}))
+            filtered_t_vals.append(json.dumps({var: filtered_t[idx, k]
+                                               for k, var in enumerate(ind_vars)}))
 
-        return zip(coeffs, stand_errs, t_vals,
+        return zip(coeffs, stand_errs, t_vals, filtered_t_vals,
                    predicted, residuals, r_squared, bw, rowid)
 
     def gwr_predict(self, subquery, dep_var, ind_vars,
