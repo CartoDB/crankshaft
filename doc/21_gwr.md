@@ -2,7 +2,9 @@
 
 ### Predictive geographically weighted regression (GWR)
 
-Predictive GWR builds a spatially-varying regression model to predict unknown values from other known values. Similar to traditional linear regression, GWR takes a linear combination of independent variables and known dependent variables to calculate the best fit of a model. The model coefficients are spatially varying (controlled by the bandwidth parameter), so the model fit varies from geometry to geometry. GWR exposes places where non-stationarity is taking places--that is, where local behavior differs from what would be seen by doing a model without spatial variation.
+Predictive GWR generates estimates of the dependent variable at locations where it has not been observed. It predicts these unknown values by first using the GWR model estimation analysis with known data values of the dependent and independent variables sampled from around the prediction location(s) to build a geographically weighted, spatially-varying regression model. It then uses this model and known values of the independent variables at the prediction locations to predict the value of the dependent variable where it is otherwise unknown.
+
+For predictive GWR to work, a dataset needs known independent variables, some known dependent variables, and some unknown dependent variables. The dataset also needs to have geometry data (e.g., point, lines, or polygons).
 
 #### Arguments
 
@@ -53,7 +55,7 @@ Note: See [PostgreSQL syntax for parsing JSON objects](https://www.postgresql.or
 
 ### Geographically weighted regression model estimation
 
-Similar to the prediction-based GWR, this analysis generates the model coefficients for a spatially-varying regression. The model coefficients, along with their respective statistics, allow one to make inferences or describe a dependent variable based on the independent variables that make up the model.
+This analysis generates the model coefficients for a geographically weighted, spatially-varying regression. The model coefficients, along with their respective statistics, allow one to make inferences or describe a dependent variable based on a set of independent variables. Similar to traditional linear regression, GWR takes a linear combination of independent variables and a known dependent variable to estimate an optimal set of coefficients. The model coefficients are spatially varying (controlled by the `bandwidth` and `fixed` parameters), so that the model output is allowed to vary from geometry to geometry. This allows GWR to capture non-stationarity -- that is, how local processes vary over space. In contrast, coefficients obtained from estimating a traditional linear regression model assume that processes are constant over space.
 
 #### Arguments
 
