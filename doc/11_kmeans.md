@@ -80,7 +80,7 @@ As a standard machine learning method, k-means clustering is an unsupervised lea
 | query | TEXT | SQL query to expose the data to be used in the analysis (e.g., `SELECT * FROM iris_data`). It should contain at least the columns specified in `colnames` and the `id_colname`. |
 | colnames | TEXT[] | Array of columns to be used in the analysis (e.g., `Array['petal_width', 'sepal_length', 'petal_length']`). |
 | no\_clusters | INTEGER | Number of clusters for the classification of the data |
-| id_colname (optaional) | TEXT | The id column (default: 'cartodb_id') for identifying rows |
+| id_col (optional) | TEXT | The id column (default: 'cartodb_id') for identifying rows |
 | standarize (optional) | BOOLEAN | Setting this to true (default) standardizes the data to have a mean at zero and a standard deviation of 1 |
 
 ### Returns

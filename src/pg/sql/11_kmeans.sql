@@ -21,7 +21,7 @@ CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(
   colnames TEXT[],
   num_clusters INTEGER,
   standardize BOOLEAN DEFAULT true,
-  id_colname TEXT DEFAULT 'cartodb_id'
+  id_col TEXT DEFAULT 'cartodb_id'
 )
 RETURNS TABLE(cluster_label text, cluster_center json, silhouettes numeric, rowid bigint) AS $$
 
@@ -29,7 +29,7 @@ RETURNS TABLE(cluster_label text, cluster_center json, silhouettes numeric, rowi
     kmeans = Kmeans()
     return kmeans.nonspatial(query, colnames, num_clusters,
                              standardize=standardize,
-                             id_col=id_colname)
+                             id_col=id_col)
 $$ LANGUAGE plpythonu;
 
 
