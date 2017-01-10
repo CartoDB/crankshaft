@@ -2,9 +2,7 @@
 
 ### CDB_KMeans(subquery text, no_clusters INTEGER)
 
-This function attempts to find n clusters within the input data. It will return a table to CartoDB ids and 
-the number of the cluster each point in the input was assigend to.
-
+This function attempts to find `no_clusters` clusters within the input data based on the geographic distribution. It will return a table with ids and the cluster classification of each point input assuming `the_geom` is not null-valued. If `the_geom` is null-valued, the point will not be considered in the analysis.
 
 #### Arguments
 
@@ -19,17 +17,19 @@ A table with the following columns.
 
 | Column Name | Type | Description |
 |-------------|------|-------------|
-| cartodb\_id | INTEGER | The CartoDB id of the row in the input table.|
-| cluster\_no | INTEGER | The cluster that this point belongs to. |
+| cartodb\_id | INTEGER | The row id of the row from the input table |
+| cluster\_no | INTEGER | The cluster that this point belongs to |
 
 
 #### Example Usage
 
 ```sql
-SELECT 
-    customers.*, 
-    km.cluster_no 
-    FROM cdb_crankshaft.CDB_Kmeans('SELECT * from customers' , 6) km, customers_3
+SELECT
+    customers.*,
+    km.cluster_no
+    FROM
+      cdb_crankshaft.CDB_Kmeans('SELECT * from customers' , 6) As km,
+      customers
     WHERE customers.cartodb_id = km.cartodb_id
 ```
 
@@ -37,7 +37,7 @@ SELECT
 
 Function that computes the weighted centroid of a number of clusters by some weight column.
 
-### Arguments 
+### Arguments
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -45,18 +45,57 @@ Function that computes the weighted centroid of a number of clusters by some wei
 | weight\_column | TEXT | The name of the column to use as a weight |
 | category\_column | TEXT | The name of the column to use as a category |
 
-### Returns 
+### Returns
 
 A table with the following columns.
 
 | Column Name | Type | Description |
 |-------------|------|-------------|
 | the\_geom | GEOMETRY | A point for the weighted cluster center |
-| class | INTEGER | The cluster class | 
+| class | INTEGER | The cluster class |
 
-### Example Usage 
+### Example Usage
 
-```sql 
-SELECT ST_TRANSFORM(the_geom, 3857) as the_geom_webmercator, class 
-FROM cdb_weighted_mean('SELECT *, customer_value FROM customers','customer_value','cluster_no')
+```sql
+SELECT
+  ST_Transform(the_geom, 3857) As the_geom_webmercator,
+  class
+FROM
+  cdb_crankshaft.CDB_Weighted_Mean(
+    'SELECT *, customer_value FROM customers',
+    'customer_value',
+    'cluster_no')
 ```
+
+## CDB_KMeansNonspatial(subquery text, colnames text[], no_clusters int)
+
+K-means clustering classifies the rows of your dataset into `no_clusters` by finding the centers (means) of the variables in `colnames` and classifying each row by it's proximity to the nearest center. This method partitions space into distinct Voronoi cells.
+
+As a standard machine learning method, k-means clustering is an unsupervised learning technique that finds the natural clustering of values. For instance, it is useful for finding subgroups in census data leading to demographic segmentation.
+
+### Arguments
+
+| Name | Type | Description |
+|------|------|-------------|
+| query | TEXT | SQL query to expose the data to be used in the analysis (e.g., `SELECT * FROM iris_data`). It should contain at least the columns specified in `colnames` and the `id_colname`. |
+| colnames | TEXT[] | Array of columns to be used in the analysis (e.g., `Array['petal_width', 'sepal_length', 'petal_length']`). |
+| no\_clusters | INTEGER | Number of clusters for the classification of the data |
+| id_colname (optaional) | TEXT | The id column (default: 'cartodb_id') for identifying rows |
+| standarize (optional) | BOOLEAN | Setting this to true (default) standardizes the data to have a mean at zero and a standard deviation of 1 |
+
+### Returns
+
+A table with the following columns.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| cluster_label | TEXT | Label that a cluster belongs to, number from 0 to `no_clusters - 1`. |
+| cluster_center | JSON | Center of the cluster that a row belongs to. The keys of the JSON object are the `colnames`, with values that are the center of the respective cluster |
+| silhouettes | NUMERIC | [Silhouette score](http://scikit-learn.org/stable/modules/generated/sklearn.metrics.silhouette_score.html#sklearn.metrics.silhouette_score) of the cluster label |
+| rowid | BIGINT | id of the original row for associating back with the original data |
+
+
+### Resources
+
+-   Read more in [scikit-learn's documentation](http://scikit-learn.org/stable/modules/clustering.html#k-means)
+-   [K-means basics](https://www.datascience.com/blog/introduction-to-k-means-clustering-algorithm-learn-data-science-tutorials)
