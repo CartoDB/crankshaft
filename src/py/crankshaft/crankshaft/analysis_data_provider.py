@@ -45,18 +45,34 @@ class AnalysisDataProvider:
             return pu.empty_zipped_array(2)
 
     def get_nonspatial_kmeans(self, params):
-        """fetch data for non-spatial kmeans"""
+        """
+            Fetch data for non-spatial k-means.
+
+            Inputs - a dict (params) with the following keys:
+                colnames: a (text) list of column names (e.g.,
+                          `['andy', 'cookie']`)
+                id_col: the name of the id column (e.g., `'cartodb_id'`)
+                subquery: the subquery for exposing the data (e.g.,
+                          SELECT * FROM favorite_things)
+            Output:
+                A SQL query for packaging the data for consumption within
+                `KMeans().nonspatial`. Format will be a list of length one,
+                with the first element a dict with keys ('rowid', 'attr1',
+                'attr2', ...)
+        """
         agg_cols = ', '.join(['array_agg({0}) As arr_col{1}'.format(val, idx+1)
                               for idx, val in enumerate(params['colnames'])])
-        print agg_cols
         query = '''
             SELECT {cols}, array_agg({id_col}) As rowid
             FROM ({subquery}) As a
         '''.format(subquery=params['subquery'],
                    id_col=params['id_col'],
-                   cols=agg_cols)
+                   cols=agg_cols).strip()
         try:
             data = plpy.execute(query)
+            if len(data) == 0:
+                plpy.error('No non-null-valued data to analyze. Check the '
+                           'rows and columns of all of the inputs')
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
@@ -71,6 +87,9 @@ class AnalysisDataProvider:
                  "WHERE {geom_col} IS NOT NULL").format(**params)
         try:
             data = plpy.execute(query)
+            if len(data) == 0:
+                plpy.error('No non-null-valued data to analyze. Check the '
+                           'rows and columns of all of the inputs')
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)

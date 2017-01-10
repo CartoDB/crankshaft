@@ -32,40 +32,45 @@ class Kmeans:
         return zip(ids, labels)
 
     def nonspatial(self, subquery, colnames, num_clusters=5,
-                   id_col='cartodb_id', standarize=True):
+                   standardize=True, id_col='cartodb_id'):
         """
+            Inputs:
             query (string): A SQL query to retrieve the data required to do the
                             k-means clustering analysis, like so:
                             SELECT * FROM iris_flower_data
             colnames (list): a list of the column names which contain the data
-                             of interest, like so: ["sepal_width",
-                                                    "petal_width",
-                                                    "sepal_length",
-                                                    "petal_length"]
+                             of interest, like so: ['sepal_width',
+                                                    'petal_width',
+                                                    'sepal_length',
+                                                    'petal_length']
             num_clusters (int): number of clusters (greater than zero)
             id_col (string): name of the input id_column
+
+            Output:
+            A list of tuples with the following columns:
+            cluster labels: a label for the cluster that the row belongs to
+            centers: center of the cluster that this row belongs to
+            silhouettes: silhouette measure for this value
+            rowid: row that these values belong to (corresponds to the value in
+                   `id_col`)
         """
         import json
         from sklearn import metrics
 
-        out_id_colname = 'rowids'
         # TODO: need a random seed?
-        params = {"cols": colnames,
+        params = {"colnames": colnames,
                   "subquery": subquery,
                   "id_col": id_col}
 
-        data = self.data_provider.get_nonspatial_kmeans(params, standarize)
+        data = self.data_provider.get_nonspatial_kmeans(params)
 
         # fill array with values for k-means clustering
-        if standarize:
+        if standardize:
             cluster_columns = _scale_data(
               _extract_columns(data, len(colnames)))
         else:
             cluster_columns = _extract_columns(data, len(colnames))
 
-        print str(cluster_columns)
-        # TODO: decide on optimal parameters for most cases
-        #       Are there ways of deciding parameters based on inputs?
         kmeans = KMeans(n_clusters=num_clusters,
                         random_state=0).fit(cluster_columns)
 
@@ -79,7 +84,7 @@ class Kmeans:
         return zip(kmeans.labels_,
                    centers,
                    silhouettes,
-                   data[0][out_id_colname])
+                   data[0]['rowid'])
 
 
 # -- Preprocessing steps
@@ -102,4 +107,5 @@ def _scale_data(features):
         features (numpy matrix): features of dimension (n_features, n_samples)
     """
     from sklearn.preprocessing import StandardScaler
-    return StandardScaler().fit_transform(features)
+    scaler = StandardScaler()
+    return scaler.fit_transform(features)

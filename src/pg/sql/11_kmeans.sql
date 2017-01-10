@@ -11,20 +11,25 @@ $$ LANGUAGE plpythonu;
 
 -- Non-spatial k-means clustering
 -- query: sql query to retrieve all the needed data
+-- colnames: text array of column names for doing the clustering analysis
+-- standardize: whether to scale variables to a mean of zero and a standard
+--              deviation of 1
+-- id_colname: name of the id column
 
 CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(
   query TEXT,
   colnames TEXT[],
   num_clusters INTEGER,
-  id_colname TEXT DEFAULT 'cartodb_id',
-  standarize BOOLEAN DEFAULT true
+  standardize BOOLEAN DEFAULT true,
+  id_colname TEXT DEFAULT 'cartodb_id'
 )
 RETURNS TABLE(cluster_label text, cluster_center json, silhouettes numeric, rowid bigint) AS $$
 
     from crankshaft.clustering import Kmeans
     kmeans = Kmeans()
     return kmeans.nonspatial(query, colnames, num_clusters,
-                             id_colname, standarize)
+                             standardize=standardize,
+                             id_col=id_colname)
 $$ LANGUAGE plpythonu;
 
 

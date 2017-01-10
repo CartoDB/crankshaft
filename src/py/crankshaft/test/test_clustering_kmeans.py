@@ -19,7 +19,7 @@ class FakeDataProvider(AnalysisDataProvider):
     def get_spatial_kmeans(self, query):
         return self.mocked_result
 
-    def get_nonspatial_kmeans(self, query, standarize):
+    def get_nonspatial_kmeans(self, query):
         return self.mocked_result
 
 
@@ -66,7 +66,7 @@ class KMeansNonspatialTest(unittest.TestCase):
         # http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html#sklearn-cluster-kmeans
         data_raw = [OrderedDict([("arr_col1", [1, 1, 1, 4, 4, 4]),
                                  ("arr_col2", [2, 4, 0, 2, 4, 0]),
-                                 ("rowids", [1, 2, 3, 4, 5, 6])])]
+                                 ("rowid", [1, 2, 3, 4, 5, 6])])]
 
         random_seeds.set_random_seeds(1234)
         kmeans = Kmeans(FakeDataProvider(data_raw))
