@@ -45,7 +45,7 @@ class AnalysisDataProvider:
             verify_data(len(data))
             return data
         except plpy.SPIError, err:
-            plpy.error('Analysis failed: %s' % e)
+            plpy.error('Analysis failed: %s' % err)
             return pu.empty_zipped_array(2)
 
     def get_nonspatial_kmeans(self, query):
