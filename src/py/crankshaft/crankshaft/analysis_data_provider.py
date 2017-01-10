@@ -6,8 +6,8 @@ NULL_VALUE_ERROR = ('No usable data passed to analysis. Check your input rows '
                     'for null values and fill in appropriately.')
 
 
-def verify_data(n_rows):
-    if n_rows == 0:
+def verify_data(data):
+    if len(data) == 0:
         plpy.error(NULL_VALUE_ERROR)
 
 
@@ -19,7 +19,7 @@ class AnalysisDataProvider:
             data = plpy.execute(query)
 
             # if there are no neighbors or all nulls, exit
-            verify_data(len(data))
+            verify_data(data)
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
@@ -30,7 +30,7 @@ class AnalysisDataProvider:
             query = pu.construct_neighbor_query(w_type, params)
             data = plpy.execute(query)
 
-            verify_data(len(data))
+            verify_data(data)
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
@@ -42,32 +42,33 @@ class AnalysisDataProvider:
             data = plpy.execute(query)
 
             # if there are no neighbors, exit
-            verify_data(len(data))
+            verify_data(data)
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
-            return pu.empty_zipped_array(2)
 
     def get_nonspatial_kmeans(self, query):
         """fetch data for non-spatial kmeans"""
         try:
             data = plpy.execute(query)
-            verify_data(len(data))
+            verify_data(data)
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
 
     def get_spatial_kmeans(self, params):
         """fetch data for spatial kmeans"""
-        query = ("SELECT "
-                 "array_agg(\"{id_col}\" ORDER BY \"{id_col}\") as ids,"
-                 "array_agg(ST_X(\"{geom_col}\") ORDER BY \"{id_col}\") As xs,"
-                 "array_agg(ST_Y(\"{geom_col}\") ORDER BY \"{id_col}\") As ys "
-                 "FROM ({subquery}) As a "
-                 "WHERE \"{geom_col}\" IS NOT NULL").format(**params)
+        query = '''
+                SELECT
+                  array_agg("{id_col}" ORDER BY "{id_col}") as ids,
+                  array_agg(ST_X("{geom_col}") ORDER BY "{id_col}") As xs,
+                  array_agg(ST_Y("{geom_col}") ORDER BY "{id_col}") As ys
+                FROM ({subquery}) As a
+                WHERE "{geom_col}" IS NOT NULL
+                '''.format(**params)
         try:
             data = plpy.execute(query)
-            verify_data(len(data))
+            verify_data(data)
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
