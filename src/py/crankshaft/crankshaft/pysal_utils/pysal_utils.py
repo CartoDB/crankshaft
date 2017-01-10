@@ -193,13 +193,13 @@ def get_attributes(query_res, attr_num=1):
                     dtype=np.float)
 
 
-def empty_zipped_array(num_nones):
-    """
-        prepare return values for cases of empty weights objects (no neighbors)
-        Input:
-        @param num_nones int: number of columns (e.g., 4)
-        Output:
-        [(None, None, None, None)]
-    """
-
-    return [tuple([None] * num_nones)]
+# def empty_zipped_array(num_nones):
+#     """
+#         prepare return values for cases of empty weights objects (no neighbors)
+#         Input:
+#         @param num_nones int: number of columns (e.g., 4)
+#         Output:
+#         [(None, None, None, None)]
+#     """
+#
+#     return [tuple([None] * num_nones)]
