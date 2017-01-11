@@ -2,3 +2,4 @@
 from moran import *
 from kmeans import *
 from getis import *
+from maxp import *
