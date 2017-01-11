@@ -68,7 +68,7 @@ class Markov:
         weights.transform = 'r'
 
         # prep time data
-        t_data = get_time_data(query_result, time_cols)
+        t_data = pu.get_attributes(query_result, len(time_cols))
 
         sp_markov_result = ps.Spatial_Markov(t_data,
                                              weights,
@@ -88,59 +88,13 @@ class Markov:
                                   sp_markov_result.classes[:, -1])
 
         # find the ups and down and overall distribution of each cell
-        trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist, sp_markov_result.classes[:, -1])
+        trend_up, trend_down, trend, \
+            volatility = get_prob_stats(
+                prob_dist,
+                sp_markov_result.classes[:, -1])
 
         # output the results
         return zip(trend, trend_up, trend_down, volatility, weights.id_order)
-
-
-
-def get_time_data(markov_data, time_cols):
-    """
-        Extract the time columns and bin appropriately
-    """
-    num_attrs = len(time_cols)
-    return np.array([[x['attr' + str(i)] for x in markov_data]
-                     for i in range(1, num_attrs+1)], dtype=float).transpose()
-
-
-# not currently used
-def rebin_data(time_data, num_time_per_bin):
-    """
-        Convert an n x l matrix into an (n/m) x l matrix where the values are
-         reduced (averaged) for the intervening states:
-          1 2 3 4    1.5 3.5
-          5 6 7 8 -> 5.5 7.5
-          9 8 7 6    8.5 6.5
-          5 4 3 2    4.5 2.5
-
-          if m = 2, the 4 x 4 matrix is transformed to a 2 x 4 matrix.
-
-        This process effectively resamples the data at a longer time span n
-         units longer than the input data.
-        For cases when there is a remainder (remainder(5/3) = 2), the remaining
-         two columns are binned together as the last time period, while the
-         first three are binned together for the first period.
-
-        Input:
-          @param time_data n x l  ndarray: measurements of an attribute at
-           different time intervals
-          @param num_time_per_bin int: number of columns to average into a new
-           column
-        Output:
-          ceil(n / m) x l ndarray of resampled time series
-    """
-
-    if time_data.shape[1] % num_time_per_bin == 0:
-        # if fit is perfect, then use it
-        n_max = time_data.shape[1] / num_time_per_bin
-    else:
-        # fit remainders into an additional column
-        n_max = time_data.shape[1] / num_time_per_bin + 1
-
-    return np.array(
-      [time_data[:, num_time_per_bin * i:num_time_per_bin * (i+1)].mean(axis=1)
-       for i in range(n_max)]).T
 
 
 def get_prob_dist(transition_matrix, lag_indices, unit_indices):

@@ -39,7 +39,7 @@ class Moran:
         result = self.data_provider.get_moran(w_type, params)
 
         # collect attributes
-        attr_vals = pu.get_attributes(result)
+        attr_vals = pu.get_attribute(result, 1)
 
         # calculate weights
         weight = pu.get_weight(result, w_type, num_ngbrs)
@@ -68,7 +68,7 @@ class Moran:
 
         result = self.data_provider.get_moran(w_type, params)
 
-        attr_vals = pu.get_attributes(result)
+        attr_vals = pu.get_attribute(result, 1)
         weight = pu.get_weight(result, w_type, num_ngbrs)
 
         # calculate LISA values
@@ -96,8 +96,8 @@ class Moran:
         result = self.data_provider.get_moran(w_type, params)
 
         # collect attributes
-        numer = pu.get_attributes(result, 1)
-        denom = pu.get_attributes(result, 2)
+        numer = pu.get_attribute(result, 1)
+        denom = pu.get_attribute(result, 2)
 
         weight = pu.get_weight(result, w_type, num_ngbrs)
 
@@ -126,8 +126,8 @@ class Moran:
         result = self.data_provider.get_moran(w_type, params)
 
         # collect attributes
-        numer = pu.get_attributes(result, 1)
-        denom = pu.get_attributes(result, 2)
+        numer = pu.get_attribute(result, 1)
+        denom = pu.get_attribute(result, 2)
 
         weight = pu.get_weight(result, w_type, num_ngbrs)
 
@@ -157,8 +157,8 @@ class Moran:
         result = self.data_provider.get_moran(w_type, params)
 
         # collect attributes
-        attr1_vals = pu.get_attributes(result, 1)
-        attr2_vals = pu.get_attributes(result, 2)
+        attr1_vals = pu.get_attribute(result, 1)
+        attr2_vals = pu.get_attribute(result, 2)
 
         # create weights
         weight = pu.get_weight(result, w_type, num_ngbrs)
