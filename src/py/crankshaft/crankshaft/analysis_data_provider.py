@@ -9,7 +9,6 @@ NULL_VALUE_ERROR = ('No usable data passed to analysis. Check your input rows '
 def verify_data(f):
     def wrapper(*args, **kwargs):
         try:
-            print('kwargs: %s' % str(kwargs))
             data = f(*args, **kwargs)
             if len(data) == 0:
                 plpy.error(NULL_VALUE_ERROR)
