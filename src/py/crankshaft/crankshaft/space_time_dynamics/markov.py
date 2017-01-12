@@ -61,14 +61,14 @@ class Markov(object):
                   "subquery": subquery,
                   "num_ngbrs": num_ngbrs}
 
-        query_result = self.data_provider.get_markov(w_type, params)
+        result = self.data_provider.get_markov(w_type, params)
 
         # build weight
-        weights = pu.get_weight(query_result, w_type)
+        weights = pu.get_weight(result, w_type)
         weights.transform = 'r'
 
         # prep time data
-        t_data = get_time_data(query_result, time_cols)
+        t_data = get_time_data(result, time_cols)
 
         sp_markov_result = ps.Spatial_Markov(t_data,
                                              weights,
