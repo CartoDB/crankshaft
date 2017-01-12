@@ -11,7 +11,7 @@ def verify_data(data):
         plpy.error(NULL_VALUE_ERROR)
 
 
-class AnalysisDataProvider:
+class AnalysisDataProvider(object):
     def get_getis(self, w_type, params):
         """fetch data for getis ord's g"""
         try:

@@ -11,7 +11,7 @@ import crankshaft.pysal_utils as pu
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 
-class Markov:
+class Markov(object):
     def __init__(self, data_provider=None):
         if data_provider is None:
             self.data_provider = AnalysisDataProvider()

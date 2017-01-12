@@ -12,7 +12,7 @@ from crankshaft.analysis_data_provider import AnalysisDataProvider
 # High level interface ---------------------------------------
 
 
-class Getis:
+class Getis(object):
     def __init__(self, data_provider=None):
         if data_provider is None:
             self.data_provider = AnalysisDataProvider()

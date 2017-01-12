@@ -15,7 +15,7 @@ import crankshaft.pysal_utils as pu
 # High level interface ---------------------------------------
 
 
-class Moran:
+class Moran(object):
     def __init__(self, data_provider=None):
         if data_provider is None:
             self.data_provider = AnalysisDataProvider()
