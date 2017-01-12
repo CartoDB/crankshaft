@@ -209,14 +209,14 @@ def gwr_query(params):
 
     query = '''
       SELECT
-        array_agg(ST_X(ST_Centroid({geom_col}))) As x,
-        array_agg(ST_Y(ST_Centroid({geom_col}))) As y,
-        array_agg({dep_var}) As dep_var,
+        array_agg(ST_X(ST_Centroid("{geom_col}"))) As x,
+        array_agg(ST_Y(ST_Centroid("{geom_col}"))) As y,
+        array_agg("{dep_var}") As dep_var,
         %(ind_vars_select)s
-        array_agg({id_col}) As rowid
+        array_agg("{id_col}") As rowid
       FROM ({subquery}) As q
       WHERE
-        {dep_var} IS NOT NULL AND
+        "{dep_var}" IS NOT NULL AND
         %(ind_vars_where)s
         ''' % replacements
 
