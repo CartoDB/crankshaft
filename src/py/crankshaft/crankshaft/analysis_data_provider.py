@@ -16,6 +16,9 @@ def verify_data(f):
                 return data
         except Exception, err:
             plpy.error('Analysis failed: {}'.format(err))
+
+        return []
+
     return wrapper
 
 
