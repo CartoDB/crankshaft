@@ -15,7 +15,7 @@ def gravity(subquery, flows, o_vars, d_vars, cost, cost_func, Quasi=False):
     cost_func: 'exp' for exponential decay | 'pow' for power decay
     Quasi: boolean with True for estimate QuasiPoisson model
     """
-    
+
     # concatenate origin and dest variables into one list for query
     ind_vars = o_vars + d_vars
 
@@ -37,9 +37,9 @@ def gravity(subquery, flows, o_vars, d_vars, cost, cost_func, Quasi=False):
     # add cost name in var name list
     ind_vars.insert(len(ind_vars), cost)
 
-    # unique ids and variable names list 
+    # unique ids and variable names list
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
-    
+
     # extract dependent variable
     flows = np.array(query_result[0]['dep_var']).reshape((-1, 1))
 
@@ -55,19 +55,19 @@ def gravity(subquery, flows, o_vars, d_vars, cost, cost_func, Quasi=False):
         attr_name = 'attr' + str(attr + 1)
         o_vars[:, attr] = np.array(
           query_result[0][attr_name]).flatten()
-    
+
     # then dests
     for attr in range(0, d):
         attr_name = 'attr' + str(attr + 1 + o)
         d_vars[:, attr] = np.array(
-          query_result[0][attr_name]).flatten() 
+          query_result[0][attr_name]).flatten()
 
     # finally cost
     cost = np.array(query_result[0]['cost'], dtype=np.float).flatten()
 
-    #add intercept variable name
+    # add intercept variable name
     ind_vars.insert(0, 'intercept')
-    
+
     model = Gravity(flows, o_vars, d_vars, cost, cost_func, Quasi=Quasi).fit()
     coefficients = []
     stand_errs = []
@@ -75,7 +75,7 @@ def gravity(subquery, flows, o_vars, d_vars, cost, cost_func, Quasi=False):
     predicted = model.yhat
     r_squared = np.repeat(model.pseudoR2, n)
     aic = np.repeat(model.AIC, n)
-    
+
     for idx in xrange(n):
         coefficients.append(json.dumps({var: model.params[k] for k, var in
             enumerate(ind_vars)}))
@@ -83,7 +83,7 @@ def gravity(subquery, flows, o_vars, d_vars, cost, cost_func, Quasi=False):
             enumerate(ind_vars)}))
         t_vals.append(json.dumps({var: model.tvalues[k] for k, var in
             enumerate(ind_vars)}))
-        
+
     return zip(coefficients, stand_errs, t_vals, predicted, r_squared, aic, rowid)
 
 def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
@@ -116,10 +116,10 @@ def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
 
     # add cost name in var name list
     ind_vars.insert(len(ind_vars), cost)
-    
-    #unique ids and variable names list 
+
+    #unique ids and variable names list
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
-    
+
     # origin names variable for fixed effects (constraints)
     origins = np.array(query_result[0]['origins'])
 
@@ -135,7 +135,7 @@ def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
     for attr in range(0, d):
         attr_name = 'attr' + str(attr + 1)
         d_vars[:, attr] = np.array(
-          query_result[0][attr_name]).flatten() 
+          query_result[0][attr_name]).flatten()
 
     # finally cost
     cost = np.array(query_result[0]['cost'], dtype=np.float).flatten()
@@ -145,10 +145,10 @@ def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
     	ind_vars.insert(x, 'origin_' + str(var))
     ind_vars.pop(0)
     ind_vars.insert(0, 'intercept')
-    
+
     # calibrate model
     model = Production(flows, origins, d_vars, cost, cost_func, Quasi=Quasi).fit()
-    
+
     # format output
     coefficients = []
     stand_errs = []
@@ -156,7 +156,7 @@ def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
     predicted = model.yhat
     r_squared = np.repeat(model.pseudoR2, n)
     aic = np.repeat(model.AIC, n)
-   
+
     for idx in xrange(n):
         coefficients.append(json.dumps({var: model.params[k] for k, var in
             enumerate(ind_vars)}))
@@ -164,7 +164,7 @@ def production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
             enumerate(ind_vars)}))
         t_vals.append(json.dumps({var: model.tvalues[k] for k, var in
             enumerate(ind_vars)}))
-        
+
     return zip(coefficients, stand_errs, t_vals, predicted, r_squared, aic, rowid)
 
 def attraction(subquery, flows, destinations, o_vars, cost, cost_func, Quasi=False):
@@ -198,10 +198,10 @@ def attraction(subquery, flows, destinations, o_vars, cost, cost_func, Quasi=Fal
 
     # add cost name in var name list
     ind_vars.insert(len(ind_vars), cost)
-    
-    #unique ids and variable names list 
+
+    #unique ids and variable names list
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
-    
+
     # dest names variable for fixed effects (constraints)
     destinations = np.array(query_result[0]['destinations'])
 
@@ -217,7 +217,7 @@ def attraction(subquery, flows, destinations, o_vars, cost, cost_func, Quasi=Fal
     for attr in range(0, o):
         attr_name = 'attr' + str(attr + 1)
         o_vars[:, attr] = np.array(
-          query_result[0][attr_name]).flatten() 
+          query_result[0][attr_name]).flatten()
 
     # finally cost
     cost = np.array(query_result[0]['cost'], dtype=np.float).flatten()
@@ -227,18 +227,18 @@ def attraction(subquery, flows, destinations, o_vars, cost, cost_func, Quasi=Fal
     	ind_vars.insert(x, 'dest_' + str(var))
     ind_vars.pop(0)
     ind_vars.insert(0, 'intercept')
-    
+
     # calibrate model
     model = Attraction(flows, destinations, o_vars, cost, cost_func, Quasi=Quasi).fit()
-    
-    # format model 
+
+    # format model
     coefficients = []
     stand_errs = []
     t_vals = []
     predicted = model.yhat
     r_squared = np.repeat(model.pseudoR2, n)
     aic = np.repeat(model.AIC, n)
-   
+
     for idx in xrange(n):
         coefficients.append(json.dumps({var: model.params[k] for k, var in
             enumerate(ind_vars)}))
@@ -246,7 +246,7 @@ def attraction(subquery, flows, destinations, o_vars, cost, cost_func, Quasi=Fal
             enumerate(ind_vars)}))
         t_vals.append(json.dumps({var: model.tvalues[k] for k, var in
             enumerate(ind_vars)}))
-        
+
     return zip(coefficients, stand_errs, t_vals, predicted, r_squared, aic, rowid)
 
 def doubly(subquery, flows, origins, destinations, cost, cost_func, Quasi=False):
@@ -259,7 +259,7 @@ def doubly(subquery, flows, origins, destinations, cost, cost_func, Quasi=False)
     cost_func: 'exp' for exponential decay | 'pow' for power decay
     Quasi: boolean with True for estimate QuasiPoisson model
     """
-    
+
     # query_result = subquery
     params = {'id_col': 'cartodb_id',
               'subquery': subquery,
@@ -278,10 +278,10 @@ def doubly(subquery, flows, origins, destinations, cost, cost_func, Quasi=False)
 
     # add cost name in var name list
     ind_vars = [cost]
-    
-    # unique ids and variable names list 
+
+    # unique ids and variable names list
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
-    
+
     # dest names variable for fixed effects (constraints)
     origins = np.array(query_result[0]['origins'])
     destinations = np.array(query_result[0]['destinations'])
@@ -303,10 +303,10 @@ def doubly(subquery, flows, origins, destinations, cost, cost_func, Quasi=False)
     	ind_vars.insert(x, 'origin_' + str(var))
     ind_vars.pop(0)
     ind_vars.insert(0, 'intercept')
-   
+
     # calibrate model
     model = Doubly(flows, origins, destinations, cost, cost_func, Quasi=Quasi).fit()
-    
+
     # format output
     coefficients = []
     stand_errs = []
@@ -314,7 +314,7 @@ def doubly(subquery, flows, origins, destinations, cost, cost_func, Quasi=False)
     predicted = model.yhat
     r_squared = np.repeat(model.pseudoR2, n)
     aic = np.repeat(model.AIC, n)
-   
+
     for idx in xrange(n):
         coefficients.append(json.dumps({var: model.params[k] for k, var in
             enumerate(ind_vars)}))
@@ -322,7 +322,7 @@ def doubly(subquery, flows, origins, destinations, cost, cost_func, Quasi=False)
             enumerate(ind_vars)}))
         t_vals.append(json.dumps({var: model.tvalues[k] for k, var in
             enumerate(ind_vars)}))
-        
+
     return zip(coefficients, stand_errs, t_vals, predicted, r_squared, aic, rowid)
 
 def local_production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=False):
@@ -356,8 +356,8 @@ def local_production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=Fa
 
     # add cost name in var name list
     ind_vars.insert(len(ind_vars), cost)
-    
-    #unique ids and variable names list 
+
+    #unique ids and variable names list
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
 
     # origin names variable for fixed effects (constraints)
@@ -375,7 +375,7 @@ def local_production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=Fa
     for attr in range(0, d):
         attr_name = 'attr' + str(attr + 1)
         d_vars[:, attr] = np.array(
-          query_result[0][attr_name]).flatten() 
+          query_result[0][attr_name]).flatten()
 
     # finally cost
     cost = np.array(query_result[0]['cost'], dtype=np.float).flatten()
@@ -383,14 +383,14 @@ def local_production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=Fa
     # calibrate model
     model = Production(flows, origins, d_vars, cost, cost_func, Quasi=Quasi)
     local_model = model.local()
-    
+
     # format output
     coefficients = []
     t_vals = []
     stand_errs = []
     r_squared = local_model['pseudoR2']
     aic = local_model['AIC']
-   
+
     for idx in xrange(len(np.unique(origins))):
         coefficients.append(json.dumps({var: local_model['param' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
@@ -398,7 +398,7 @@ def local_production(subquery, flows, origins, d_vars, cost, cost_func, Quasi=Fa
             enumerate(ind_vars)}))
         stand_errs.append(json.dumps({var: local_model['stde' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-    
+
     return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)
 
 def local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, Quasi=False):
@@ -432,10 +432,10 @@ def local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, Qua
 
     # add cost name in var name list
     ind_vars.insert(len(ind_vars), cost)
-    
-    #unique ids and variable names list 
+
+    #unique ids and variable names list
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
-    
+
     # dest names variable for fixed effects (constraints)
     destinations = np.array(query_result[0]['destinations'])
 
@@ -451,22 +451,22 @@ def local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, Qua
     for attr in range(0, o):
         attr_name = 'attr' + str(attr + 1)
         o_vars[:, attr] = np.array(
-          query_result[0][attr_name]).flatten() 
+          query_result[0][attr_name]).flatten()
 
     # finally cost
     cost = np.array(query_result[0]['cost'], dtype=np.float).flatten()
-    
+
     # calibrate model
     model = Attraction(flows, destinations, o_vars, cost, cost_func, Quasi=Quasi)
     local_model = model.local()
-        
-    # format output    
+
+    # format output
     coefficients = []
     t_vals = []
     stand_errs = []
     r_squared = local_model['pseudoR2']
     aic = local_model['AIC']
-   
+
     for idx in xrange(len(np.unique(destinations))):
         coefficients.append(json.dumps({var: local_model['param' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
@@ -474,7 +474,7 @@ def local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, Qua
             enumerate(ind_vars)}))
         stand_errs.append(json.dumps({var: local_model['stde' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-    
+
     return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)
 
 def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=False):
@@ -490,7 +490,7 @@ def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=
     cost_func: 'exp' for exponential decay | 'pow' for power decay
     Quasi: boolean with True for estimate QuasiPoisson model
     """
-    
+
     # concatenate origin and dest variables into one list for query
     ind_vars = o_vars + d_vars
 
@@ -513,9 +513,9 @@ def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=
     # add cost name in var name list
     ind_vars.insert(len(ind_vars), cost)
 
-    # unique ids and variable names list 
+    # unique ids and variable names list
     rowid = np.array(query_result[0]['rowid'], dtype=np.int)
-    
+
     # extract dependent variable
     flows = np.array(query_result[0]['dep_var']).reshape((-1, 1))
 
@@ -531,30 +531,30 @@ def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=
         attr_name = 'attr' + str(attr + 1)
         o_vars[:, attr] = np.array(
           query_result[0][attr_name]).flatten()
-    
+
     # then dests
     for attr in range(0, d):
         attr_name = 'attr' + str(attr + 1 + o)
         d_vars[:, attr] = np.array(
-          query_result[0][attr_name]).flatten() 
+          query_result[0][attr_name]).flatten()
 
     # finally cost
     cost = np.array(query_result[0]['cost'], dtype=np.float).flatten()
 
     #get origin or destination id's that are the focus of local models
     locs = np.array(query_result[0]['locs'])
-    
+
     # calibrate model
     model = Gravity(flows, o_vars, d_vars, cost, cost_func, Quasi=Quasi)
     local_model = model.local(locs, np.unique(locs))
-    
+
     # format output
     coefficients = []
     t_vals = []
     stand_errs = []
     r_squared = local_model['pseudoR2']
     aic = local_model['AIC']
-   
+
     for idx in xrange(len(np.unique(locs))):
         coefficients.append(json.dumps({var: local_model['param' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
@@ -562,6 +562,5 @@ def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, Quasi=
             enumerate(ind_vars)}))
         stand_errs.append(json.dumps({var: local_model['stde' + str(k)][idx] for k, var in
             enumerate(ind_vars)}))
-    
-    return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)
 
+    return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)

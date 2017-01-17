@@ -1,21 +1,24 @@
-CREATE OR REPLACE FUNCTION  CDB_KMeans(query text, no_clusters integer,no_init integer default 20)
-RETURNS table (cartodb_id integer, cluster_no integer) as $$
-    
-    from crankshaft.clustering import kmeans
-    return kmeans(query,no_clusters,no_init)
+-- Spatial k-means clustering
 
-$$ language plpythonu;
+CREATE OR REPLACE FUNCTION CDB_KMeans(query text, no_clusters integer, no_init integer default 20)
+RETURNS table (cartodb_id integer, cluster_no integer) as $$
+
+    from crankshaft.clustering import Kmeans
+    kmeans = Kmeans()
+    return kmeans.spatial(query, no_clusters, no_init)
+
+$$ LANGUAGE plpythonu;
 
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(state Numeric[],the_geom GEOMETRY(Point, 4326), weight NUMERIC)
-RETURNS Numeric[] AS 
+RETURNS Numeric[] AS
 $$
-DECLARE 
+DECLARE
     newX NUMERIC;
     newY NUMERIC;
     newW NUMERIC;
 BEGIN
-    IF weight IS NULL OR the_geom IS NULL THEN 
+    IF weight IS NULL OR the_geom IS NULL THEN
         newX = state[1];
         newY = state[2];
         newW = state[3];
@@ -30,12 +33,12 @@ END
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanF(state Numeric[])
-RETURNS GEOMETRY AS 
+RETURNS GEOMETRY AS
 $$
 BEGIN
-    IF state[3] = 0 THEN 
+    IF state[3] = 0 THEN
         RETURN ST_SetSRID(ST_MakePoint(state[1],state[2]), 4326);
-    ELSE 
+    ELSE
         RETURN ST_SETSRID(ST_MakePoint(state[1]/state[3], state[2]/state[3]),4326);
     END IF;
 END
@@ -56,7 +59,7 @@ BEGIN
             SFUNC = CDB_WeightedMeanS,
             FINALFUNC = CDB_WeightedMeanF,
             STYPE = Numeric[],
-            INITCOND = "{0.0,0.0,0.0}" 
+            INITCOND = "{0.0,0.0,0.0}"
         );
     END IF;
 END

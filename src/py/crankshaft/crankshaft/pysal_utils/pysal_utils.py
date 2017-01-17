@@ -45,8 +45,16 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
 def query_attr_select(params, table_ref=True):
     """
         Create portion of SELECT statement for attributes inolved in query.
+        Defaults to order in the params
         @param params: dict of information used in query (column names,
                        table name, etc.)
+            Example:
+            OrderedDict([('numerator', 'price'),
+                         ('denominator', 'sq_meters'),
+                         ('subquery', 'SELECT * FROM interesting_data')])
+        Output:
+          "i.\"price\"::numeric As attr1, " \
+          "i.\"sq_meters\"::numeric As attr2, "
     """
 
     attr_string = ""
@@ -70,7 +78,7 @@ def query_attr_select(params, table_ref=True):
                  if k not in ('id_col', 'geom_col', 'subquery',
                               'num_ngbrs', 'subquery')]
 
-        for idx, val in enumerate(sorted(attrs)):
+        for idx, val in enumerate(attrs):
             attr_string += template % {"col": params[val],
                                        "alias_num": idx + 1}
 
@@ -86,8 +94,8 @@ def query_attr_where(params, table_ref=True):
              'numerator': 'data1',
              'denominator': 'data2',
              '': ...}
-        Output: 'idx_replace."data1" IS NOT NULL AND idx_replace."data2"
-                IS NOT NULL'
+        Output:
+          'idx_replace."data1" IS NOT NULL AND idx_replace."data2" IS NOT NULL'
         Input:
         {'subquery': ...,
          'time_cols': ['time1', 'time2', 'time3'],
@@ -112,13 +120,13 @@ def query_attr_where(params, table_ref=True):
 
         # get keys
         attrs = sorted([k for k in params
-                        if k not in ('id_col', 'geom_col', 'subquery',
-                                     'num_ngbrs', 'ind_vars')])
+                        if k not in ('id_col', 'geom_col',
+                                     'subquery', 'num_ngbrs', 'ind_vars')])
         # add values to template
         for attr in attrs:
             attr_string.append(template % params[attr])
 
-        if len(attrs) == 2:
+        if 'denominator' in attrs:
             check_zero = "\"%s\" <> 0" % params[attrs[1]]
             if table_ref is not None:
                 check_zero = "idx_replace." + check_zero
@@ -190,31 +198,6 @@ def queen(params):
     return query.format(**params)
 
 
-def gwr_query(params):
-    """
-    GWR query
-    """
-
-    replacements = {"ind_vars_select": query_attr_select(params,
-                                                         table_ref=None),
-                    "ind_vars_where": query_attr_where(params,
-                                                       table_ref=None)}
-
-    query = '''
-      SELECT
-        array_agg(ST_X(ST_Centroid({geom_col}))) As x,
-        array_agg(ST_Y(ST_Centroid({geom_col}))) As y,
-        array_agg({dep_var}) As dep_var,
-        %(ind_vars_select)s
-        array_agg({id_col}) As rowid
-      FROM ({subquery}) As q
-      WHERE
-        {dep_var} IS NOT NULL AND
-        %(ind_vars_where)s
-        ''' % replacements
-
-    return query.format(**params).strip()
-
 # to add more weight methods open a ticket or pull request
 
 def gravity_query(params):
@@ -241,6 +224,7 @@ def gravity_query(params):
         ''' % replacements
 
     return query.format(**params).strip()
+
 
 def local_gravity_query(params):
     """
@@ -269,6 +253,7 @@ def local_gravity_query(params):
 
     return query.format(**params).strip()
 
+
 def production_query(params):
     """
     production-constrained spatial interaction  query
@@ -295,6 +280,7 @@ def production_query(params):
         ''' % replacements
 
     return query.format(**params).strip()
+
 
 def attraction_query(params):
     """
@@ -323,6 +309,7 @@ def attraction_query(params):
 
     return query.format(**params).strip()
 
+
 def doubly_query(params):
     """
     attraction-constrained spatial interaction  query
@@ -345,10 +332,11 @@ def doubly_query(params):
         {dep_var} IS NOT NULL AND
         {origins} IS NOT NULL AND
         {destinations} IS NOT NULL AND
-        {cost} IS NOT NULL 
+        {cost} IS NOT NULL
         '''
 
     return query.format(**params).strip()
+
 
 def get_attributes(query_res, attr_num=1):
     """
