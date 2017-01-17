@@ -282,7 +282,7 @@ def production_query(params):
     return query.format(**params).strip()
 
 
-def attraction_query(params):
+def spint_attraction_query(params):
     """
     attraction-constrained spatial interaction  query
     """
