@@ -114,7 +114,7 @@ DECLARE
     d numeric;
 BEGIN
     dist := 1e999;
-    pols := array_agg((ST_dump(polygon)).geom);
+    WITH collection as (SELECT (ST_dump(polygon)).geom as geom) SELECT array_agg(geom) into pols FROM collection;
     FOR j in 1..array_length(pols, 1)
     LOOP
         pol := pols[j];
