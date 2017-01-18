@@ -96,27 +96,43 @@ $$ language plpgsql IMMUTABLE;
 
 -- signed distance point to polygon with holes
 -- negative is the point is out the polygon
+-- rev 1. adding MULTIPOLYGON and GEOMETRYCOLLECTION support by @abelvm
 CREATE OR REPLACE FUNCTION _Signed_Dist(
     IN polygon geometry,
     IN point geometry
     )
 RETURNS numeric  AS $$
 DECLARE
+    pols geometry[];
+    pol geometry;
     i integer;
+    j integer;
     within integer;
+    w integer;
     holes integer;
     dist numeric;
+    d numeric;
 BEGIN
     dist := 1e999;
-    SELECT LEAST(dist, ST_distance(point, ST_ExteriorRing(polygon))::numeric) INTO dist;
-    SELECT CASE WHEN ST_Within(point,polygon) THEN 1 ELSE -1 END INTO within;
-    SELECT ST_NumInteriorRings(polygon) INTO holes;
-    IF holes > 0 THEN
-        FOR i IN 1..holes
-        LOOP
-            SELECT LEAST(dist, ST_distance(point, ST_InteriorRingN(polygon, i))::numeric) INTO dist;
-        END LOOP;
-    END IF;
+    pols := array_agg((ST_dump(polygon)).geom);
+    FOR j in 1..array_length(pols, 1);
+    LOOP
+        pol := pols[j];
+        d := dist;
+        SELECT LEAST(dist, ST_distance(point, ST_ExteriorRing(pol))::numeric) INTO d;
+        SELECT CASE WHEN ST_Within(point,pol) THEN 1 ELSE -1 END INTO w;
+        SELECT ST_NumInteriorRings(pol) INTO holes;
+        IF holes > 0 THEN
+            FOR i IN 1..holes
+            LOOP
+                SELECT LEAST(d, ST_distance(point, ST_InteriorRingN(pol, i))::numeric) INTO d;
+            END LOOP;
+        END IF;
+        IF d < dist THEN
+            dist:= d;
+            within := w;
+        END IF;
+    END LOOP;
     dist := dist * within::numeric;
     RETURN dist;
 END;
