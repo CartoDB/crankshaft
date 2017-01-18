@@ -37,7 +37,7 @@ SELECT
   aoi.quads,
   aoi.significance,
   c.num_cyclists_per_total_population
-FROM CDB_GetAreasOfInterestLocal('SELECT * FROM commute_data'
+FROM CDB_AreasOfInterestLocal('SELECT * FROM commute_data'
                                  'num_cyclists_per_total_population') As aoi
 JOIN commute_data As c
 ON c.cartodb_id = aoi.rowid;
@@ -113,7 +113,7 @@ SELECT
   aoi.quads,
   aoi.significance,
   c.cyclists_per_total_population
-FROM CDB_GetAreasOfInterestLocalRate('SELECT * FROM commute_data'
+FROM CDB_AreasOfInterestLocalRate('SELECT * FROM commute_data'
                                      'num_cyclists',
                                      'total_population') As aoi
 JOIN commute_data As c

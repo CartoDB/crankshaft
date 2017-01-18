@@ -17,16 +17,15 @@ RETURNS TABLE(
 DECLARE
     cell_count integer;
     tin geometry[];
+    resolution integer;
 BEGIN
-    -- calc the cell size in web mercator units
-    -- WITH center as (
-    --     SELECT ST_centroid(ST_Collect(geomin)) as c
-    -- )
-    -- SELECT
-    --     round(resolution / cos(ST_y(c) * pi()/180))
-    --     INTO cell
-    -- FROM center;
-    -- raise notice 'Resol: %', cell;
+
+    -- nasty trick to override issue #121
+    IF max_time = 0 THEN
+        max_time = -90;
+    END IF;
+    resolution := max_time;
+    max_time := -1 * resolution;
 
     -- calc the optimal number of cells for the current dataset
     SELECT
@@ -70,9 +69,13 @@ BEGIN
     ),
     resolution as(
         SELECT
-             round(|/ (
-                 ST_area(geom) / cell_count
-             )) as cell
+            CASE WHEN resolution <= 0  THEN
+                round(|/ (
+                 ST_area(geom) / abs(cell_count)
+             ))
+            ELSE
+                resolution
+            END AS cell
         FROM envelope3857
     ),
     grid as(
