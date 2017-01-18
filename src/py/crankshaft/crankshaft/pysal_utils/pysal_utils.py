@@ -127,7 +127,7 @@ def query_attr_where(params, table_ref=True):
             attr_string.append(template % params[attr])
 
         if 'denominator' in attrs:
-            check_zero = "\"%s\" <> 0" % params[attrs[1]]
+            check_zero = "\"%s\" <> 0" % params['denominator']
             if table_ref is not None:
                 check_zero = "idx_replace." + check_zero
             attr_string.append(check_zero)
