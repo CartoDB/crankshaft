@@ -115,7 +115,7 @@ DECLARE
 BEGIN
     dist := 1e999;
     pols := array_agg((ST_dump(polygon)).geom);
-    FOR j in 1..array_length(pols, 1);
+    FOR j in 1..array_length(pols, 1)
     LOOP
         pol := pols[j];
         d := dist;
