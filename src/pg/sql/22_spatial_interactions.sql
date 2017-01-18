@@ -4,9 +4,9 @@ CDB_Gravity(subquery text, flows text, o_vars text[], d_vars text[],
 RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid varchar)
 AS $$
 
-from crankshaft.regression import spint_gravity
-
-return spint_gravity.gravity(subquery, flows, o_vars, d_vars, cost, cost_func, quasi)
+from crankshaft.regression import SpInt
+spint = SpInt()
+return spint.gravity(subquery, flows, o_vars, d_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
@@ -16,9 +16,9 @@ CDB_Production(subquery text, flows text, origins text, d_vars text[],
 RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid varchar)
 AS $$
 
-from crankshaft.regression import spint_gravity
-
-return spint_gravity.production(subquery, flows, origins, d_vars, cost, cost_func, quasi)
+from crankshaft.regression import SpInt
+spint = SpInt()
+return spint.production(subquery, flows, origins, d_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
@@ -29,9 +29,9 @@ CDB_Attraction(subquery text, flows text, destinations text, o_vars text[],
 RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid varchar)
 AS $$
 
-from crankshaft.regression import spint_gravity
-
-return spint_gravity.attraction(subquery, flows, destinations, o_vars, cost, cost_func, quasi)
+from crankshaft.regression import SpInt
+spint = SpInt()
+return spint.attraction(subquery, flows, destinations, o_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
@@ -42,9 +42,9 @@ CDB_Doubly(subquery text, flows text, origins text, destinations text,
 RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid varchar)
 AS $$
 
-from crankshaft.regression import spint_gravity
-
-return spint_gravity.doubly(subquery, flows, origins, destinations, cost, cost_func, quasi)
+from crankshaft.regression import SpInt
+spint = SpInt()
+return spint.doubly(subquery, flows, origins, destinations, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
@@ -54,9 +54,9 @@ CDB_LocalProduction(subquery text, flows text, origins text, d_vars text[], cost
 RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid varchar)
 AS $$
 
-from crankshaft.regression import spint_gravity
-
-return spint_gravity.local_production(subquery, flows, origins, d_vars, cost, cost_func, quasi)
+from crankshaft.regression import SpInt
+spint = SpInt()
+return spint.local_production(subquery, flows, origins, d_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
@@ -67,9 +67,9 @@ CDB_LocalAttraction(subquery text, flows text, destinations text, o_vars text[],
 RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid varchar)
 AS $$
 
-from crankshaft.regression import spint_gravity
-
-return spint_gravity.local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, quasi)
+from crankshaft.regression import SpInt
+spint = SpInt()
+return spint.local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
@@ -79,8 +79,8 @@ CDB_LocalGravity(subquery text, flows text, o_vars text[], d_vars text[], locs t
 RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid varchar)
 AS $$
 
-from crankshaft.regression import spint_gravity
-
-return spint_gravity.local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, quasi)
+from crankshaft.regression import SpInt
+spint = SpInt()
+return spint.local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;

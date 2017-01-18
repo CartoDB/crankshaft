@@ -13,7 +13,7 @@ class SpInt(object):
         else:
             self.data_provider = AnalysisDataProvider()
 
-    def gravity(subquery, flows, o_vars, d_vars, cost, cost_func,
+    def gravity(self, subquery, flows, o_vars, d_vars, cost, cost_func,
                 quasi=False, id_col='cartodb_id'):
         """
         subquery: 'select * from demographics'
@@ -83,17 +83,20 @@ class SpInt(object):
         aic = np.repeat(model.AIC, n)
 
         for idx in xrange(n):
-            coefficients.append(json.dumps({var: model.params[k]
-                                            for k, var in enumerate(ind_vars)}))
-            stand_errs.append(json.dumps({var: model.std_err[k]
-                                          for k, var in enumerate(ind_vars)}))
-            t_vals.append(json.dumps({var: model.tvalues[k]
-                                      for k, var in enumerate(ind_vars)}))
+            coefficients.append(
+              json.dumps({var: model.params[k]
+                          for k, var in enumerate(ind_vars)}))
+            stand_errs.append(
+              json.dumps({var: model.std_err[k]
+                          for k, var in enumerate(ind_vars)}))
+            t_vals.append(
+              json.dumps({var: model.tvalues[k]
+                          for k, var in enumerate(ind_vars)}))
 
         return zip(coefficients, stand_errs, t_vals, predicted,
                    r_squared, aic, rowid)
 
-    def production(subquery, flows, origins, d_vars, cost, cost_func,
+    def production(self, subquery, flows, origins, d_vars, cost, cost_func,
                    quasi=False, id_col='cartodb_id'):
         """
         subquery: 'select * from demographics'
@@ -165,18 +168,21 @@ class SpInt(object):
         aic = np.repeat(model.AIC, n)
 
         for idx in xrange(n):
-            coefficients.append(json.dumps({var: model.params[k]
-                                            for k, var in enumerate(ind_vars)}))
-            stand_errs.append(json.dumps({var: model.std_err[k]
-                                          for k, var in enumerate(ind_vars)}))
-            t_vals.append(json.dumps({var: model.tvalues[k]
-                                      for k, var in enumerate(ind_vars)}))
+            coefficients.append(
+              json.dumps({var: model.params[k]
+                          for k, var in enumerate(ind_vars)}))
+            stand_errs.append(
+              json.dumps({var: model.std_err[k]
+                          for k, var in enumerate(ind_vars)}))
+            t_vals.append(
+              json.dumps({var: model.tvalues[k]
+                          for k, var in enumerate(ind_vars)}))
 
         return zip(coefficients, stand_errs, t_vals,
                    predicted, r_squared, aic, rowid)
 
-    def attraction(subquery, flows, destinations, o_vars, cost, cost_func,
-                   quasi=False, id_col='cartodb_id'):
+    def attraction(self, subquery, flows, destinations, o_vars, cost,
+                   cost_func, quasi=False, id_col='cartodb_id'):
         """
         subquery: 'select * from demographics'
         flows: 'flow_count'
@@ -245,17 +251,20 @@ class SpInt(object):
         aic = np.repeat(model.AIC, n)
 
         for idx in xrange(n):
-            coefficients.append(json.dumps({var: model.params[k]
-                                            for k, var in enumerate(ind_vars)}))
-            stand_errs.append(json.dumps({var: model.std_err[k]
-                                          for k, var in enumerate(ind_vars)}))
-            t_vals.append(json.dumps({var: model.tvalues[k]
-                                      for k, var in enumerate(ind_vars)}))
+            coefficients.append(
+              json.dumps({var: model.params[k]
+                          for k, var in enumerate(ind_vars)}))
+            stand_errs.append(
+              json.dumps({var: model.std_err[k]
+                          for k, var in enumerate(ind_vars)}))
+            t_vals.append(
+              json.dumps({var: model.tvalues[k]
+                          for k, var in enumerate(ind_vars)}))
 
         return zip(coefficients, stand_errs, t_vals, predicted,
                    r_squared, aic, rowid)
 
-    def doubly(subquery, flows, origins, destinations, cost, cost_func,
+    def doubly(self, subquery, flows, origins, destinations, cost, cost_func,
                quasi=False, id_col='cartodb_id'):
         """
         subquery: 'select * from demographics'
@@ -321,18 +330,21 @@ class SpInt(object):
         aic = np.repeat(model.AIC, n)
 
         for idx in xrange(n):
-            coefficients.append(json.dumps({var: model.params[k]
-                                            for k, var in enumerate(ind_vars)}))
-            stand_errs.append(json.dumps({var: model.std_err[k]
-                                          for k, var in enumerate(ind_vars)}))
-            t_vals.append(json.dumps({var: model.tvalues[k]
-                                      for k, var in enumerate(ind_vars)}))
+            coefficients.append(
+              json.dumps({var: model.params[k]
+                          for k, var in enumerate(ind_vars)}))
+            stand_errs.append(
+              json.dumps({var: model.std_err[k]
+                          for k, var in enumerate(ind_vars)}))
+            t_vals.append(
+              json.dumps({var: model.tvalues[k]
+                          for k, var in enumerate(ind_vars)}))
 
         return zip(coefficients, stand_errs, t_vals, predicted,
                    r_squared, aic, rowid)
 
-    def local_production(subquery, flows, origins, d_vars, cost, cost_func,
-                         quasi=False, id_col='cartodb_id'):
+    def local_production(self, subquery, flows, origins, d_vars, cost,
+                         cost_func, quasi=False, id_col='cartodb_id'):
         """
         subquery: 'select * from demographics'
         flows: 'flow_count'
@@ -407,7 +419,7 @@ class SpInt(object):
 
         return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)
 
-    def local_attraction(subquery, flows, destinations, o_vars, cost,
+    def local_attraction(self, subquery, flows, destinations, o_vars, cost,
                          cost_func, quasi=False, id_col='cartodb_id'):
         """
         subquery: 'select * from demographics'
@@ -483,8 +495,8 @@ class SpInt(object):
 
         return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)
 
-    def local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func,
-                      quasi=False, id_col='cartodb_id'):
+    def local_gravity(self, subquery, flows, o_vars, d_vars, locs, cost,
+                      cost_func, quasi=False, id_col='cartodb_id'):
         """
         subquery: 'select * from demographics'
         flows: 'flow_count'
