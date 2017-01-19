@@ -35,16 +35,16 @@ class SpInt(object):
                   'ind_vars': ind_vars,
                   'cost': cost}
 
-        data = self.data_provider.get_spint_gravity(params)
+        result = self.data_provider.get_spint_gravity(params)
 
         # add cost name in var name list
         ind_vars.insert(len(ind_vars), cost)
 
         # unique ids and variable names list
-        rowid = np.array(data[0]['rowid'], dtype=np.int)
+        rowid = np.array(result[0]['rowid'], dtype=np.int)
 
         # extract dependent variable
-        flows = np.array(data[0]['dep_var']).reshape((-1, 1))
+        flows = np.array(result[0]['dep_var']).reshape((-1, 1))
 
         # extract origin variables, dest variables and cost variable
         n = flows.shape[0]
@@ -58,24 +58,24 @@ class SpInt(object):
         for attr in range(0, o):
             attr_name = 'attr' + str(attr + 1)
             o_vars[:, attr] = np.array(
-              data[0][attr_name]).flatten()
+              result[0][attr_name]).flatten()
 
         # then dests
         # TODO: replace with pu.get_attributes (in another branch)
         for attr in range(0, d):
             attr_name = 'attr' + str(attr + 1 + o)
             d_vars[:, attr] = np.array(
-              data[0][attr_name]).flatten()
+              result[0][attr_name]).flatten()
 
         # finally cost
-        cost = np.array(data[0]['cost'], dtype=np.float).flatten()
+        cost = np.array(result[0]['cost'], dtype=np.float).flatten()
 
         # add intercept variable name
         ind_vars.insert(0, 'intercept')
 
         model = Gravity(flows, o_vars, d_vars, cost,
                         cost_func, Quasi=quasi).fit()
-        coefficients = []
+        coeffs = []
         stand_errs = []
         t_vals = []
         predicted = model.yhat
@@ -83,7 +83,7 @@ class SpInt(object):
         aic = np.repeat(model.AIC, n)
 
         for idx in xrange(n):
-            coefficients.append(
+            coeffs.append(
               json.dumps({var: model.params[k]
                           for k, var in enumerate(ind_vars)}))
             stand_errs.append(
@@ -93,7 +93,7 @@ class SpInt(object):
               json.dumps({var: model.tvalues[k]
                           for k, var in enumerate(ind_vars)}))
 
-        return zip(coefficients, stand_errs, t_vals, predicted,
+        return zip(coeffs, stand_errs, t_vals, predicted,
                    r_squared, aic, rowid)
 
     def production(self, subquery, flows, origins, d_vars, cost, cost_func,
@@ -119,19 +119,19 @@ class SpInt(object):
                   'cost': cost}
 
         # TODO: replace query_result with data
-        data = self.data_provider.get_spint_production(params)
+        result = self.data_provider.get_spint_production(params)
 
         # add cost name in var name list
         ind_vars.insert(len(ind_vars), cost)
 
         # unique ids and variable names list
-        rowid = np.array(data[0]['rowid'], dtype=np.int)
+        rowid = np.array(result[0]['rowid'], dtype=np.int)
 
         # origin names variable for fixed effects (constraints)
-        origins = np.array(data[0]['origins'])
+        origins = np.array(result[0]['origins'])
 
         # extract dependent variable
-        flows = np.array(data[0]['dep_var']).reshape((-1, 1))
+        flows = np.array(result[0]['dep_var']).reshape((-1, 1))
 
         # extract origin variables, dest variables and cost variable
         n = flows.shape[0]
@@ -143,10 +143,10 @@ class SpInt(object):
         for attr in range(0, d):
             attr_name = 'attr' + str(attr + 1)
             d_vars[:, attr] = np.array(
-              data[0][attr_name]).flatten()
+              result[0][attr_name]).flatten()
 
         # finally cost
-        cost = np.array(data[0]['cost'], dtype=np.float).flatten()
+        cost = np.array(result[0]['cost'], dtype=np.float).flatten()
 
         # add fixed effects and intercept variable name list
         for x, var in enumerate(np.unique(origins)):
@@ -160,7 +160,7 @@ class SpInt(object):
                            Quasi=quasi).fit()
 
         # format output
-        coefficients = []
+        coeffs = []
         stand_errs = []
         t_vals = []
         predicted = model.yhat
@@ -168,7 +168,7 @@ class SpInt(object):
         aic = np.repeat(model.AIC, n)
 
         for idx in xrange(n):
-            coefficients.append(
+            coeffs.append(
               json.dumps({var: model.params[k]
                           for k, var in enumerate(ind_vars)}))
             stand_errs.append(
@@ -178,7 +178,7 @@ class SpInt(object):
               json.dumps({var: model.tvalues[k]
                           for k, var in enumerate(ind_vars)}))
 
-        return zip(coefficients, stand_errs, t_vals,
+        return zip(coeffs, stand_errs, t_vals,
                    predicted, r_squared, aic, rowid)
 
     def attraction(self, subquery, flows, destinations, o_vars, cost,
@@ -203,19 +203,19 @@ class SpInt(object):
                   'destinations': destinations,
                   'cost': cost}
 
-        data = self.data_provider.get_spint_attraction(params)
+        result = self.data_provider.get_spint_attraction(params)
 
         # add cost name in var name list
         ind_vars.insert(len(ind_vars), cost)
 
         # unique ids and variable names list
-        rowid = np.array(data[0]['rowid'], dtype=np.int)
+        rowid = np.array(result[0]['rowid'], dtype=np.int)
 
         # dest names variable for fixed effects (constraints)
-        destinations = np.array(data[0]['destinations'])
+        destinations = np.array(result[0]['destinations'])
 
         # extract dependent variable
-        flows = np.array(data[0]['dep_var']).reshape((-1, 1))
+        flows = np.array(result[0]['dep_var']).reshape((-1, 1))
 
         # extract origin variables, dest variables and cost variable
         n = flows.shape[0]
@@ -226,10 +226,10 @@ class SpInt(object):
         for attr in range(0, o):
             attr_name = 'attr' + str(attr + 1)
             o_vars[:, attr] = np.array(
-              data[0][attr_name]).flatten()
+              result[0][attr_name]).flatten()
 
         # finally cost
-        cost = np.array(data[0]['cost'], dtype=np.float).flatten()
+        cost = np.array(result[0]['cost'], dtype=np.float).flatten()
 
         # add fixed effects and intercept variable name list
         for x, var in enumerate(np.unique(destinations)):
@@ -243,7 +243,7 @@ class SpInt(object):
                            Quasi=quasi).fit()
 
         # format model
-        coefficients = []
+        coeffs = []
         stand_errs = []
         t_vals = []
         predicted = model.yhat
@@ -251,7 +251,7 @@ class SpInt(object):
         aic = np.repeat(model.AIC, n)
 
         for idx in xrange(n):
-            coefficients.append(
+            coeffs.append(
               json.dumps({var: model.params[k]
                           for k, var in enumerate(ind_vars)}))
             stand_errs.append(
@@ -261,7 +261,7 @@ class SpInt(object):
               json.dumps({var: model.tvalues[k]
                           for k, var in enumerate(ind_vars)}))
 
-        return zip(coefficients, stand_errs, t_vals, predicted,
+        return zip(coeffs, stand_errs, t_vals, predicted,
                    r_squared, aic, rowid)
 
     def doubly(self, subquery, flows, origins, destinations, cost, cost_func,
@@ -284,26 +284,26 @@ class SpInt(object):
                   'destinations': destinations,
                   'cost': cost}
 
-        data = self.data_provider.get_spint_doubly(params)
+        result = self.data_provider.get_spint_doubly(params)
 
         # add cost name in var name list
         ind_vars = [cost]
 
         # unique ids and variable names list
-        rowid = np.array(data[0]['rowid'], dtype=np.int)
+        rowid = np.array(result[0]['rowid'], dtype=np.int)
 
         # dest names variable for fixed effects (constraints)
-        origins = np.array(data[0]['origins'])
-        destinations = np.array(data[0]['destinations'])
+        origins = np.array(result[0]['origins'])
+        destinations = np.array(result[0]['destinations'])
 
         # extract dependent variable
-        flows = np.array(data[0]['dep_var']).reshape((-1, 1))
+        flows = np.array(result[0]['dep_var']).reshape((-1, 1))
 
         # extract origin variables, dest variables and cost variable
         n = flows.shape[0]
 
         # finally cost
-        cost = np.array(data[0]['cost'], dtype=np.float).flatten()
+        cost = np.array(result[0]['cost'], dtype=np.float).flatten()
 
         # add fixed effects and intercept to variable name list
         for x, var in enumerate(np.unique(destinations)):
@@ -322,7 +322,7 @@ class SpInt(object):
                        Quasi=quasi).fit()
 
         # format output
-        coefficients = []
+        coeffs = []
         stand_errs = []
         t_vals = []
         predicted = model.yhat
@@ -330,7 +330,7 @@ class SpInt(object):
         aic = np.repeat(model.AIC, n)
 
         for idx in xrange(n):
-            coefficients.append(
+            coeffs.append(
               json.dumps({var: model.params[k]
                           for k, var in enumerate(ind_vars)}))
             stand_errs.append(
@@ -340,7 +340,7 @@ class SpInt(object):
               json.dumps({var: model.tvalues[k]
                           for k, var in enumerate(ind_vars)}))
 
-        return zip(coefficients, stand_errs, t_vals, predicted,
+        return zip(coeffs, stand_errs, t_vals, predicted,
                    r_squared, aic, rowid)
 
     def local_production(self, subquery, flows, origins, d_vars, cost,
@@ -365,19 +365,19 @@ class SpInt(object):
                   'origins': origins,
                   'cost': cost}
 
-        data = self.data_provider.get_spint_production(params)
+        result = self.data_provider.get_spint_production(params)
 
         # add cost name in var name list
         ind_vars.insert(len(ind_vars), cost)
 
         # unique ids and variable names list
-        rowid = np.array(data[0]['rowid'], dtype=np.int)
+        rowid = np.array(result[0]['rowid'], dtype=np.int)
 
         # origin names variable for fixed effects (constraints)
-        origins = np.array(data[0]['origins'])
+        origins = np.array(result[0]['origins'])
 
         # extract dependent variable
-        flows = np.array(data[0]['dep_var']).reshape((-1, 1))
+        flows = np.array(result[0]['dep_var']).reshape((-1, 1))
 
         # extract origin variables, dest variables and cost variable
         n = flows.shape[0]
@@ -389,10 +389,10 @@ class SpInt(object):
         for attr in range(0, d):
             attr_name = 'attr' + str(attr + 1)
             d_vars[:, attr] = np.array(
-              data[0][attr_name]).flatten()
+              result[0][attr_name]).flatten()
 
         # finally cost
-        cost = np.array(data[0]['cost'], dtype=np.float).flatten()
+        cost = np.array(result[0]['cost'], dtype=np.float).flatten()
 
         # calibrate model
         model = Production(flows, origins, d_vars, cost, cost_func,
@@ -400,14 +400,14 @@ class SpInt(object):
         local_model = model.local()
 
         # format output
-        coefficients = []
+        coeffs = []
         t_vals = []
         stand_errs = []
         r_squared = local_model['pseudoR2']
         aic = local_model['AIC']
 
         for idx in xrange(len(np.unique(origins))):
-            coefficients.append(
+            coeffs.append(
               json.dumps({var: local_model['param' + str(k)][idx]
                           for k, var in enumerate(ind_vars)}))
             t_vals.append(
@@ -417,7 +417,7 @@ class SpInt(object):
               json.dumps({var: local_model['stde' + str(k)][idx]
                           for k, var in enumerate(ind_vars)}))
 
-        return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)
+        return zip(coeffs, stand_errs, t_vals, r_squared, aic, rowid)
 
     def local_attraction(self, subquery, flows, destinations, o_vars, cost,
                          cost_func, quasi=False, id_col='cartodb_id'):
@@ -441,19 +441,19 @@ class SpInt(object):
                   'destinations': destinations,
                   'cost': cost}
 
-        data = self.data_provider.get_spint_attraction(params)
+        result = self.data_provider.get_spint_attraction(params)
 
         # add cost name in var name list
         ind_vars.insert(len(ind_vars), cost)
 
         # unique ids and variable names list
-        rowid = np.array(data[0]['rowid'], dtype=np.int)
+        rowid = np.array(result[0]['rowid'], dtype=np.int)
 
         # dest names variable for fixed effects (constraints)
-        destinations = np.array(data[0]['destinations'])
+        destinations = np.array(result[0]['destinations'])
 
         # extract dependent variable
-        flows = np.array(data[0]['dep_var']).reshape((-1, 1))
+        flows = np.array(result[0]['dep_var']).reshape((-1, 1))
 
         # extract origin variables, dest variables and cost variable
         n = flows.shape[0]
@@ -465,10 +465,10 @@ class SpInt(object):
         for attr in range(0, o):
             attr_name = 'attr' + str(attr + 1)
             o_vars[:, attr] = np.array(
-              data[0][attr_name]).flatten()
+              result[0][attr_name]).flatten()
 
         # finally cost
-        cost = np.array(data[0]['cost'], dtype=np.float).flatten()
+        cost = np.array(result[0]['cost'], dtype=np.float).flatten()
 
         # calibrate model
         model = Attraction(flows, destinations, o_vars, cost, cost_func,
@@ -476,14 +476,14 @@ class SpInt(object):
         local_model = model.local()
 
         # format output
-        coefficients = []
+        coeffs = []
         t_vals = []
         stand_errs = []
         r_squared = local_model['pseudoR2']
         aic = local_model['AIC']
 
         for idx in xrange(len(np.unique(destinations))):
-            coefficients.append(
+            coeffs.append(
               json.dumps({var: local_model['param' + str(k)][idx]
                           for k, var in enumerate(ind_vars)}))
             t_vals.append(
@@ -493,7 +493,7 @@ class SpInt(object):
               json.dumps({var: local_model['stde' + str(k)][idx]
                           for k, var in enumerate(ind_vars)}))
 
-        return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)
+        return zip(coeffs, stand_errs, t_vals, r_squared, aic, rowid)
 
     def local_gravity(self, subquery, flows, o_vars, d_vars, locs, cost,
                       cost_func, quasi=False, id_col='cartodb_id'):
@@ -521,16 +521,16 @@ class SpInt(object):
                   'locs': locs,
                   'cost': cost}
 
-        data = self.data_provider.get_spint_local_gravity(params)
+        result = self.data_provider.get_spint_local_gravity(params)
 
         # add cost name in var name list
         ind_vars.insert(len(ind_vars), cost)
 
         # unique ids and variable names list
-        rowid = np.array(data[0]['rowid'], dtype=np.int)
+        rowid = np.array(result[0]['rowid'], dtype=np.int)
 
         # extract dependent variable
-        flows = np.array(data[0]['dep_var']).reshape((-1, 1))
+        flows = np.array(result[0]['dep_var']).reshape((-1, 1))
 
         # extract origin variables, dest variables and cost variable
         n = flows.shape[0]
@@ -543,33 +543,33 @@ class SpInt(object):
         for attr in range(0, o):
             attr_name = 'attr' + str(attr + 1)
             o_vars[:, attr] = np.array(
-              data[0][attr_name]).flatten()
+              result[0][attr_name]).flatten()
 
         # then dests
         for attr in range(0, d):
             attr_name = 'attr' + str(attr + 1 + o)
             d_vars[:, attr] = np.array(
-              data[0][attr_name]).flatten()
+              result[0][attr_name]).flatten()
 
         # finally cost
-        cost = np.array(data[0]['cost'], dtype=np.float).flatten()
+        cost = np.array(result[0]['cost'], dtype=np.float).flatten()
 
         # get origin or destination id's that are the focus of local models
-        locs = np.array(data[0]['locs'])
+        locs = np.array(result[0]['locs'])
 
         # calibrate model
         model = Gravity(flows, o_vars, d_vars, cost, cost_func, Quasi=quasi)
         local_model = model.local(locs, np.unique(locs))
 
         # format output
-        coefficients = []
+        coeffs = []
         t_vals = []
         stand_errs = []
         r_squared = local_model['pseudoR2']
         aic = local_model['AIC']
 
         for idx in xrange(len(np.unique(locs))):
-            coefficients.append(
+            coeffs.append(
               json.dumps({var: local_model['param' + str(k)][idx]
                           for k, var in enumerate(ind_vars)}))
             t_vals.append(
@@ -579,4 +579,4 @@ class SpInt(object):
               json.dumps({var: local_model['stde' + str(k)][idx]
                           for k, var in enumerate(ind_vars)}))
 
-        return zip(coefficients, stand_errs, t_vals, r_squared, aic, rowid)
+        return zip(coeffs, stand_errs, t_vals, r_squared, aic, rowid)
