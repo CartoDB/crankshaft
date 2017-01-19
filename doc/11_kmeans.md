@@ -61,7 +61,7 @@ SELECT
   ST_Transform(the_geom, 3857) As the_geom_webmercator,
   class
 FROM
-  cdb_crankshaft.CDB_Weighted_Mean(
+  cdb_crankshaft.CDB_WeightedMean(
     'SELECT *, customer_value FROM customers',
     'customer_value',
     'cluster_no')
