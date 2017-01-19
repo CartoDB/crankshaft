@@ -1,7 +1,7 @@
 import numpy as np
 from spint.base.gravity import Gravity, Production, Attraction, Doubly
 import plpy
-from analysis_data_provider import AnalysisDataProvider
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 import crankshaft.pysal_utils as pu
 import json
 

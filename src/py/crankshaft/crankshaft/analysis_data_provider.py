@@ -69,7 +69,6 @@ class AnalysisDataProvider:
     def get_spint_gravity(self, params):
         try:
             query = pu.spint_gravity_query(params)
-            plpy.notice(query)
             return plpy.execute(query)
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
@@ -77,26 +76,27 @@ class AnalysisDataProvider:
     def get_spint_production(self, params):
         try:
             query = pu.spint_production_query(params)
-            plpy.notice(query)
             return plpy.execute(query)
         except plpy.SPIError, err:
-            plpy.notice(query)
             plpy.error('Analysis failed: %s' % err)
 
     def get_spint_attraction(self, params):
         try:
             query = pu.spint_attraction_query(params)
-            plpy.notice(query)
             return plpy.execute(query)
         except plpy.SPIError, err:
-            plpy.notice(query)
             plpy.error('Analysis failed: %s' % err)
 
     def get_spint_local_gravity(self, params):
         try:
-            query = pu.local_gravity_query(params)
-            plpy.notice(query)
+            query = pu.spint_local_gravity_query(params)
             return plpy.execute(query)
         except plpy.SPIError, err:
-            plpy.notice(query)
+            plpy.error('Analysis failed: %s' % err)
+
+    def get_spint_doubly(self, params):
+        try:
+            query = pu.spint_doubly_query(params)
+            return plpy.execute(query)
+        except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)

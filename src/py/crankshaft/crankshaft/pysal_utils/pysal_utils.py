@@ -200,7 +200,7 @@ def queen(params):
 
 # to add more weight methods open a ticket or pull request
 
-def gravity_query(params):
+def spint_gravity_query(params):
     """
     gravity spatial interaction  query
     """
@@ -212,21 +212,21 @@ def gravity_query(params):
 
     query = '''
       SELECT
-        array_agg({dep_var}) As dep_var,
+        array_agg("{dep_var}") As dep_var,
         %(ind_vars_select)s
-        array_agg({id_col}) As rowid,
-        array_agg({cost}) As cost
+        array_agg("{id_col}") As rowid,
+        array_agg("{cost}") As cost
       FROM ({subquery}) As q
       WHERE
-        {dep_var} IS NOT NULL AND
-        {cost} IS NOT NULL AND
+        "{dep_var}" IS NOT NULL AND
+        "{cost}" IS NOT NULL AND
         %(ind_vars_where)s
         ''' % replacements
 
     return query.format(**params).strip()
 
 
-def local_gravity_query(params):
+def spint_local_gravity_query(params):
     """
     gravity spatial interaction  query
     """
@@ -238,23 +238,23 @@ def local_gravity_query(params):
 
     query = '''
       SELECT
-        array_agg({dep_var}) As dep_var,
+        array_agg("{dep_var}") As dep_var,
         %(ind_vars_select)s
-        array_agg({id_col}) As rowid,
-        array_agg({locs}) As locs,
-        array_agg({cost}) As cost
+        array_agg("{id_col}") As rowid,
+        array_agg("{locs}") As locs,
+        array_agg("{cost}") As cost
       FROM ({subquery}) As q
       WHERE
-        {dep_var} IS NOT NULL AND
-        {locs} IS NOT NULL AND
-        {cost} IS NOT NULL AND
+        "{dep_var}" IS NOT NULL AND
+        "{locs}" IS NOT NULL AND
+        "{cost}" IS NOT NULL AND
         %(ind_vars_where)s
         ''' % replacements
 
     return query.format(**params).strip()
 
 
-def production_query(params):
+def spint_production_query(params):
     """
     production-constrained spatial interaction  query
     """
@@ -266,16 +266,16 @@ def production_query(params):
 
     query = '''
       SELECT
-        array_agg({dep_var}) As dep_var,
+        array_agg("{dep_var}") As dep_var,
         %(ind_vars_select)s
-        array_agg({id_col}) As rowid,
-        array_agg({origins}) As origins,
-        array_agg({cost}) As cost
+        array_agg("{id_col}") As rowid,
+        array_agg("{origins}") As origins,
+        array_agg("{cost}") As cost
       FROM ({subquery}) As q
       WHERE
-        {dep_var} IS NOT NULL AND
-        {origins} IS NOT NULL AND
-        {cost} IS NOT NULL AND
+        "{dep_var}" IS NOT NULL AND
+        "{origins}" IS NOT NULL AND
+        "{cost}" IS NOT NULL AND
         %(ind_vars_where)s
         ''' % replacements
 
@@ -294,23 +294,23 @@ def spint_attraction_query(params):
 
     query = '''
       SELECT
-        array_agg({dep_var}) As dep_var,
+        array_agg("{dep_var}") As dep_var,
         %(ind_vars_select)s
-        array_agg({id_col}) As rowid,
-        array_agg({destinations}) As destinations,
-        array_agg({cost}) As cost
+        array_agg("{id_col}") As rowid,
+        array_agg("{destinations}") As destinations,
+        array_agg("{cost}") As cost
       FROM ({subquery}) As q
       WHERE
-        {dep_var} IS NOT NULL AND
-        {destinations} IS NOT NULL AND
-        {cost} IS NOT NULL AND
+        "{dep_var}" IS NOT NULL AND
+        "{destinations}" IS NOT NULL AND
+        "{cost}" IS NOT NULL AND
         %(ind_vars_where)s
         ''' % replacements
 
     return query.format(**params).strip()
 
 
-def doubly_query(params):
+def spint_doubly_query(params):
     """
     attraction-constrained spatial interaction  query
     """
@@ -322,17 +322,17 @@ def doubly_query(params):
 
     query = '''
       SELECT
-        array_agg({dep_var}) As dep_var,
-        array_agg({id_col}) As rowid,
-        array_agg({origins}) As origins,
-        array_agg({destinations}) As destinations,
-        array_agg({cost}) As cost
+        array_agg("{dep_var}") As dep_var,
+        array_agg("{id_col}") As rowid,
+        array_agg("{origins}") As origins,
+        array_agg("{destinations}") As destinations,
+        array_agg("{cost}") As cost
       FROM ({subquery}) As q
       WHERE
-        {dep_var} IS NOT NULL AND
-        {origins} IS NOT NULL AND
-        {destinations} IS NOT NULL AND
-        {cost} IS NOT NULL
+        "{dep_var}" IS NOT NULL AND
+        "{origins}" IS NOT NULL AND
+        "{destinations}" IS NOT NULL AND
+        "{cost}" IS NOT NULL
         '''
 
     return query.format(**params).strip()
