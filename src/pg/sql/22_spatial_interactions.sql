@@ -1,86 +1,86 @@
 CREATE OR REPLACE FUNCTION
-CDB_Gravity(subquery text, flows text, o_vars text[], d_vars text[],
+CDB_SpIntGravity(subquery text, flows_var text, origin_vars text[], destin_vars text[],
        cost text, cost_func text default 'pow', quasi boolean default False)
-RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid varchar)
+RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid bigint)
 AS $$
 
 from crankshaft.regression import SpInt
 spint = SpInt()
-return spint.gravity(subquery, flows, o_vars, d_vars, cost, cost_func, quasi)
+return spint.gravity(subquery, flows_var, origin_vars, destin_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION
-CDB_Production(subquery text, flows text, origins text, d_vars text[],
-       cost text, cost_func text default 'pow', Quasi boolean default False)
-RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid varchar)
+CDB_SpIntProduction(subquery text, flows_var text, origins text, d_vars text[],
+       cost text, cost_func text default 'pow', quasi boolean default False)
+RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid bigint)
 AS $$
 
 from crankshaft.regression import SpInt
 spint = SpInt()
-return spint.production(subquery, flows, origins, d_vars, cost, cost_func, quasi)
-
-$$ LANGUAGE plpythonu;
-
-
-CREATE OR REPLACE FUNCTION
-CDB_Attraction(subquery text, flows text, destinations text, o_vars text[],
-       cost text, cost_func text default 'pow', Quasi boolean default False)
-RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid varchar)
-AS $$
-
-from crankshaft.regression import SpInt
-spint = SpInt()
-return spint.attraction(subquery, flows, destinations, o_vars, cost, cost_func, quasi)
+return spint.production(subquery, flows_var, origins, d_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
 
 CREATE OR REPLACE FUNCTION
-CDB_Doubly(subquery text, flows text, origins text, destinations text,
-       cost text, cost_func text default 'pow', Quasi boolean default False)
-RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid varchar)
+CDB_SpIntAttraction(subquery text, flows_var text, destinations text, o_vars text[],
+       cost text, cost_func text default 'pow', quasi boolean default False)
+RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid bigint)
 AS $$
 
 from crankshaft.regression import SpInt
 spint = SpInt()
-return spint.doubly(subquery, flows, origins, destinations, cost, cost_func, quasi)
+return spint.attraction(subquery, flows_var, destinations, o_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
 
 CREATE OR REPLACE FUNCTION
-CDB_LocalProduction(subquery text, flows text, origins text, d_vars text[], cost text, cost_func text default 'pow', Quasi boolean default False)
-RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid varchar)
+CDB_SpIntDoubly(subquery text, flows_var text, origins text, destinations text,
+       cost text, cost_func text default 'pow', quasi boolean default False)
+RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, predicted numeric, r_squared numeric, aic numeric, rowid bigint)
 AS $$
 
 from crankshaft.regression import SpInt
 spint = SpInt()
-return spint.local_production(subquery, flows, origins, d_vars, cost, cost_func, quasi)
+return spint.doubly(subquery, flows_var, origins, destinations, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
 
 CREATE OR REPLACE FUNCTION
-CDB_LocalAttraction(subquery text, flows text, destinations text, o_vars text[],
-       cost text, cost_func text default 'pow', Quasi boolean default False)
-RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid varchar)
+CDB_SpIntLocalProduction(subquery text, flows_var text, origins text, d_vars text[], cost text, cost_func text default 'pow', quasi boolean default False)
+RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid bigint)
 AS $$
 
 from crankshaft.regression import SpInt
 spint = SpInt()
-return spint.local_attraction(subquery, flows, destinations, o_vars, cost, cost_func, quasi)
+return spint.local_production(subquery, flows_var, origins, d_vars, cost, cost_func, quasi)
+
+$$ LANGUAGE plpythonu;
+
+
+CREATE OR REPLACE FUNCTION
+CDB_SpIntLocalAttraction(subquery text, flows_var text, destinations text, o_vars text[],
+       cost text, cost_func text default 'pow', quasi boolean default False)
+RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid bigint)
+AS $$
+
+from crankshaft.regression import SpInt
+spint = SpInt()
+return spint.local_attraction(subquery, flows_var, destinations, o_vars, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
 
 CREATE OR REPLACE FUNCTION
-CDB_LocalGravity(subquery text, flows text, o_vars text[], d_vars text[], locs text,
-       cost text, cost_func text default 'pow', Quasi boolean default False)
-RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid varchar)
+CDB_SpIntLocalGravity(subquery text, flows_var text, o_vars text[], d_vars text[], locs text,
+       cost text, cost_func text default 'pow', quasi boolean default False)
+RETURNS table(coeffs JSON, stand_errs JSON, t_vals JSON, r_squared numeric, aic numeric, rowid bigint)
 AS $$
 
 from crankshaft.regression import SpInt
 spint = SpInt()
-return spint.local_gravity(subquery, flows, o_vars, d_vars, locs, cost, cost_func, quasi)
+return spint.local_gravity(subquery, flows_var, o_vars, d_vars, locs, cost, cost_func, quasi)
 
 $$ LANGUAGE plpythonu;
