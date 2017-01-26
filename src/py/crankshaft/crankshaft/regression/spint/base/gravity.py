@@ -36,8 +36,8 @@ class BaseGravity(CountModel):
     origins         : array of strings
                       n x 1; unique identifiers of origins of n flows
     destinations    : array of strings
-                      n x 1; unique identifiers of destinations of n flows 
-    cost            : array 
+                      n x 1; unique identifiers of destinations of n flows
+    cost            : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cost_func       : string or function that has scalar input and output
@@ -82,12 +82,12 @@ class BaseGravity(CountModel):
                       number of observations
     k               : integer
                       number of parameters
-    c               : array 
+    c               : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cf              : function
                       cost function; used to transform cost variable
-    ov              : array 
+    ov              : array
                       n x p(o); p attributes for each origin of n flows
     dv              : array
                       n x p(d); p attributes for each destination of n flows
@@ -129,7 +129,7 @@ class BaseGravity(CountModel):
     adj_D2          : float
                       adjusted percentage of explained deviance
     pseudo_R2       : float
-                      McFadden's pseudo R2  (coefficient of determination) 
+                      McFadden's pseudo R2  (coefficient of determination)
     adj_pseudoR2    : float
                       adjusted McFadden's pseudo R2
     SRMSE           : float
@@ -192,33 +192,33 @@ class BaseGravity(CountModel):
             if constant | isinstance(self, Doubly):
                 d_dummies = d_dummies[:,1:]
             X = sphstack(X, d_dummies, array_out=False)
-        if self.ov is not None:	
+        if self.ov is not None:
             if isinstance(self, Gravity):
                 for each in range(self.ov.shape[1]):
-                    if (self.ov[:,each] == 0).any(): 
+                    if (self.ov[:,each] == 0).any():
                     	raise ValueError("Zero values detected in column %s "
                                 "of origin variables, which are undefined for "
                                 "Poisson log-linear spatial interaction models" % each)
                     X = np.hstack((X, np.log(np.reshape(self.ov[:,each], (-1,1)))))
             else:
                 for each in range(self.ov.shape[1]):
-                    if (self.ov[:,each] == 0).any(): 
+                    if (self.ov[:,each] == 0).any():
                     	raise ValueError("Zero values detected in column %s "
                                 "of origin variables, which are undefined for "
                                 "Poisson log-linear spatial interaction models" % each)
                     ov = sp.csr_matrix(np.log(np.reshape(self.ov[:,each], ((-1,1)))))
                     X = sphstack(X, ov, array_out=False)
-        if self.dv is not None:    	
+        if self.dv is not None:
             if isinstance(self, Gravity):
                 for each in range(self.dv.shape[1]):
-                    if (self.dv[:,each] == 0).any(): 
+                    if (self.dv[:,each] == 0).any():
                     	raise ValueError("Zero values detected in column %s "
                                 "of destination variables, which are undefined for "
                                 "Poisson log-linear spatial interaction models" % each)
                     X = np.hstack((X, np.log(np.reshape(self.dv[:,each], (-1,1)))))
             else:
                 for each in range(self.dv.shape[1]):
-                    if (self.dv[:,each] == 0).any(): 
+                    if (self.dv[:,each] == 0).any():
                     	raise ValueError("Zero values detected in column %s "
                                 "of destination variables, which are undefined for "
                                 "Poisson log-linear spatial interaction models" % each)
@@ -238,7 +238,7 @@ class BaseGravity(CountModel):
         	raise NotImplementedError("Competing destination model not yet implemented")
         if Lag:
         	raise NotImplementedError("Spatial Lag autoregressive model not yet implemented")
-        
+
         CountModel.__init__(self, y, X, constant=constant)
         if (framework.lower() == 'glm'):
             if not Quasi:
@@ -283,7 +283,7 @@ class BaseGravity(CountModel):
         else:
             raise TypeError("input must be an numpy array or list that can be coerced"
                     " into the dimensions n x 1")
-    
+
 class Gravity(BaseGravity):
     """
     Unconstrained (traditional gravity) gravity-type spatial interaction model
@@ -292,7 +292,7 @@ class Gravity(BaseGravity):
     ----------
     flows           : array of integers
                       n x 1; observed flows between O origins and D destinations
-    cost            : array 
+    cost            : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cost_func       : string or function that has scalar input and output
@@ -336,14 +336,14 @@ class Gravity(BaseGravity):
                       number of observations
     k               : integer
                       number of parameters
-    c               : array 
+    c               : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cf              : function
                       cost function; used to transform cost variable
-    ov              : array 
+    ov              : array
                       n x p(o); p attributes for each origin of n flows
-    dv              : array 
+    dv              : array
                       n x p(d); p attributes for each destination of n flows
     constant        : boolean
                       True to include intercept in model; True by default
@@ -376,14 +376,14 @@ class Gravity(BaseGravity):
                       value of the loglikelihood function evaluated with only an
                       intercept; see family.py for distribution-specific
                       loglikelihoods
-    AIC             : float 
+    AIC             : float
                       Akaike information criterion
     D2              : float
                       percentage of explained deviance
     adj_D2          : float
                       adjusted percentage of explained deviance
     pseudo_R2       : float
-                      McFadden's pseudo R2  (coefficient of determination) 
+                      McFadden's pseudo R2  (coefficient of determination)
     adj_pseudoR2    : float
                       adjusted McFadden's pseudo R2
     SRMSE           : float
@@ -407,7 +407,7 @@ class Gravity(BaseGravity):
     >>> model.params
     array([  3.80050153e+00,   5.54103854e-01,   3.94282921e-01,
             -2.27091686e-03])
-    
+
     """
     def __init__(self, flows, o_vars, d_vars, cost,
             cost_func, constant=True, framework='GLM', SF=None, CD=None,
@@ -425,23 +425,23 @@ class Gravity(BaseGravity):
         self.dv = np.reshape(d_vars, (-1,p))
         self.c = np.reshape(cost, (-1,1))
         #User.check_arrays(self.f, self.ov, self.dv, self.c)
-        
+
         BaseGravity.__init__(self, self.f, self.c,
                 cost_func=cost_func, o_vars=self.ov, d_vars=self.dv, constant=constant,
                 framework=framework, SF=SF, CD=CD, Lag=Lag, Quasi=Quasi)
-        
+
     def local(self, loc_index, locs):
         """
         Calibrate local models for subsets of data from a single location to all
         other locations
-        
+
         Parameters
         ----------
         loc_index   : n x 1 array of either origin or destination id label for
                       flows; must be explicitly provided for local version of
                       basic gravity model since these are not passed to the
-                      global model. 
-                    
+                      global model.
+
         locs        : iterable of either origin or destination labels for which
                       to calibrate local models; must also be explicitly
                       provided since local gravity models can be calibrated from origins
@@ -452,7 +452,7 @@ class Gravity(BaseGravity):
         Returns
         -------
         results     : dict where keys are names of model outputs and diagnostics
-                      and values are lists of location specific values. 
+                      and values are lists of location specific values.
         """
         results = {}
         covs = self.ov.shape[1] + self.dv.shape[1] + 1
@@ -495,7 +495,7 @@ class Gravity(BaseGravity):
 class Production(BaseGravity):
     """
     Production-constrained (origin-constrained) gravity-type spatial interaction model
-    
+
     Parameters
     ----------
     flows           : array of integers
@@ -504,7 +504,7 @@ class Production(BaseGravity):
                       n x 1; unique identifiers of origins of n flows; when
                       there are many origins it will be faster to use integers
                       rather than strings for id labels.
-    cost            : array 
+    cost            : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cost_func       : string or function that has scalar input and output
@@ -545,14 +545,14 @@ class Production(BaseGravity):
                       number of observations
     k               : integer
                       number of parameters
-    c               : array 
+    c               : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cf              : function
                       cost function; used to transform cost variable
     o               : array
                       n x 1; index of origin id's
-    dv              : array 
+    dv              : array
                       n x p; p attributes for each destination of n flows
     constant        : boolean
                       True to include intercept in model; True by default
@@ -585,14 +585,14 @@ class Production(BaseGravity):
                       value of the loglikelihood function evaluated with only an
                       intercept; see family.py for distribution-specific
                       loglikelihoods
-    AIC             : float 
+    AIC             : float
                       Akaike information criterion
     D2              : float
                       percentage of explained deviance
     adj_D2          : float
                       adjusted percentage of explained deviance
     pseudo_R2       : float
-                      McFadden's pseudo R2  (coefficient of determination) 
+                      McFadden's pseudo R2  (coefficient of determination)
     adj_pseudoR2    : float
                       adjusted McFadden's pseudo R2
     SRMSE           : float
@@ -623,7 +623,7 @@ class Production(BaseGravity):
         self.constant = constant
         self.f = self.reshape(flows)
         self.o = self.reshape(origins)
-        
+
         try:
             if d_vars.shape[1]:
                 p = d_vars.shape[1]
@@ -632,16 +632,16 @@ class Production(BaseGravity):
         self.dv = np.reshape(d_vars, (-1,p))
         self.c = self.reshape(cost)
         #User.check_arrays(self.f, self.o, self.dv, self.c)
-       
+
         BaseGravity.__init__(self, self.f, self.c, cost_func=cost_func, d_vars=self.dv,
                 origins=self.o, constant=constant, framework=framework,
                 SF=SF, CD=CD, Lag=Lag, Quasi=Quasi)
-    
+
     def local(self, locs=None):
         """
         Calibrate local models for subsets of data from a single location to all
         other locations
-        
+
         Parameters
         ----------
         locs        : iterable of location (origins) labels; default is
@@ -653,7 +653,10 @@ class Production(BaseGravity):
                       and values are lists of location specific values
         """
         results = {}
-        offset = len(np.unique(locs))
+        if locs is None:
+            offset = 1
+        else:
+            offset = len(np.unique(locs))
         covs = self.dv.shape[1] + 1
         results['AIC'] = []
         results['deviance'] = []
@@ -695,7 +698,7 @@ class Production(BaseGravity):
 class Attraction(BaseGravity):
     """
     Attraction-constrained (destination-constrained) gravity-type spatial interaction model
-    
+
     Parameters
     ----------
     flows           : array of integers
@@ -704,7 +707,7 @@ class Attraction(BaseGravity):
                       n x 1; unique identifiers of destinations of n flows; when
                       there are many destinations it will be faster to use
                       integers over strings for id labels.
-    cost            : array 
+    cost            : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cost_func       : string or function that has scalar input and output
@@ -750,7 +753,7 @@ class Attraction(BaseGravity):
                       number of observations
     k               : integer
                       number of parameters
-    c               : array 
+    c               : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cf              : function
@@ -786,14 +789,14 @@ class Attraction(BaseGravity):
                       value of the loglikelihood function evaluated with only an
                       intercept; see family.py for distribution-specific
                       loglikelihoods
-    AIC             : float 
+    AIC             : float
                       Akaike information criterion
     D2              : float
                       percentage of explained deviance
     adj_D2          : float
                       adjusted percentage of explained deviance
     pseudo_R2       : float
-                      McFadden's pseudo R2  (coefficient of determination) 
+                      McFadden's pseudo R2  (coefficient of determination)
     adj_pseudoR2    : float
                       adjusted McFadden's pseudo R2
     SRMSE           : float
@@ -816,24 +819,29 @@ class Attraction(BaseGravity):
     >>> model = Attraction(flows, d, o_cap, cost, 'exp')
     >>> model.params[-4:]
     array([ 1.21962276,  0.87634028,  0.88290909, -0.00229081])
-    
+
     """
     def __init__(self, flows, destinations, o_vars, cost, cost_func,
-            constant=True, framework='GLM', SF=None, CD=None, Lag=None,
-            Quasi=False):
-        self.f = np.reshape(flows, (-1,1))
+                 constant=True, framework='GLM', SF=None, CD=None, Lag=None,
+                 Quasi=False):
+        self.f = np.reshape(flows, (-1, 1))
         if len(o_vars.shape) > 1:
             p = o_vars.shape[1]
         else:
             p = 1
-        self.ov = np.reshape(o_vars, (-1,p))
-        self.d = np.reshape(destinations, (-1,1))
-        self.c = np.reshape(cost, (-1,1))
-        #User.check_arrays(self.f, self.d, self.ov, self.c)
+        self.ov = np.reshape(o_vars, (-1, p))
+        self.d = np.reshape(destinations, (-1, 1))
+        self.c = np.reshape(cost, (-1, 1))
+        # User.check_arrays(self.f, self.d, self.ov, self.c)
 
-        BaseGravity.__init__(self, self.f, self.c, cost_func=cost_func, o_vars=self.ov,
-                 destinations=self.d, constant=constant,
-                 framework=framework, SF=SF, CD=CD, Lag=Lag, Quasi=Quasi)
+        BaseGravity.__init__(self, self.f, self.c,
+                             cost_func=cost_func,
+                             o_vars=self.ov,
+                             destinations=self.d,
+                             constant=constant,
+                             framework=framework,
+                             SF=SF, CD=CD, Lag=Lag,
+                             Quasi=Quasi)
 
     def local(self, locs=None):
         """
@@ -851,7 +859,10 @@ class Attraction(BaseGravity):
                       and values are lists of location specific values
         """
         results = {}
-        offset = len(np.unique(locs))
+        if locs is None:
+            offset = 1
+        else:
+            offset = len(np.unique(locs))
         covs = self.ov.shape[1] + 1
         results['AIC'] = []
         results['deviance'] = []
@@ -866,13 +877,13 @@ class Attraction(BaseGravity):
             results['stde' + str(cov)] = []
             results['pvalue' + str(cov)] = []
             results['tvalue' + str(cov)] = []
-        if locs is  None:
-        	locs = np.unique(self.d)
+        if locs is None:
+            locs = np.unique(self.d)
         for loc in np.unique(locs):
             subset = self.d == loc
             f = self.reshape(self.f[subset])
             d = self.reshape(self.d[subset])
-            o_vars = self.ov[subset.reshape(self.ov.shape[0]),:]
+            o_vars = self.ov[subset.reshape(self.ov.shape[0]), :]
             dij = self.reshape(self.c[subset])
             model = Attraction(f, d, o_vars, dij, self.cf, constant=False)
             results['AIC'].append(model.AIC)
@@ -893,7 +904,7 @@ class Attraction(BaseGravity):
 class Doubly(BaseGravity):
     """
     Doubly-constrained gravity-type spatial interaction model
-    
+
     Parameters
     ----------
     flows           : array of integers
@@ -906,7 +917,7 @@ class Doubly(BaseGravity):
                       n x 1; unique identifiers of destinations of n flows; when
                       there are many destinations it will be faster to use
                       integers rather than strings for id labels
-    cost            : array 
+    cost            : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cost_func       : string or function that has scalar input and output
@@ -949,7 +960,7 @@ class Doubly(BaseGravity):
                       number of observations
     k               : integer
                       number of parameters
-    c               : array 
+    c               : array
                       n x 1; cost to overcome separation between each origin and
                       destination associated with a flow; typically distance or time
     cf              : function
@@ -989,14 +1000,14 @@ class Doubly(BaseGravity):
                       value of the loglikelihood function evaluated with only an
                       intercept; see family.py for distribution-specific
                       loglikelihoods
-    AIC             : float 
+    AIC             : float
                       Akaike information criterion
     D2              : float
                       percentage of explained deviance
     adj_D2          : float
                       adjusted percentage of explained deviance
     pseudo_R2       : float
-                      McFadden's pseudo R2  (coefficient of determination) 
+                      McFadden's pseudo R2  (coefficient of determination)
     adj_pseudoR2    : float
                       adjusted McFadden's pseudo R2
     SRMSE           : float
@@ -1031,7 +1042,7 @@ class Doubly(BaseGravity):
         self.c = np.reshape(cost, (-1,1))
         #User.check_arrays(self.f, self.o, self.d, self.c)
 
-        BaseGravity.__init__(self, self.f, self.c, cost_func=cost_func, origins=self.o, 
+        BaseGravity.__init__(self, self.f, self.c, cost_func=cost_func, origins=self.o,
                 destinations=self.d, constant=constant,
                 framework=framework, SF=SF, CD=CD, Lag=Lag, Quasi=Quasi)
 
