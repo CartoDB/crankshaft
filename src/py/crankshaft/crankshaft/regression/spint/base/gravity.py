@@ -654,7 +654,8 @@ class Production(BaseGravity):
         """
         results = {}
         if locs is None:
-            offset = 1
+            locs = np.unique(self.o)
+            offset = len(locs)
         else:
             offset = len(np.unique(locs))
         covs = self.dv.shape[1] + 1
@@ -671,8 +672,6 @@ class Production(BaseGravity):
             results['stde' + str(cov)] = []
             results['pvalue' + str(cov)] = []
             results['tvalue' + str(cov)] = []
-        if locs is None:
-        	locs = np.unique(self.o)
         for loc in np.unique(locs):
             subset = self.o == loc
             f = self.reshape(self.f[subset])
@@ -860,7 +859,8 @@ class Attraction(BaseGravity):
         """
         results = {}
         if locs is None:
-            offset = 1
+            locs = np.unique(self.d)
+            offset = len(locs)
         else:
             offset = len(np.unique(locs))
         covs = self.ov.shape[1] + 1
@@ -877,8 +877,6 @@ class Attraction(BaseGravity):
             results['stde' + str(cov)] = []
             results['pvalue' + str(cov)] = []
             results['tvalue' + str(cov)] = []
-        if locs is None:
-            locs = np.unique(self.d)
         for loc in np.unique(locs):
             subset = self.d == loc
             f = self.reshape(self.f[subset])
