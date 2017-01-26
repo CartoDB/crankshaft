@@ -39,7 +39,7 @@ SELECT
   a.cartodb_id,
   a.the_geom,
   a.the_geom_webmercator,
-  origin_i,
+  a.origin_i,
   (spint.coeffs->>'origin_i')::numeric As coeff_origin_i,
   (spint.coeffs->>'destination_j')::numeric As coeff_destination_j,
   (spint.coeffs->>'intercept')::numeric As coeff_intercept,
@@ -330,7 +330,7 @@ SELECT
   spint.aic
 FROM cdb_crankshaft.CDB_SpIntLocalProduction('select * from austria_migration',   
   'flow_data',
-  'origin',
+  'origin_i',
   Array['destination_j'],
   'dij') As spint
 JOIN austria_migration As a
@@ -398,7 +398,7 @@ SELECT
   a.cartodb_id,
   a.the_geom,
   a.the_geom_webmercator,
-  origin_i,
+  a.origin_i,
   (spint.coeffs->>'origin_i')::numeric As coeff_origin_i,
   (spint.coeffs->>'destination_j')::numeric As coeff_destination_j,
   (spint.coeffs->>'intercept')::numeric As coeff_intercept,
