@@ -450,7 +450,7 @@ class SpInt(object):
         rowid = np.array(result[0]['rowid'], dtype=np.int)
 
         # dest names variable for fixed effects (constraints)
-        destinations = np.array(result[0]['destinations'])
+        dest_list = np.array(result[0]['destinations'])
 
         # extract dependent variable
         flows = np.array(result[0]['dep_var']).reshape((-1, 1))
@@ -471,7 +471,7 @@ class SpInt(object):
         cost = np.array(result[0]['cost'], dtype=np.float).flatten()
 
         # calibrate model
-        model = Attraction(flows, destinations, o_vars, cost, cost_func,
+        model = Attraction(flows, dest_list, o_vars, cost, cost_func,
                            Quasi=quasi)
         local_model = model.local()
 
@@ -482,7 +482,7 @@ class SpInt(object):
         r_squared = local_model['pseudoR2']
         aic = local_model['AIC']
 
-        for idx in xrange(len(np.unique(destinations))):
+        for idx in xrange(len(np.unique(dest_list))):
             coeffs.append(
               json.dumps({var: local_model['param' + str(k)][idx]
                           for k, var in enumerate(ind_vars)}))
