@@ -3,7 +3,11 @@ import plpy
 import pysal_utils as pu
 
 
-class AnalysisDataProvider:
+class AnalysisDataProvider(object):
+    """
+        Analysis data provider for crankshaft functions. These mostly rely on
+        plpy data sources.
+    """
     def get_getis(self, w_type, params):
         """fetch data for getis ord's g"""
         try:
@@ -66,41 +70,59 @@ class AnalysisDataProvider:
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
 
-    def get_model_data(self, params):
-        """fetch data for Segmentation"""
-        columns = ','.join(['array_agg("{col}") As "{col}"'.format(col=col)
+    def get_segmentation_model_data(self, params):
+        """
+           fetch data for Segmentation
+           params = {"subquery": query,
+                     "target": variable,
+                     "features": feature_columns}
+        """
+        columns = ', '.join(['array_agg("{col}") As "{col}"'.format(col=col)
                             for col in params['feature_columns']])
-
-        query = ("SELECT"
-                 "array_agg({target}) As target,"
-                 "{columns} As feature",
-                 "FROM ({subquery}) As q").format(params['query'],
-                                                        ['variable'])
+        query = '''
+                SELECT
+                  array_agg("{target}") As target,
+                  {columns}
+                FROM ({subquery}) As q
+                '''.format(subquery=params['subquery'],
+                           target=params['target'],
+                           columns=columns)
         try:
             data = plpy.execute(query)
             return data
         except plpy.SPIError, err:
                 plpy.error('Failed to build segmentation model: %s' % err)
 
-    def get_segment_data(self, params):
-        """fetch cartodb_ids"""
-        query = ("SELECT"
-                 "array_agg({id_col} ORDER BY {id_col}) as ids,"
-                 "FROM ({subquery}) as q").format(**params)
+    def get_segmentation_data(self, params):
+        """
+            params = {"subquery": target_query,
+                      "id_col": id_col}
+        """
+        query = '''
+                SELECT
+                  array_agg("{id_col}" ORDER BY "{id_col}") as "ids"
+                FROM ({subquery}) as q
+                 '''.format(**params)
         try:
             data = plpy.execute(query)
             return data
         except plpy.SPIError, err:
             plpy.error('Failed to build segmentation model: %s' % err)
 
-    def get_predict_data(self, params):
-        """fetch data for Segmentation"""
-
-        joined_features = ','.join(['"{0}"::numeric'.format(a)
-                                    for a in features_columns])
-        query = ("SELECT"
-                 "Array({joined_features}) As features,"
-                 "FROM ({subquery}) as q").format(**params)
+    def get_segmentation_predict_data(self, params):
+        """
+            fetch data for Segmentation
+            params = {"subquery": target_query,
+                      "feature_columns": feature_columns}
+        """
+        joined_features = ', '.join(['"{}"::numeric'.format(a)
+                                     for a in params['feature_columns']])
+        query = '''
+                SELECT
+                  Array({joined_features}) As features
+                FROM ({subquery}) as q
+                '''.format(subquery=params['subquery'],
+                           joined_features=joined_features)
         try:
             cursor = plpy.cursor(query)
             return cursor
