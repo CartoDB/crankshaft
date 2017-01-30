@@ -65,3 +65,44 @@ class AnalysisDataProvider:
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
+
+    def get_model_data(self, params):
+        """fetch data for Segmentation"""
+        columns = ','.join(['array_agg("{col}") As "{col}"'.format(col=col)
+                            for col in params['feature_columns']])
+
+        query = ("SELECT"
+                 "array_agg({target}) As target,"
+                 "{columns} As feature",
+                 "FROM ({subquery}) As q").format(params['query'],
+                                                        ['variable'])
+        try:
+            data = plpy.execute(query)
+            return data
+        except plpy.SPIError, err:
+                plpy.error('Failed to build segmentation model: %s' % err)
+
+    def get_segment_data(self, params):
+        """fetch cartodb_ids"""
+        query = ("SELECT"
+                 "array_agg({id_col} ORDER BY {id_col}) as ids,"
+                 "FROM ({subquery}) as q").format(**params)
+        try:
+            data = plpy.execute(query)
+            return data
+        except plpy.SPIError, err:
+            plpy.error('Failed to build segmentation model: %s' % err)
+
+    def get_predict_data(self, params):
+        """fetch data for Segmentation"""
+
+        joined_features = ','.join(['"{0}"::numeric'.format(a)
+                                    for a in features_columns])
+        query = ("SELECT"
+                 "Array({joined_features}) As features,"
+                 "FROM ({subquery}) as q").format(**params)
+        try:
+            cursor = plpy.cursor(query)
+            return cursor
+        except plpy.SPIError, err:
+            plpy.error('Failed to build segmentation model: %s' % err)

@@ -42,6 +42,9 @@ class MockPlPy:
     def info(self, msg):
         self.infos.append(msg)
 
+    def error(self, msg):
+        self.infos.append(msg)
+
     def cursor(self, query):
         data = self.execute(query)
         return MockCursor(data)
