@@ -485,3 +485,17 @@ FROM cdb_crankshaft.CDB_SpIntLocalAttraction('select * from austria_migration',
 JOIN austria_migration As a
 on a.cartodb_id = spint.rowid
 ```
+
+
+## Advanced reading
+
+*   Roy, John R., and Jean-Claude Thill. 2003. “Spatial Interaction Modelling.” Papers in Regional Science 83 (1): 339–61. doi:10.1007/s10110-003-0189-4.
+
+*   Wilson, Alan. 2010. “Entropy in Urban and Regional Modelling: Retrospect and Prospect.” Geographical Analysis 42 (4): 364–94.
+
+*   Oshan, Taylor M. 2016. “A Primer for Working with the Spatial Interaction Modeling (SpInt) Module in the Python Spatial Analysis Library (PySAL).” REGION 3 (2): 11. doi:10.18335/region.v3i2.175.
+
+
+*   O’Kelly, Morton E. 2010. “Entropy-Based Spatial Interaction Models for Trip Distribution. 基于熵的空间相互作用模型在出行分布中的应用.” Geographical Analysis 42 (4): 472–87.
+
+*   Fotheringham, A. S. 2001. “Spatial Interaction Models.” In International Encyclopedia of the Social & Behavioral Sciences, edited by Neil J. SmelserPaul B. Baltes, 14794–800. Oxford: Pergamon. <http://www.sciencedirect.com/science/article/pii/B0080430767025195>.
