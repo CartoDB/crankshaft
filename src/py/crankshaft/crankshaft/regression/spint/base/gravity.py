@@ -5,8 +5,7 @@
 References
 ----------
 
-Fotheringham, A. S. and O'Kelly, M. E. (1989). Spatial Interaction Models: Formulations
- and Applications. London: Kluwer Academic Publishers.
+Fotheringham, A. S. and O'Kelly, M. E. (1989). Spatial Interaction Models: Formulations and Applications. London: Kluwer Academic Publishers.
 
 Wilson, A. G. (1967). A statistical theory of spatial distribution models.
  Transportation Research, 1, 253–269.
@@ -653,11 +652,9 @@ class Production(BaseGravity):
                       and values are lists of location specific values
         """
         results = {}
+        offset = 1
         if locs is None:
             locs = np.unique(self.o)
-            offset = len(locs)
-        else:
-            offset = len(np.unique(locs))
         covs = self.dv.shape[1] + 1
         results['AIC'] = []
         results['deviance'] = []
@@ -858,11 +855,9 @@ class Attraction(BaseGravity):
                       and values are lists of location specific values
         """
         results = {}
+        offset = 1
         if locs is None:
             locs = np.unique(self.d)
-            offset = len(locs)
-        else:
-            offset = len(np.unique(locs))
         covs = self.ov.shape[1] + 1
         results['AIC'] = []
         results['deviance'] = []
