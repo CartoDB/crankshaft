@@ -73,12 +73,12 @@ class AnalysisDataProvider(object):
     def get_segmentation_model_data(self, params):
         """
            fetch data for Segmentation
-           params = {"subquery": query,
-                     "target": variable,
-                     "features": feature_columns}
+        params = {"subquery": query,
+                  "target": variable,
+                  "features": feature_columns}
         """
         columns = ', '.join(['array_agg("{col}") As "{col}"'.format(col=col)
-                            for col in params['feature_columns']])
+                             for col in params['features']])
         query = '''
                 SELECT
                   array_agg("{target}") As target,

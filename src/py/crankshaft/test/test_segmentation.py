@@ -4,6 +4,21 @@ from helper import plpy, fixture_file
 from crankshaft.segmentation import Segmentation
 import json
 
+class RawDataProvider(AnalysisDataProvider):
+    def __init__(self, raw_data1, raw_data2, raw_data3):
+        self.raw_data1 = raw_data1
+        self.raw_data2 = raw_data2
+        self.raw_data3 = raw_data3
+
+    def get_segmentation_data(self, params):
+        return self.raw_data1
+
+    def get_segmentation_predict_data(self, params):
+        return self.raw_data2
+
+    def get_segmentation_model_data(self, params):
+        return self.raw_data3
+
 class SegmentationTest(unittest.TestCase):
     """Testing class for Moran's I functions"""
 
@@ -36,19 +51,23 @@ class SegmentationTest(unittest.TestCase):
 
 
         ids =  [{'cartodb_ids': range(len(test_data))}]
-        rows =  [{'x1': 0,'x2':0,'x3':0,'y':0,'cartodb_id':0}]
+        rows =  [{'x1': 0, 'x2': 0, 'x3': 0, 'y': 0, 'cartodb_id': 0}]
 
-        plpy._define_result('select \* from  \(select \* from training\) a  limit 1',rows)
-        plpy._define_result('.*from \(select \* from training\) as a' ,training_data)
-        plpy._define_result('select array_agg\(cartodb\_id order by cartodb\_id\) as cartodb_ids from \(.*\) a',ids)
-        plpy._define_result('.*select \* from test.*' ,test_data)
+        plpy._define_result('select \* from  \(select \* from training\) a  limit 1', rows)
+        plpy._define_result('.*from \(select \* from training\) as a', training_data)
+        plpy._define_result('select array_agg\(cartodb\_id order by cartodb\_id\) as cartodb_ids from \(.*\) a', ids)
+        plpy._define_result('.*select \* from test.*', test_data)
 
-        model_parameters =  {'n_estimators': 1200,
-                             'max_depth': 3,
-                             'subsample' : 0.5,
-                             'learning_rate': 0.01,
-                             'min_samples_leaf': 1}
-        seg = Segmentation()
+        model_parameters = {'n_estimators': 1200,
+                            'max_depth': 3,
+                            'subsample' : 0.5,
+                            'learning_rate': 0.01,
+                            'min_samples_leaf': 1}
+        data = [{'target': [],
+                 'x1': [],
+                 'x2': [],
+                 'x3': []}]
+        seg = Segmentation(RawDataProvider(test, train, predict))
         '''
         self, query, variable, feature_columns,
                                        target_query, model_params,

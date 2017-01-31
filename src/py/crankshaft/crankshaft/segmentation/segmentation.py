@@ -69,7 +69,7 @@ class Segmentation(object):
 
         params = {"subquery": target_query,
                   "id_col": id_col,
-                  "feature_columns": features}
+                  "feature_columns": feature_columns}
 
         target, features, target_mean, \
             feature_means = self.clean_data(variable, feature_columns, query)
@@ -101,6 +101,9 @@ class Segmentation(object):
 
         results = []
         cursors = self.data_provider.get_segmentation_predict_data(params)
+        # cursors = [{'': ,
+        #             '': }]
+        #
         while True:
             rows = cursors.fetch(batch_size)
             if not rows:
@@ -126,6 +129,14 @@ class Segmentation(object):
                   "features": feature_columns}
 
         data = self.data_provider.get_segmentation_model_data(params)
+
+        '''
+        data: [{'target': [2.9, 4.9, 4, 5, 6]},
+        {'feature1': [1,2,3,4]}, {'feature2' : [2,3,4,5]}
+        ]
+        '''
+
+        [{target: [dsdfs]}]
 
         # extract target data from plpy object
         target = np.array(data[0]['target'])
