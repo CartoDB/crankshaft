@@ -12,6 +12,9 @@ from crankshaft.analysis_data_provider import AnalysisDataProvider
 # NOTE: added optional param here
 
 class Segmentation(object):
+    """
+        Add docstring
+    """
 
     def __init__(self, data_provider=None):
         if data_provider is None:
@@ -67,8 +70,9 @@ class Segmentation(object):
         params = {"subquery": target_query,
                   "id_col": id_col}
 
-        target, features, target_mean,
-        feature_means = clean_data(variable, feature_columns, query)
+        target, features, target_mean, \
+          feature_means = self.clean_data(variable, feature_columns, query)
+
         model, accuracy = train_model(target, features, model_params, 0.2)
         result = self.predict_segment(model, feature_columns, target_query,
                                       feature_means)
@@ -112,23 +116,26 @@ class Segmentation(object):
         return np.concatenate(results)
 
 
-def clean_data(self, query, variable, feature_columns):
-    params = {"subquery": query,
-              "target": variable,
-              "features": feature_columns}
+    def clean_data(self, query, variable, feature_columns):
+        """
+            Add docstring
+        """
+        params = {"subquery": query,
+                  "target": variable,
+                  "features": feature_columns}
 
-    data = self.data_provider.get_segmentation_model_data(params)
+        data = self.data_provider.get_segmentation_model_data(params)
 
-    # extract target data from plpy object
-    target = np.array(data[0]['target'])
+        # extract target data from plpy object
+        target = np.array(data[0]['target'])
 
-    # put n feature data arrays into an n x m array of arrays
-    features = np.column_stack([np.array(data[0][col], dtype=float)
-                                for col in feature_columns])
+        # put n feature data arrays into an n x m array of arrays
+        features = np.column_stack([np.array(data[0][col], dtype=float)
+                                    for col in feature_columns])
 
-    features, feature_means = replace_nan_with_mean(features)
-    target, target_mean = replace_nan_with_mean(target)
-    return target, features, target_mean, feature_means
+        features, feature_means = replace_nan_with_mean(features)
+        target, target_mean = replace_nan_with_mean(target)
+        return target, features, target_mean, feature_means
 
 
 def replace_nan_with_mean(array, means=None):
@@ -171,8 +178,8 @@ def train_model(target, features, model_params, test_split):
             @parma test_split: The fraction of the data to be withheld for
                 testing the model / calculating the accuray
     """
-    features_train, features_test,
-    target_train, target_test = train_test_split(features, target,
+    features_train, features_test, \
+      target_train, target_test = train_test_split(features, target,
                                                  test_size=test_split)
     model = GradientBoostingRegressor(**model_params)
     model.fit(features_train, target_train)
