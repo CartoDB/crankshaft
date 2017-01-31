@@ -15,7 +15,8 @@ AS $$
     import numpy as np
     import plpy
 
-    from crankshaft.segmentation import create_and_predict_segment_agg
+    from crankshaft.segmentation import Segmentation
+    seg = Segmentation()
     model_params = {'n_estimators': n_estimators,
                     'max_depth': max_depth,
                     'subsample': subsample,
@@ -27,7 +28,7 @@ AS $$
         a = np.array(data, dtype=float)
         return a.reshape(len(a)/dimension, dimension)
 
-    return create_and_predict_segment_agg(np.array(target, dtype=float),
+    return seg.create_and_predict_segment_agg(np.array(target, dtype=float),
             unpack2D(features),
             unpack2D(target_features),
             target_ids,
@@ -65,7 +66,8 @@ CREATE OR REPLACE FUNCTION
       min_samples_leaf INTEGER DEFAULT 1)
 RETURNS TABLE (cartodb_id TEXT, prediction NUMERIC, accuracy NUMERIC)
 AS $$
-  from crankshaft.segmentation import create_and_predict_segment
+  from crankshaft.segmentation import Segmentation
+  seg = Segmentation()
   model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf}
-  return create_and_predict_segment(query,variable_name,target_table, model_params)
+  return seg.create_and_predict_segment(query,variable_name,target_table, model_params)
 $$ LANGUAGE plpythonu;

@@ -68,10 +68,11 @@ class Segmentation(object):
         """
 
         params = {"subquery": target_query,
-                  "id_col": id_col}
+                  "id_col": id_col,
+                  "feature_columns": features}
 
         target, features, target_mean, \
-          feature_means = self.clean_data(variable, feature_columns, query)
+            feature_means = self.clean_data(variable, feature_columns, query)
 
         model, accuracy = train_model(target, features, model_params, 0.2)
         result = self.predict_segment(model, feature_columns, target_query,
@@ -82,7 +83,8 @@ class Segmentation(object):
 
         return zip(rowid, result, accuracy_array)
 
-    def predict_segment(self, model, feature_columns, target_query, feature_means):
+    def predict_segment(self, model, feature_columns, target_query,
+                        feature_means):
         """
         Use the provided model to predict the values for the new feature set
             Input:
@@ -114,7 +116,6 @@ class Segmentation(object):
 
         # NOTE: we removed the cartodb_ids calculation in here
         return np.concatenate(results)
-
 
     def clean_data(self, query, variable, feature_columns):
         """
@@ -179,8 +180,8 @@ def train_model(target, features, model_params, test_split):
                 testing the model / calculating the accuray
     """
     features_train, features_test, \
-      target_train, target_test = train_test_split(features, target,
-                                                 test_size=test_split)
+        target_train, target_test = train_test_split(features, target,
+                                                     test_size=test_split)
     model = GradientBoostingRegressor(**model_params)
     model.fit(features_train, target_train)
     accuracy = calculate_model_accuracy(model, features_test, target_test)

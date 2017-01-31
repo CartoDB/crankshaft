@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from helper import plpy, fixture_file
-import crankshaft.segmentation as segmentation
+from crankshaft.segmentation import Segmentation
 import json
 
 class SegmentationTest(unittest.TestCase):
@@ -48,16 +48,23 @@ class SegmentationTest(unittest.TestCase):
                              'subsample' : 0.5,
                              'learning_rate': 0.01,
                              'min_samples_leaf': 1}
+        seg = Segmentation()
+        '''
+        self, query, variable, feature_columns,
+                                       target_query, model_params,
+                                       id_col='cartodb_id'
+        '''
 
-        result = segmentation.create_and_predict_segment(
+        result = seg.create_and_predict_segment(
                 'select * from training',
                 'target',
+                'feature_columns',
                 'select * from test',
-                model_parameters)
+                 model_parameters)
 
         prediction = [r[1] for r in result]
 
-        accuracy =np.sqrt(np.mean( np.square( np.array(prediction) - np.array(test_y))))
+        accuracy = np.sqrt(np.mean( np.square( np.array(prediction) - np.array(test_y))))
 
         self.assertEqual(len(result),len(test_data))
         self.assertTrue( result[0][2] < 0.01)

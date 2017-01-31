@@ -1,1 +1,2 @@
-from segmentation import * 
+"""Import all functions from for segmentation"""
+from segmentation import *
