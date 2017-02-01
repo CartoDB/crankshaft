@@ -68,8 +68,7 @@ class Segmentation(object):
         """
 
         params = {"subquery": target_query,
-                  "id_col": id_col,
-                  "feature_columns": feature_columns}
+                  "id_col": id_col}
 
         target, features, target_mean, \
             feature_means = self.clean_data(variable, feature_columns, query)
@@ -80,6 +79,10 @@ class Segmentation(object):
         accuracy_array = [accuracy] * result.shape[0]
 
         rowid = self.data_provider.get_segmentation_data(params)
+
+        '''
+        rowid = [{'ids': [2.9, 4.9, 4, 5, 6]}]
+        '''
 
         return zip(rowid, result, accuracy_array)
 
@@ -101,9 +104,12 @@ class Segmentation(object):
 
         results = []
         cursors = self.data_provider.get_segmentation_predict_data(params)
-        # cursors = [{'': ,
-        #             '': }]
-        #
+
+        '''
+         cursors = [{'features': [[m1[0],m2[0],m3[0]],[m1[1],m2[1],m3[1]],
+                                  [m1[2],m2[2],m3[2]]]}]
+        '''
+
         while True:
             rows = cursors.fetch(batch_size)
             if not rows:
@@ -131,7 +137,7 @@ class Segmentation(object):
         data = self.data_provider.get_segmentation_model_data(params)
 
         '''
-        data: [{'target': [2.9, 4.9, 4, 5, 6]},
+        data = [{'target': [2.9, 4.9, 4, 5, 6]},
         {'feature1': [1,2,3,4]}, {'feature2' : [2,3,4,5]}
         ]
         '''

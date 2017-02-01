@@ -119,7 +119,7 @@ class AnalysisDataProvider(object):
                                      for a in params['feature_columns']])
         query = '''
                 SELECT
-                  Array({joined_features}) As features
+                  Array[{joined_features}] As features
                 FROM ({subquery}) as q
                 '''.format(subquery=params['subquery'],
                            joined_features=joined_features)

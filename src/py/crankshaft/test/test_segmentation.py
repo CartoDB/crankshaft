@@ -1,8 +1,10 @@
 import unittest
 import numpy as np
 from helper import plpy, fixture_file
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 from crankshaft.segmentation import Segmentation
 import json
+
 
 class RawDataProvider(AnalysisDataProvider):
     def __init__(self, raw_data1, raw_data2, raw_data3):
@@ -19,24 +21,25 @@ class RawDataProvider(AnalysisDataProvider):
     def get_segmentation_model_data(self, params):
         return self.raw_data3
 
+
 class SegmentationTest(unittest.TestCase):
     """Testing class for Moran's I functions"""
 
     def setUp(self):
         plpy._reset()
 
-    def generate_random_data(self,n_samples,random_state,  row_type=False):
+    def generate_random_data(self, n_samples, random_state, row_type=False):
         x1 = random_state.uniform(size=n_samples)
         x2 = random_state.uniform(size=n_samples)
         x3 = random_state.randint(0, 4, size=n_samples)
 
         y = x1+x2*x2+x3
-        cartodb_id  = range(len(x1))
+        cartodb_id = range(len(x1))
 
         if row_type:
-            return [ {'features': vals} for vals in zip(x1,x2,x3)], y
+            return [{'features': vals} for vals in zip(x1, x2, x3)], y
         else:
-            return  [dict( zip(['x1','x2','x3','target', 'cartodb_id'],[x1,x2,x3,y,cartodb_id]))]
+            return [dict(zip(['x1', 'x2', 'x3', 'target', 'cartodb_id'], [x1, x2, x3, y, cartodb_id]))]
 
     def test_replace_nan_with_mean(self):
         test_array = np.array([1.2, np.nan, 3.2, np.nan, np.nan])
@@ -49,9 +52,8 @@ class SegmentationTest(unittest.TestCase):
         training_data = self.generate_random_data(n_samples, random_state_train)
         test_data, test_y = self.generate_random_data(n_samples, random_state_test, row_type=True)
 
-
-        ids =  [{'cartodb_ids': range(len(test_data))}]
-        rows =  [{'x1': 0, 'x2': 0, 'x3': 0, 'y': 0, 'cartodb_id': 0}]
+        ids = [{'cartodb_ids': range(len(test_data))}]
+        rows = [{'x1': 0, 'x2': 0, 'x3': 0, 'y': 0, 'cartodb_id': 0}]
 
         plpy._define_result('select \* from  \(select \* from training\) a  limit 1', rows)
         plpy._define_result('.*from \(select \* from training\) as a', training_data)
@@ -60,7 +62,7 @@ class SegmentationTest(unittest.TestCase):
 
         model_parameters = {'n_estimators': 1200,
                             'max_depth': 3,
-                            'subsample' : 0.5,
+                            'subsample': 0.5,
                             'learning_rate': 0.01,
                             'min_samples_leaf': 1}
         data = [{'target': [],
@@ -79,12 +81,12 @@ class SegmentationTest(unittest.TestCase):
                 'target',
                 'feature_columns',
                 'select * from test',
-                 model_parameters)
+                model_parameters)
 
         prediction = [r[1] for r in result]
 
-        accuracy = np.sqrt(np.mean( np.square( np.array(prediction) - np.array(test_y))))
+        accuracy = np.sqrt(np.mean(np.square(np.array(prediction) - np.array(test_y))))
 
-        self.assertEqual(len(result),len(test_data))
-        self.assertTrue( result[0][2] < 0.01)
-        self.assertTrue( accuracy < 0.5*np.mean(test_y)  )
+        self.assertEqual(len(result), len(test_data))
+        self.assertTrue(result[0][2] < 0.01)
+        self.assertTrue(accuracy < 0.5*np.mean(test_y))
