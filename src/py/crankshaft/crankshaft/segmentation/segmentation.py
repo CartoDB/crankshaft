@@ -70,8 +70,7 @@ class Segmentation(object):
         params = {"subquery": target_query,
                   "id_col": id_col}
 
-        target, features, target_mean, \
-            feature_means = self.clean_data(variable, feature_columns, query)
+        target, features, target_mean, feature_means = self.clean_data(variable, feature_columns, query)
 
         model, accuracy = train_model(target, features, model_params, 0.2)
         result = self.predict_segment(model, feature_columns, target_query,
@@ -141,8 +140,6 @@ class Segmentation(object):
         {'feature1': [1,2,3,4]}, {'feature2' : [2,3,4,5]}
         ]
         '''
-
-        [{target: [dsdfs]}]
 
         # extract target data from plpy object
         target = np.array(data[0]['target'])
