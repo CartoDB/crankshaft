@@ -77,6 +77,7 @@ class AnalysisDataProvider(object):
                   "target": variable,
                   "features": feature_columns}
         """
+
         columns = ', '.join(['array_agg("{col}") As "{col}"'.format(col=col)
                              for col in params['features']])
         query = '''

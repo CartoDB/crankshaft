@@ -63,7 +63,6 @@ class SegmentationTest(unittest.TestCase):
         self.assertTrue(assert_array_equal(result, expectation))
 
     def test_create_and_predict_segment(self):
-        from crankshaft.segmentation import Segmentation
         from numpy.testing import assert_array_equal
 
         n_samples = 1000
