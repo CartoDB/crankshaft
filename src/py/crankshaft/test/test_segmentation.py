@@ -87,7 +87,7 @@ class SegmentationTest(unittest.TestCase):
                             'subsample': 0.5,
                             'learning_rate': 0.01,
                             'min_samples_leaf': 1}
-        data = [{'query':
+        data = [{'query': 'select * FROM research_team',
                  'target': [],
                  'x1': [],
                  'x2': [],
@@ -111,7 +111,7 @@ class SegmentationTest(unittest.TestCase):
         # Before here figure out how to set up the data provider
         # After use data prodiver to run the query and test results.
 
-        seg = Segmentation(data_provider=)
+        seg = Segmentation(RawDataProvider([]))
 
         result = seg.create_and_predict_segment(
                 'select * from training',

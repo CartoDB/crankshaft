@@ -77,6 +77,7 @@ class AnalysisDataProvider(object):
                   "target": variable,
                   "features": feature_columns}
         """
+        plpy.notice("featurecols: {}".format(str(params)))
 
         columns = ', '.join(['array_agg("{col}") As "{col}"'.format(col=col)
                              for col in params['features']])
@@ -88,6 +89,7 @@ class AnalysisDataProvider(object):
                 '''.format(subquery=params['subquery'],
                            target=params['target'],
                            columns=columns)
+        plpy.notice("Query: {}".format(query))
         try:
             data = plpy.execute(query)
             return data

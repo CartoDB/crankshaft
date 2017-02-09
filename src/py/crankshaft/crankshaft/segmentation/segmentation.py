@@ -70,7 +70,7 @@ class Segmentation(object):
         params = {"subquery": target_query,
                   "id_col": id_col}
 
-        target, features, target_mean, feature_means = self.clean_data(variable, feature_columns, query)
+        target, features, target_mean, feature_means = self.clean_data(query, variable, feature_columns)
 
         model, accuracy = train_model(target, features, model_params, 0.2)
         result = self.predict_segment(model, feature_columns, target_query,
@@ -83,7 +83,7 @@ class Segmentation(object):
         rowid = [{'ids': [2.9, 4.9, 4, 5, 6]}]
         '''
 
-        return zip(rowid, result, accuracy_array)
+        return zip(rowid[0]['ids'], result, accuracy_array)
 
     def predict_segment(self, model, feature_columns, target_query,
                         feature_means):
@@ -104,6 +104,9 @@ class Segmentation(object):
         results = []
         cursors = self.data_provider.get_segmentation_predict_data(params)
 
+        import plpy
+        plpy.notice("cursor:{}".format(cursors))
+
         '''
          cursors = [{'features': [[m1[0],m2[0],m3[0]],[m1[1],m2[1],m3[1]],
                                   [m1[2],m2[2],m3[2]]]}]
@@ -113,12 +116,14 @@ class Segmentation(object):
             rows = cursors.fetch(batch_size)
             if not rows:
                 break
-            batch = np.row_stack([np.array(row['features'], dtype=float)
-                                  for row in rows])
+            batch = np.row_stack([np.array(row['features'])
+                                  for row in rows]).astype(float)
 
             # Need to fix this to global mean. This will cause weird effects
 
-            batch = replace_nan_with_mean(batch, feature_means)
+            batch = replace_nan_with_mean(batch, feature_means)[0]
+            import plpy
+            plpy.notice("BATCH: {}".format(batch))
             prediction = model.predict(batch)
             results.append(prediction)
 
@@ -136,17 +141,16 @@ class Segmentation(object):
         data = self.data_provider.get_segmentation_model_data(params)
 
         '''
-        data = [{'target': [2.9, 4.9, 4, 5, 6]},
-        {'feature1': [1,2,3,4]}, {'feature2' : [2,3,4,5]}
-        ]
+        data = [{'target': [2.9, 4.9, 4, 5, 6],
+        'feature1': [1,2,3,4], 'feature2' : [2,3,4,5]}]
         '''
 
         # extract target data from plpy object
-        target = np.array(data[0]['target'])
+        target = np.array(data[0]['target'], dtype=float)
 
         # put n feature data arrays into an n x m array of arrays
-        features = np.column_stack([np.array(data[0][col], dtype=float)
-                                    for col in feature_columns])
+        features = np.column_stack([np.array(data[0][col])
+                                    for col in feature_columns]).astype(float)
 
         features, feature_means = replace_nan_with_mean(features)
         target, target_mean = replace_nan_with_mean(target)
@@ -164,11 +168,28 @@ def replace_nan_with_mean(array, means=None):
     # TODO: update code to take in avgs parameter
 
     # returns an array of rows and column indices
-    indices = np.where(np.isnan(array))
+    # import plpy
+    # plpy.notice("array is of type: {}".format(type(array)))
+    # plpy.notice("ARRAY: {}".format(array))
+    nanvals = np.isnan(array)
+    indices = np.where(nanvals)
 
-    if not means:
-        for col in np.shape(array)[1]:
-            means[col] = np.mean(array[~np.isnan(array[:, col]), col])
+    if means is None:
+        means = {}
+
+        def loops(array, axis):
+            try:
+                return np.shape(array)[axis]
+            except IndexError:
+                return 1
+
+        ran = loops(array, 1)
+        if ran == 1:
+            array = np.array(array)
+            means[0] = np.mean(array[~np.isnan(array)])
+        else:
+            for col in range(ran):
+                means[col] = np.mean(array[~np.isnan(array[:, col]), col])
 
     # iterate through entries which have nan values
     for row, col in zip(*indices):

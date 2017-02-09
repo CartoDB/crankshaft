@@ -57,9 +57,9 @@ $$ LANGUAGE plpythonu;
 CREATE OR REPLACE FUNCTION
   CDB_CreateAndPredictSegment (
       query TEXT,
-      variable_name TEXT,
-      target_query TEXT,
+      variable TEXT,
       feature_columns TEXT[],
+      target_query TEXT,
       n_estimators INTEGER DEFAULT 1200,
       max_depth INTEGER DEFAULT 3,
       subsample DOUBLE PRECISION DEFAULT 0.5,
@@ -70,5 +70,5 @@ AS $$
   from crankshaft.segmentation import Segmentation
   seg = Segmentation()
   model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf}
-  return seg.create_and_predict_segment(query, variable_name, feature_columns, target_query, model_params)
+  return seg.create_and_predict_segment(query, variable, feature_columns, target_query, model_params)
 $$ LANGUAGE plpythonu;
