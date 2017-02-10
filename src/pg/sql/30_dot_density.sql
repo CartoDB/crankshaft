@@ -80,7 +80,7 @@ BEGIN
   RETURN final_points;
 
 END;
-$$ LANGUAGE plpgsql
+$$ LANGUAGE plpgsql;
 
 --
 -- Creates N points randomly distributed in the specified secondary polygons
