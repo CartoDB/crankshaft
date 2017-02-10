@@ -70,7 +70,8 @@ class Segmentation(object):
         params = {"subquery": target_query,
                   "id_col": id_col}
 
-        target, features, target_mean, feature_means = self.clean_data(query, variable, feature_columns)
+        (target, features, target_mean,
+            feature_means) = self.clean_data(query, variable, feature_columns)
 
         model, accuracy = train_model(target, features, model_params, 0.2)
         result = self.predict_segment(model, feature_columns, target_query,
@@ -104,9 +105,6 @@ class Segmentation(object):
         results = []
         cursors = self.data_provider.get_segmentation_predict_data(params)
 
-        import plpy
-        plpy.notice("cursor:{}".format(cursors))
-
         '''
          cursors = [{'features': [[m1[0],m2[0],m3[0]],[m1[1],m2[1],m3[1]],
                                   [m1[2],m2[2],m3[2]]]}]
@@ -122,8 +120,6 @@ class Segmentation(object):
             # Need to fix this to global mean. This will cause weird effects
 
             batch = replace_nan_with_mean(batch, feature_means)[0]
-            import plpy
-            plpy.notice("BATCH: {}".format(batch))
             prediction = model.predict(batch)
             results.append(prediction)
 
@@ -145,7 +141,7 @@ class Segmentation(object):
         'feature1': [1,2,3,4], 'feature2' : [2,3,4,5]}]
         '''
 
-        # extract target data from plpy object
+        # extract target data from data_provider object
         target = np.array(data[0]['target'], dtype=float)
 
         # put n feature data arrays into an n x m array of arrays
@@ -168,9 +164,6 @@ def replace_nan_with_mean(array, means=None):
     # TODO: update code to take in avgs parameter
 
     # returns an array of rows and column indices
-    # import plpy
-    # plpy.notice("array is of type: {}".format(type(array)))
-    # plpy.notice("ARRAY: {}".format(array))
     nanvals = np.isnan(array)
     indices = np.where(nanvals)
 
