@@ -18,6 +18,7 @@ AS $$
      extent GEOMETRY;
      eq_area_geom GEOMETRY;
      test_point Geometry;
+     iter     NUMERIC;
      width    NUMERIC;
      height   NUMERIC;
      x0       NUMERIC;
@@ -26,9 +27,9 @@ AS $$
      sample_points GEOMETRY[];
      points   GEOMETRY[];
  BEGIN
-   eq_area_geom := ST_TRANSFORM(g,2163);
+   eq_area_geom := ST_TRANSFORM(g, 2163);
    extent   := ST_Envelope(eq_area_geom);
-   max_iter := 0;
+   iter := 0;
    width    := ST_XMax(extent) - ST_XMIN(extent);
    height   := ST_YMax(extent) - ST_YMIN(extent);
    x0       := ST_XMin(extent);
@@ -36,13 +37,13 @@ AS $$
    no_left  := no_points;
 
    LOOP
-     IF(no_left<=0 or max_iter=1000) THEN
+     IF(no_left <= 0 or iter >= max_iter) THEN
        RETURN;
      END IF;
 
 
     with random_points as(
-        SELECT ST_SetSRID(ST_MAKEPOINT( x0 + width*random(),y0 + height*random()), 2163) as p
+        SELECT ST_SetSRID(ST_MAKEPOINT( x0 + width*random(), y0 + height*random()), 2163) as p
         FROM generate_series(1,no_left)
      )
      SELECT array_agg(p) from random_points
@@ -52,14 +53,34 @@ AS $$
      RETURN QUERY select ST_TRANSFORM(a, 4326) from unnest(sample_points) as a;
 
      IF sample_points IS NOT null THEN
-        no_left = no_left - array_length(sample_points,1);
+        no_left := no_left - array_length(sample_points, 1);
      END IF;
-     max_iter = max_iter + 1;
+     iter = iter + 1;
    END LOOP;
 
    RETURN;
- END
+ END;
 $$ LANGUAGE plpgsql;
+
+-- DEPRECATED
+
+CREATE OR REPLACE FUNCTION cdb_dot_density(geom geometry, no_points Integer, max_iter_per_point Integer DEFAULT 1000)
+  RETURNS GEOMETRY
+AS $$
+DECLARE
+final_points GEOMETRY;
+
+BEGIN
+
+  with new_points as(
+    SELECT * FROM CDB_DotDensity(geom, no_points, max_iter_per_point) as a
+  )
+  SELECT ST_Collect(a) FROM new_points
+  into final_points;
+  RETURN final_points;
+
+END;
+$$ LANGUAGE plpgsql
 
 --
 -- Creates N points randomly distributed in the specified secondary polygons
