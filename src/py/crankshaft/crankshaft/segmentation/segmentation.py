@@ -39,7 +39,6 @@ class Segmentation(object):
                 @param model_parameters: A dictionary containing parameters for
                 the model.
         """
-
         clean_target = replace_nan_with_mean(target)
         clean_features = replace_nan_with_mean(features)
         target_features = replace_nan_with_mean(target_features)
@@ -117,8 +116,6 @@ class Segmentation(object):
             batch = np.row_stack([np.array(row['features'])
                                   for row in rows]).astype(float)
 
-            # Need to fix this to global mean. This will cause weird effects
-
             batch = replace_nan_with_mean(batch, feature_means)[0]
             prediction = model.predict(batch)
             results.append(prediction)
@@ -161,32 +158,38 @@ def replace_nan_with_mean(array, means=None):
         Output:
             array with nans filled in with the mean of the dataset
     """
-    # TODO: update code to take in avgs parameter
 
     # returns an array of rows and column indices
     nanvals = np.isnan(array)
     indices = np.where(nanvals)
 
+    def loops(array, axis):
+        try:
+            return np.shape(array)[axis]
+        except IndexError:
+            return 1
+    ran = loops(array, 1)
+
     if means is None:
         means = {}
 
-        def loops(array, axis):
-            try:
-                return np.shape(array)[axis]
-            except IndexError:
-                return 1
-
-        ran = loops(array, 1)
         if ran == 1:
             array = np.array(array)
             means[0] = np.mean(array[~np.isnan(array)])
+            for row in zip(*indices):
+                array[row] = means[0]
         else:
             for col in range(ran):
                 means[col] = np.mean(array[~np.isnan(array[:, col]), col])
-
-    # iterate through entries which have nan values
-    for row, col in zip(*indices):
-        array[row, col] = means[col]
+            for row, col in zip(*indices):
+                array[row, col] = means[col]
+    else:
+        if ran == 1:
+            for row in zip(*indices):
+                array[row] = means[0]
+        else:
+            for row, col in zip(*indices):
+                array[row, col] = means[col]
 
     return array, means
 
