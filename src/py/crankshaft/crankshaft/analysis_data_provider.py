@@ -67,7 +67,7 @@ class AnalysisDataProvider:
             plpy.error('Analysis failed: %s' % err)
 
     def get_maxp(self, params):
-        """fetch data for spatial markov"""
+        """fetch data for max-p"""
         try:
             query = pu.construct_neighbor_query('queen', params)
             data = plpy.execute(query)
