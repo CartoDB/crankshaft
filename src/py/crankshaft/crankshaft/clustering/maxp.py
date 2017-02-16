@@ -18,9 +18,10 @@ class MaxP:
         else:
             self.data_provider = AnalysisDataProvider()
 
-    def maxp(self, subquery, colnames, floor_variable,
+    def maxp(self, subquery, colnames, floor_variable=None,
             floor=1,
-            geom_col='the_geom', id_col='cartodb_id'):
+            geom_col='the_geom', id_col='cartodb_id',
+            ):
         """
             Inputs:
             @param subquery (text): subquery to expose the data need for the
@@ -50,13 +51,18 @@ class MaxP:
 
         resp = self.data_provider.get_maxp(params)
         attr_vals = pu.get_attributes(resp, len(colnames))
-        floor_column_id = colnames.index(floor_variable)
-        # print "floor_column_id: ", floor_column_id
         weight = pu.get_weight(resp, w_type='queen')
+
+        if floor_variable == None:
+            floor_variable = np.ones((weight.n, 1)))
+        else:
+            floor_column_id = colnames.index(floor_variable)
+            floor_variable = attr_vals.transpose()[floor_column_id]
+
         start_time = time.time()
         r = ps.Maxp(weight, attr_vals,
                     floor=floor,
-                    floor_variable= attr_vals.transpose()[floor_column_id],
+                    floor_variable= floor_variable,
                     initial=10)
         # print r.regions
         cluster_classes = get_cluster_classes(weight.id_order, r.regions)
@@ -64,7 +70,6 @@ class MaxP:
         # print "elapsed time: ", time.time() - start_time
         return zip(cluster_classes, [r.pvalue] * len(weight.id_order),
                    weight.id_order)
-
 
 
 def get_cluster_classes(ids, clusters):
