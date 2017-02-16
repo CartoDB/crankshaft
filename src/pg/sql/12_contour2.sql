@@ -178,6 +178,7 @@ BEGIN
 
     running_merge := running_merge || ST_ExteriorRing(ST_Convexhull(ST_Collect(geomin))) ;
 
+    -- multilines version
     WITH
     a as(
      SELECT unnest(running_merge) as geo
