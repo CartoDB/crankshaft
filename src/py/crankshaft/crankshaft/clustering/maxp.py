@@ -46,6 +46,7 @@ class MaxP:
                   'colnames': colnames,
                   'id_col': id_col,
                   'geom_col': geom_col,
+                  'floor':
                   'floor_variable':floor_variable,
                   }
 
@@ -54,7 +55,7 @@ class MaxP:
         weight = pu.get_weight(resp, w_type='queen')
 
         if floor_variable == None:
-            floor_variable = np.ones((weight.n, 1)))
+            floor_variable = np.ones((weight.n, 1))
         else:
             floor_column_id = colnames.index(floor_variable)
             floor_variable = attr_vals.transpose()[floor_column_id]
