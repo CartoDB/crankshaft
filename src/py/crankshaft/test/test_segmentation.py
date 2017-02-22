@@ -63,8 +63,6 @@ class SegmentationTest(unittest.TestCase):
         test_array = np.array([1.2, np.nan, 3.2, np.nan, np.nan])
         result = replace_nan_with_mean(test_array, means=None)[0]
         expectation = np.array([1.2, 2.2, 3.2, 2.2, 2.2], dtype=float)
-        print result
-        print type(result)
         assert_array_equal(result, expectation)
 
     def test_create_and_predict_segment(self):
@@ -122,7 +120,6 @@ class SegmentationTest(unittest.TestCase):
         {'feature1': [1,2,3,4]}, {'feature2' : [2,3,4,5]}
         ]
         '''
-        print data_train
         # Before here figure out how to set up the data provider
         # After use data prodiver to run the query and test results.
         seg = Segmentation(RawDataProvider(data_test, data_train,
