@@ -101,7 +101,6 @@ class Segmentation(object):
 
         results = []
         cursors = self.data_provider.get_segmentation_predict_data(params)
-
         '''
          cursors = [{'features': [[m1[0],m2[0],m3[0]],[m1[1],m2[1],m3[1]],
                                   [m1[2],m2[2],m3[2]]]}]

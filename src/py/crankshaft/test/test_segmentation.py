@@ -3,6 +3,7 @@ import numpy as np
 from helper import plpy, fixture_file
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 from crankshaft.segmentation import Segmentation
+from mock_plpy import MockCursor
 import json
 
 
@@ -105,7 +106,23 @@ class SegmentationTest(unittest.TestCase):
         data_test = [{'id_col': training_data[0]['cartodb_id']}]
 
         data_predict = [{'feature_columns': test_data}]
+        # print data_predict
+        # batch = []
         '''
+        for row in data_predict:
+            max = len(data_predict[0]['feature_columns'])
+            for c in range(max):
+                batch = np.append(batch, np.row_stack([np.array(row
+                                                      ['feature_columns']
+                                                      [c])]))
+
+        # batch = np.row_stack([np.array(row['features'])
+        # for row in rows]).astype(float)
+        li = np.array(batch.tolist())
+        print len(li)
+        co = len(data_predict[0]['feature_columns'][0]['features'])
+        print len(data_predict[0]['feature_columns'])
+
          cursors = [{'features': [[m1[0],m2[0],m3[0]],[m1[1],m2[1],m3[1]],
                                   [m1[2],m2[2],m3[2]]]}]
         '''
@@ -120,6 +137,7 @@ class SegmentationTest(unittest.TestCase):
         {'feature1': [1,2,3,4]}, {'feature2' : [2,3,4,5]}
         ]
         '''
+        data_predict = MockCursor(data_predict)
         # Before here figure out how to set up the data provider
         # After use data prodiver to run the query and test results.
         seg = Segmentation(RawDataProvider(data_test, data_train,
