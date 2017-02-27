@@ -47,9 +47,6 @@ class KMeansNonspatialTest(unittest.TestCase):
     def setUp(self):
         plpy._reset()
 
-        # self.cluster_data = json.loads(
-        #     open(fixture_file('kmeans-nonspatial.json')).read())
-
         self.params = {"subquery": "SELECT * FROM TABLE",
                        "n_clusters": 5}
 
