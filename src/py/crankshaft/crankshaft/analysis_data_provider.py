@@ -30,7 +30,7 @@ class AnalysisDataProvider:
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
 
-    def get_moran(self, w_type, params):
+    def get_neighbor(self, w_type, params):
         """fetch data for moran's i analyses"""
         try:
             query = pu.construct_neighbor_query(w_type, params)
