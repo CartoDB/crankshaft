@@ -41,6 +41,6 @@ class Spatial:
 
         # calculate spatial_lag values
 
-        lag = ps.weights.spatial_lag.lag_spatial(weight, attr_vals)
+        spatial_lag = ps.weights.spatial_lag.lag_spatial(weight, attr_vals)
 
-        return zip(lag, weight.id_order)
+        return zip(spatial_lag, weight.id_order)
