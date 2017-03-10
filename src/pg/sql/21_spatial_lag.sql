@@ -5,8 +5,8 @@ CREATE OR REPLACE FUNCTION
       column_name TEXT,
       w_type TEXT,
       num_ngbrs INT,
-      geom_col TEXT,
-      id_col TEXT)
+      geom_col TEXT DEFAULT 'the_geom',
+      id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (spatial_lag NUMERIC, rowid INT)
 AS $$
   from crankshaft.spatial_lag import Spatial
