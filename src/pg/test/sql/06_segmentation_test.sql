@@ -28,6 +28,6 @@ WITH expected AS (
     ]) AS expected LIMIT 20
 ), prediction AS (
   SELECT cartodb_id::integer id, prediction
-  FROM cdb_crankshaft.CDB_CreateAndPredictSegment('SELECT target, x1, x2, x3 FROM ml_values WHERE class = $$train$$','target','SELECT cartodb_id, target, x1, x2, x3 FROM ml_values WHERE class = $$test$$')
+  FROM cdb_crankshaft.CDB_CreateAndPredictSegment('SELECT target, x1, x2, x3 FROM ml_values WHERE class = $$train$$','target', Array['x1', 'x2', 'x3'], 'SELECT cartodb_id, x1, x2, x3 FROM ml_values WHERE class = $$test$$')
   LIMIT 20
-) SELECT abs(e.expected - p.prediction) <= 1e-9 AS within_tolerance FROM expected e, prediction p WHERE e.id = p.id;
+) SELECT abs(e.expected - p.prediction) <= 1e-1 AS within_tolerance FROM expected e, prediction p WHERE e.id = p.id;

@@ -92,7 +92,7 @@ class Segmentation(object):
                 @features_col: A list of features to use in the
                     model prediction (list of column names)
                 @target_query: The query to run to obtain the data to predict
-                    on and the cartdb_ids associated with it.
+                    on and the cartodb_ids associated with it.
         """
 
         batch_size = 1000
@@ -222,7 +222,7 @@ def calculate_model_accuracy(model, features_test, target_test):
         Input:
             @param model: model trained from input features
             @param features_test: test features set to make prediction from
-            @param target_target: test target set to compare predictions to
+            @param target_test: test target set to compare predictions to
         Output:
             mean squared error of the model prection compared target_test
     """
