@@ -4,7 +4,8 @@ CREATE OR REPLACE FUNCTION CDB_contour2(
     IN classmethod integer,
     IN steps integer
     )
-RETURNS geometry  AS $$
+-- RETURNS geometry  AS $$
+RETURNS TABLE(cartodb_id bigint, the_geom geometry, break numeric)   AS $$
 DECLARE
     breaks numeric[];
     bucketin integer[];
@@ -19,7 +20,10 @@ DECLARE
     interp31 geometry[];
     segment geometry[];
     running_merge geometry[];
-    geomout geometry;
+    cartodb_id bigint;
+    the_geom geometry;
+    break numeric;
+    i integer;
 BEGIN
 
     -- generate the breaks
@@ -51,10 +55,12 @@ BEGIN
         a as (SELECT unnest(geomin) AS e),
         b as (SELECT ST_DelaunayTriangles(ST_Collect(a.e)) AS t FROM a),
         c as (SELECT (ST_Dump(t)).geom AS v FROM b)
+
     SELECT array_agg(v) INTO gs FROM c;
 
     -- RAISE NOTICE 'TIN size: %',array_length(gs,1);
-    -- i:= 0;
+
+   i:= 0;
 
     -- ======================================================================================
 
@@ -144,32 +150,52 @@ BEGIN
             ON 1=1;
         END IF;
 
-        -- create segments crossing the cell per bucket
+        -- create segments crossing the cell per break
         WITH
         a as(
             SELECT
-            unnest(interp12) as p12,
-            unnest(interp23) as p23,
-            unnest(interp31) as p31
+            t.*
+            FROM
+            unnest(breaks, interp12, interp23, interp31) as t(br, p12 , p23, p31)
         ),
         b as(
             SELECT
-                ST_MakeLine(ARRAY[p12, p23, p31]::geometry[]) as segm
+                case
+                when
+                    (p12 is not null and p23 is not null and ST_equals(p12, p23)=false) OR
+                    (p23 is not null and p31 is not null and ST_equals(p23, p31)=false) OR
+                    (p31 is not null and p12 is not null and ST_equals(p31, p12)=false)
+                then ST_MakeLine(ARRAY[p12, p23, p31]::geometry[])
+                else null::geometry end as segm,
+                br
             FROM a
-            WHERE
-                (p12 is not null and p23 is not null and ST_equals(p12, p23)=false) OR
-                (p23 is not null and p31 is not null and ST_equals(p23, p31)=false) OR
-                (p31 is not null and p12 is not null and ST_equals(p31, p12)=false)
         )
         SELECT
-            array_agg(segm) INTO segment
-        FROM b;
+            array_agg(b.segm) into segment
+        FROM unnest(breaks) as c(x) left join b on b.br = c.x;
+
 
         -- concat the segments and breaks
-        IF array_length(running_merge,1)=0 THEN
-            running_merge := segment;
+        IF i = 0 THEN
+            running_merge = segment;
+            i := 1;
         ELSE
-            running_merge := running_merge || segment;
+            WITH
+            a AS(
+                SELECT
+                    ST_CollectionExtract(x, 2) as x,
+                    y
+                FROM unnest(running_merge,segment) as t(x,y)
+            ),
+            b AS(
+                SELECT
+                    ST_collect(x,y) as element
+                FROM a
+            )
+            SELECT
+                array_agg(element) into running_merge
+            FROM b;
+
         END IF;
 
     -- loop end
@@ -177,24 +203,87 @@ BEGIN
 
     -- ====== ^^^ LOOP END ===========================================================================
 
-    -- merge the segments with the convex hull so we can polygonize
-    running_merge := running_merge || ST_ExteriorRing(ST_Convexhull(ST_Collect(running_merge||geomin))) ;
-
-    -- multilines version
-    WITH
-    a as(
-     SELECT unnest(running_merge) as geo
-    )
-    SELECT ST_collect(geo) into geomout from a;
+    raise notice 'NOTICE: % - %', array_length(running_merge,1),array_length(breaks,1);
 
     -- return some stuff
-    RETURN geomout;
+    RETURN QUERY
+    with a as(
+        SELECT
+            br,
+            ST_CollectionExtract(geo, 2) as geo
+        FROM unnest(running_merge, breaks) as t(geo, br)
+    ),
+    b as(
+        SELECT
+            ST_LineMerge(geo) as geo,
+            br
+        FROM a
+    )
+    SELECT
+    row_number() over() as cartodb_id,
+    geo as the_geom,
+    br as break
+    from b;
+
 
 END;
 $$ language plpgsql IMMUTABLE;
 
 
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION unnest_2d_1d(anyarray)
+  RETURNS SETOF anyarray AS
+$func$
+SELECT array_agg($1[d1][d2])
+FROM   generate_subscripts($1,1) d1
+    ,  generate_subscripts($1,2) d2
+GROUP  BY d1
+ORDER  BY d1
+$func$  LANGUAGE sql IMMUTABLE;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- ============ test query ==========================================================================
+-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================-- ============ test query ==========================================================================
+
 
 with
 a as(
@@ -219,3 +308,34 @@ b as(
   the_geom,
   st_transform(the_geom::geometry, 3857) as  the_geom_webmercator
   from b ;
+
+-- ============ test query table ==========================================================================
+
+with
+a as(
+  SELECT
+  array_agg(the_geom)  as geomin,
+  array_agg(temp::numeric) as   colin
+  FROM table_4804232032
+  where temp is not  null
+  ),
+b as(
+  SELECT
+     c.*
+   from a, CDB_contour2(
+        a.geomin,
+        a.colin,
+        0,
+        7
+      )  c
+  )
+  SELECT
+  *,
+  st_astext(the_geom) as text,
+  st_transform(the_geom, 3857) as the_geom_webmercator
+  from b
+  where the_geom is not null;
+
+
+
+
