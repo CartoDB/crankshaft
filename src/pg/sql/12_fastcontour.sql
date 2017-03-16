@@ -26,6 +26,8 @@ DECLARE
     i integer;
 BEGIN
 
+    -- debiug info
+    raise notice 'Points: %', array_length(colin,1);
     -- generate the breaks
     SELECT
         CASE
@@ -58,7 +60,8 @@ BEGIN
 
     SELECT array_agg(v) INTO gs FROM c;
 
-    -- RAISE NOTICE 'TIN size: %',array_length(gs,1);
+    RAISE NOTICE 'TIN size: %', array_length(gs,1);
+    raise notice 'ratio: %', array_length(gs,1)::numeric /  array_length(colin,1)::numeric;
 
    i:= 0;
 
@@ -175,7 +178,7 @@ BEGIN
         FROM unnest(breaks) as c(x) left join b on b.br = c.x;
 
 
-        -- concat the segments and breaks
+        -- sew the segments and assign breaks
         IF i = 0 THEN
             running_merge = segment;
             i := 1;
@@ -202,8 +205,6 @@ BEGIN
     END LOOP;
 
     -- ====== ^^^ LOOP END ===========================================================================
-
-    raise notice 'NOTICE: % - %', array_length(running_merge,1),array_length(breaks,1);
 
     -- return some stuff
     RETURN QUERY
@@ -241,40 +242,6 @@ $$ language plpgsql IMMUTABLE;
 
 
 
-CREATE OR REPLACE FUNCTION unnest_2d_1d(anyarray)
-  RETURNS SETOF anyarray AS
-$func$
-SELECT array_agg($1[d1][d2])
-FROM   generate_subscripts($1,1) d1
-    ,  generate_subscripts($1,2) d2
-GROUP  BY d1
-ORDER  BY d1
-$func$  LANGUAGE sql IMMUTABLE;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -286,38 +253,16 @@ $func$  LANGUAGE sql IMMUTABLE;
 
 
 with
-a as(
-  SELECT
-  array_agg(the_geom) as  geomin,
-  array_agg(temp::numeric) as colin
-  FROM table_4804232032
-  where temp is not null
-  ),
-b as(
-  SELECT
-      CDB_contour2(
-        geomin,
-        colin,
-        2,
-        7
-      ) as the_geom
-   from a
-  )
-  SELECT
-  1 as cartodb_id,
-  the_geom,
-  st_transform(the_geom::geometry, 3857) as  the_geom_webmercator
-  from b ;
-
--- ============ test query table ==========================================================================
-
-with
+a0 as(
+    select * from table_4804232032
+    -- where cartodb_id % 2 = 0
+),
 a as(
   SELECT
   array_agg(the_geom)  as geomin,
   array_agg(temp::numeric) as   colin
-  FROM table_4804232032
-  where temp is not  null
+  FROM a0
+  where temp is not   null
   ),
 b as(
   SELECT
@@ -325,7 +270,7 @@ b as(
    from a, CDB_contour2(
         a.geomin,
         a.colin,
-        0,
+        3,
         7
       )  c
   )
