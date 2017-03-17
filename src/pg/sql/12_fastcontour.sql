@@ -2,11 +2,13 @@ CREATE OR REPLACE FUNCTION CDB_contour2(
     IN geomin geometry[],
     IN colin numeric[],
     IN classmethod integer,
-    IN steps integer
+    IN steps integer,
+    IN polygons integer DEFAULT 0
     )
 -- RETURNS geometry  AS $$
 RETURNS TABLE(cartodb_id bigint, the_geom geometry, break numeric)   AS $$
 DECLARE
+    geoplane geometry[];
     breaks numeric[];
     bucketin integer[];
     gs geometry[];
@@ -26,8 +28,15 @@ DECLARE
     i integer;
 BEGIN
 
-    -- debiug info
+    -- debug info
     raise notice 'Points: %', array_length(colin,1);
+
+    -- translate to planar to avoid ST_LineInterpolatePoint errors for points far from equator
+    WITH a AS(
+        SELECT ST_transform(t.x, 3857) as gp FROM unnest(geomin) as t(x)
+    )
+    SELECT array_agg(gp) into geoplane FROM a;
+
     -- generate the breaks
     SELECT
         CASE
@@ -54,10 +63,10 @@ BEGIN
 
     -- generate the TIN
     WITH
+        -- a as (SELECT ST_transform(x, 3857) as e FROM unnest(geomin) t(x)),
         a as (SELECT unnest(geomin) AS e),
         b as (SELECT ST_DelaunayTriangles(ST_Collect(a.e)) AS t FROM a),
         c as (SELECT (ST_Dump(t)).geom AS v FROM b)
-
     SELECT array_agg(v) INTO gs FROM c;
 
     RAISE NOTICE 'TIN size: %', array_length(gs,1);
@@ -72,7 +81,8 @@ BEGIN
     LOOP
         -- retrieve the value and bucket of each vertex
         SELECT
-            array_agg(a.v),array_agg(b.c), array_agg(b.bk)
+            -- array_agg(a.v),array_agg(b.c), array_agg(b.bk)
+            array_agg(b.gp),array_agg(b.c), array_agg(b.bk)
             INTO vertex, vv, bu
         FROM
         (
@@ -83,7 +93,7 @@ BEGIN
             SELECT
                 t.*
             FROM
-                unnest(geomin, colin, bucketin) as t(geo, c, bk)
+                unnest(geomin, colin, bucketin, geoplane) as t(geo, c, bk, gp)
             WHERE ST_Equals(geo, a.v)
             LIMIT 1
         ) as b;
@@ -91,67 +101,14 @@ BEGIN
         -- continue when there is no contour line crossing the current cell
         CONTINUE WHEN bu[1] = bu[2] and bu[1] = bu[3];
 
+
         -- we have contour lines in this cell, let's find their intersections with triangle sides
-        interp12 := array_fill(null::geometry, ARRAY[steps]);
-        interp23 := array_fill(null::geometry, ARRAY[steps]);
-        interp31 := array_fill(null::geometry, ARRAY[steps]);
 
-        IF bu[1] <> bu[2] THEN
-            SELECT
-                array_agg(b.point) INTO interp12
-            FROM
-            (
-                SELECT
-                    (t.x-vv[1])/(vv[2]-vv[1]) as p
-                FROM unnest(breaks) as t(x)
-            ) AS a
-            LEFT JOIN LATERAL
-            (
-                SELECT
-                    ST_LineInterpolatePoint(ST_MakeLine(vertex[1], vertex[2]), a.p)
-                    as point
-                WHERE a.p BETWEEN 0 AND 1
-            ) AS b
-            ON 1=1;
-        END IF;
+        interp12 := _get_cell_intersects(vertex, vv , bu, breaks, 1, 2);
+        interp23 := _get_cell_intersects(vertex, vv , bu, breaks, 2, 3);
+        interp31 := _get_cell_intersects(vertex, vv , bu, breaks, 3, 1);
 
-        IF bu[2] <> bu[3] THEN
-            SELECT
-                array_agg(b.point) INTO interp23
-            FROM
-            (
-                SELECT
-                    (t.x-vv[2])/(vv[3]-vv[2]) as p
-                FROM unnest(breaks) as t(x)
-            ) AS a
-            LEFT JOIN LATERAL
-            (
-                SELECT
-                    ST_LineInterpolatePoint(ST_MakeLine(vertex[2], vertex[3]), a.p)
-                    as point
-                WHERE a.p BETWEEN 0 AND 1
-            ) AS b
-            ON 1=1;
-        END IF;
-
-        IF bu[3] <> bu[1] THEN
-            SELECT
-                array_agg(b.point) INTO interp31
-            FROM
-            (
-                SELECT
-                    (t.x-vv[3])/(vv[1]-vv[3]) as p
-                FROM unnest(breaks) as t(x)
-            ) AS a
-            LEFT JOIN LATERAL
-            (
-                SELECT
-                    ST_LineInterpolatePoint(ST_MakeLine(vertex[3], vertex[1]), a.p)
-                    as point
-                WHERE a.p BETWEEN 0 AND 1
-            ) AS b
-            ON 1=1;
-        END IF;
+        -- raise notice 'interp12 %', interp12;
 
         -- create segments crossing the cell per break
         WITH
@@ -207,43 +164,118 @@ BEGIN
     -- ====== ^^^ LOOP END ===========================================================================
 
     -- return some stuff
-    RETURN QUERY
-    with a as(
+    IF polygons = 1 THEN
+        RETURN QUERY
+        with a as(
+            SELECT
+                br,
+                ST_CollectionExtract(geo, 2) as geo
+            FROM unnest(running_merge, breaks) as t(geo, br)
+        ),
+        b as(
+            SELECT
+                ST_LineMerge(geo) as v
+            FROM a
+        ),
+        c as(
+            SELECT
+                ST_Polygonize(
+                    ST_Node(
+                        ST_LineMerge(
+                            ST_Union(
+                                v,
+                                ST_ExteriorRing(
+                                    ST_Convexhull(v)
+                                )
+                            )
+                        )
+                    )
+                ) as g1
+            FROM
+                b
+        ),
+        d as(
+            SELECT
+            (st_dump(g1)).geom as geo
+            FROM c
+        )
         SELECT
-            br,
-            ST_CollectionExtract(geo, 2) as geo
-        FROM unnest(running_merge, breaks) as t(geo, br)
-    ),
-    b as(
+        row_number() over() as cartodb_id,
+        ST_Transform(geo, 4326) as the_geom,
+        1::numeric as break
+        from d
+        WHERE ST_GeometryType(geo) = 'ST_Polygon';
+    ELSE
+        RETURN QUERY
+        with a as(
+            SELECT
+                br,
+                ST_CollectionExtract(geo, 2) as geo
+            FROM unnest(running_merge, breaks) as t(geo, br)
+        ),
+        b as(
+            SELECT
+                ST_LineMerge(geo) as geo,
+                br
+            FROM a
+        )
         SELECT
-            ST_LineMerge(geo) as geo,
-            br
-        FROM a
-    )
-    SELECT
-    row_number() over() as cartodb_id,
-    geo as the_geom,
-    br as break
-    from b;
-
+        row_number() over() as cartodb_id,
+        ST_Transform(geo, 4326) as the_geom,
+        br as break
+        from b;
+    END IF;
 
 END;
 $$ language plpgsql IMMUTABLE;
 
 
 
+-- ========================= support function =========================
 
+CREATE OR REPLACE FUNCTION _get_cell_intersects(
+    IN vertex geometry[],
+    IN vv numeric[],
+    IN bu integer[],
+    IN breaks numeric[],
+    IN i1 integer,
+    IN i2 integer
+    )
+RETURNS geometry[]  AS $$
+DECLARE
+    result geometry[];
+BEGIN
 
+    result := array_fill(null::geometry, ARRAY[array_length(breaks, 1)]);
 
+    IF bu[i1] <> bu[i2] THEN
 
+        SELECT
+            array_agg(b.point) INTO result
+        FROM
+        (
+            SELECT
+                (t.x-vv[i1])/(vv[i2]-vv[i1]) as p
+            FROM unnest(breaks) as t(x)
+        ) AS a
+        LEFT JOIN LATERAL
+        (
+            SELECT
+                ST_LineInterpolatePoint(
+                    ST_MakeLine(
+                        vertex[i1],
+                        vertex[i2]
+                    ), a.p)
+                as point
+            WHERE a.p BETWEEN 0 AND 1
+        ) AS b
+        ON 1=1;
+    END IF;
 
+    return result;
 
-
-
-
-
-
-
+END;
+$$ language plpgsql IMMUTABLE;
 
 
 
