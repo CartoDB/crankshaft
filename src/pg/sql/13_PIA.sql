@@ -31,7 +31,7 @@ DECLARE
     sqr numeric;
     p geometry;
 BEGIN
-    sqr := |/2;
+    sqr := 0.5*(|/2.0);
     polygon := ST_Transform(polygon, 3857);
 
     -- grid #0 cell size
@@ -46,7 +46,7 @@ BEGIN
     SELECT array_agg(c) INTO cells FROM c1;
 
     -- 1st guess: centroid
-    best_c := polygon;
+    -- best_c := polygon;
     best_d := cdb_crankshaft._Signed_Dist(polygon, ST_Centroid(Polygon));
 
     -- looping the loop
@@ -57,6 +57,7 @@ BEGIN
         EXIT WHEN i > n;
 
         cell := cells[i];
+
         i := i+1;
 
         -- cell side size, it's square
@@ -64,13 +65,14 @@ BEGIN
 
         -- check distance
         test_d := cdb_crankshaft._Signed_Dist(polygon, ST_Centroid(cell));
+
         IF test_d > best_d THEN
             best_d := test_d;
-            best_c := cells[i];
+            best_c := cell;
         END IF;
 
         -- longest distance within the cell
-        test_mx := test_d + (test_h/2 * sqr);
+        test_mx := test_d + (test_h * sqr);
 
         -- if the cell has no chance to contains the desired point, continue
         CONTINUE WHEN test_mx - best_d <= tolerance;
@@ -93,6 +95,7 @@ BEGIN
 
 END;
 $$ language plpgsql IMMUTABLE;
+
 
 
 -- signed distance point to polygon with holes
