@@ -46,6 +46,7 @@ BEGIN
     SELECT array_agg(c) INTO cells FROM c1;
 
     -- 1st guess: centroid
+    best_c := polygon;
     best_d := cdb_crankshaft._Signed_Dist(polygon, ST_Centroid(Polygon));
 
     -- looping the loop
