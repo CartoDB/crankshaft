@@ -1,9 +1,9 @@
 """class for fetching data"""
 import plpy
 import pysal_utils as pu
+import numpy as np
 
-
-class AnalysisDataProvider:
+class AnalysisDataProvider(object):
     def get_getis(self, w_type, params):
         """fetch data for getis ord's g"""
         try:
@@ -65,3 +65,31 @@ class AnalysisDataProvider:
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
+
+    def get_column(self, table, column):
+        """
+        """
+        query = '''
+            SELECT array_agg("{column}" ORDER BY "cartodb_id" ASC) as col
+              FROM "{table}"
+        '''.format(table=table, column=column)
+        resp = plpy.execute(query)
+        return np.array(resp[0]['col'], dtype=float)
+
+    def get_pairwise_distances(self, drain, source):
+        """retuns the pairwise distances between row i and j for all i in table1 and j in table1"""
+        query = '''
+            SELECT array_agg(ST_Distance(d."the_geom"::geography,
+                                         s."the_geom"::geography) / 1000.0
+                             ORDER BY d."cartodb_id" ASC)  as dist
+              FROM "{drain}" as d, "{source}" as s
+            GROUP BY s."cartodb_id"
+            ORDER BY s."cartodb_id" ASC
+        '''.format(drain=drain, source=source)
+
+        resp = plpy.execute(query)
+
+        # len(s) x len(d) matrix
+        return np.array([np.array(row['dist'], dtype=float)
+                         for row in resp], dtype=float)
+
