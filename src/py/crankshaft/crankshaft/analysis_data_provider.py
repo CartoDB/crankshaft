@@ -66,15 +66,25 @@ class AnalysisDataProvider(object):
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
 
-    def get_column(self, table, column):
+    def get_column(self, table, column, dtype=float):
         """
+        Retrieve the column from the specified table
+
+        :param table: table to retrieve column from
+        :type table: text
+        :param column: column to retrieve
+        :type column: text
+        :param dtype: data type in column (e.g, float, int, str)
+        :type dtype: type
+        :returns: column from table as a NumPy array
+        :rtype: NumPy array
         """
         query = '''
             SELECT array_agg("{column}" ORDER BY "cartodb_id" ASC) as col
               FROM "{table}"
         '''.format(table=table, column=column)
         resp = plpy.execute(query)
-        return np.array(resp[0]['col'], dtype=float)
+        return np.array(resp[0]['col'], dtype=dtype)
 
     def get_pairwise_distances(self, drain, source):
         """retuns the pairwise distances between row i and j for all i in table1 and j in table1"""

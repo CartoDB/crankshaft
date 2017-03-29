@@ -1,9 +1,8 @@
 """optimization"""
-import sys
+import plpy
+import numpy as np
 import cvxopt
 from cvxopt.glpk import ilp
-import numpy as np
-import plpy
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 class Optim(object):
@@ -33,12 +32,58 @@ class Optim(object):
                                                             production_column))
         self.marginal_cost = self.data_provider.get_column(drain_table,
                                                            marginal_column)
+        # database ids
+        self.drain_ids = self.data_provider.get_column(drain_table,
+                                                       'cartodb_id',
+                                                       dtype=int)
+        self.source_ids = self.data_provider.get_column(source_table,
+                                                        'cartodb_id',
+                                                        dtype=int)
         # derivative data
         self.distances = self.data_provider.get_pairwise_distances(source_table,
                                                                    drain_table)
         self.n_areas = len(self.waste_in_area)
         self.n_plants = len(self.distances)
         self.cost = self.calc_cost()
+
+    def output(self):
+        """..."""
+
+        # n_drains x n_sources matrix (row, column)
+        assignments = self.optim()
+        # 
+        plpy.notice("self.cost.shape: {}".format(str(self.cost.shape)))
+        plpy.notice("self.cost: {}".format(self.cost))
+        # 
+        plpy.notice(assignments)
+        plpy.notice("assignments.shape: {}".format(str(assignments.shape)))
+        
+        # crosswalks for matrix index -> cartodb_id
+        drain_id_crosswalk = {}
+        for idx, cid in enumerate(self.drain_ids):
+            # matrix index -> cartodb_id
+            drain_id_crosswalk[idx] = cid
+        # plpy.notice(drain_id_crosswalk)
+        
+        source_id_crosswalk = {}
+        for idx, cid in enumerate(self.source_ids):
+            # matrix index -> cartodb_id
+            source_id_crosswalk[idx] = cid
+        # plpy.notice(source_id_crosswalk)
+        
+        # find non-zero entries
+        nonzeros = np.nonzero(assignments)
+        plpy.notice("nonzeros: {}".format(str(nonzeros)))
+        source_index, drain_index = nonzeros[0], nonzeros[1]
+        # 
+        plpy.notice(source_index)
+        plpy.notice(drain_index)
+        assigned_costs = [(drain_id_crosswalk[drain_index[i]],
+                           source_id_crosswalk[source_index[i]],
+                           self.cost[drain_index[i],
+                                     source_index[i]])
+                          for i in range(len(source_index))]
+        return assigned_costs
 
     def test(self):
         """
@@ -75,7 +120,7 @@ class Optim(object):
                                          self.waste_in_area[pair[1]],
                                          self.marginal_cost[pair[0]])
                           for pair, distance in np.ndenumerate(self.distances)])
-        return costs
+        return costs.reshape(self.distances.shape)
 
     def optim(self):
         """solve linear optimization problem
@@ -88,27 +133,30 @@ class Optim(object):
         """
         # costs
         # elements chosen to minimize sum
+        # NOTE: used to be ravel('F')
         c = cvxopt.matrix(self.cost.ravel('F'))
 
         # equality constraint variables
         # each area is serviced once
-        A = cvxopt.spmatrix(1., [i // self.n_plants
-                                 for i in range(self.n_plants * self.n_areas)],
-                                range(self.n_plants * self.n_areas))
+        A = cvxopt.spmatrix(1., 
+                            [i // self.n_plants
+                             for i in range(self.n_plants * self.n_areas)],
+                            range(self.n_plants * self.n_areas))
         b = cvxopt.matrix(np.ones((self.n_areas, 1)), tc='d')
 
         # inequality constraint variables
         # each plant never goes over capacity
-        h = cvxopt.matrix(self.plant_capacity)
+        h = cvxopt.matrix(self.plant_capacity, tc='d')
         G = cvxopt.spmatrix(np.repeat(self.waste_in_area, self.n_plants),
                             [i % self.n_plants
                              for i in range(self.n_plants * self.n_areas)],
                             range(self.n_plants * self.n_areas))
-
+        binary_entries = set(range(len(c)))
         # solve
-        sol, x = ilp(c=c, G=G, h=h, A=A, b=b)
+        (sol, x) = ilp(c=c, G=G, h=h, A=A, b=b, B=binary_entries)
         # assignment = np.array(x).reshape((self.n_areas, self.n_plants))
         if sol != 'optimal':
-            raise Exception("Solution not soluble: {}".format(sol))
-
-        return np.array(x)
+            raise Exception("No solution possible: {}".format(sol))
+        x_shape = (self.cost.shape[1], self.cost.shape[0])
+        # Note: x needs to be shaped like self.cost.T
+        return np.array(x, dtype=int).flatten().reshape(x_shape)
