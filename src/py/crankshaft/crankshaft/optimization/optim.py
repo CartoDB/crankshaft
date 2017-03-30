@@ -9,8 +9,8 @@ class Optim(object):
     """Linear optimization class for logistics cost minimization
     Optimization for logistics
     based on models:
-      - waste_per_person * (1 - recycle_rate) * population
-      - waste_in_area * (marginal_cost + transport_cost * distance)
+      - amount_per_unit * (1 - recycle_rate) * population
+      - source_amount * (marginal_cost + transport_cost * distance)
     That is, `cost ~ population * distance`
     """
 
@@ -22,38 +22,38 @@ class Optim(object):
                                         AnalysisDataProvider())
         # model parameters
         self.model_params = {
-            'waste_per_person': kwargs.get('waste_per_person', 0.01),
+            'amount_per_unit': kwargs.get('amount_per_unit', 0.01),
             'dist_cost': kwargs.get('dist_cost', 0.15),
-            'recycle_rate': kwargs.get('recycle_rate', 0.0)
-            }
+            'recycle_rate': kwargs.get('recycle_rate', 0.0)}
+
         # model data
         self.model_data = {
-            'plant_capacity': self.data_provider.get_column(drain_table,
+            'drain_capacity': self.data_provider.get_column(drain_table,
                                                             capacity_column),
-            'waste_in_area': (self.model_params['waste_per_person'] *
+            'source_amount': (self.model_params['amount_per_unit'] *
                               (1. - self.model_params['recycle_rate']) *
                               self.data_provider.get_column(source_table,
                                                             production_column)),
             'marginal_cost': self.data_provider.get_column(drain_table,
-                                                           marginal_column)
-        }
+                                                           marginal_column)}
 
         # database ids
-        self.drain_ids = self.data_provider.get_column(drain_table,
-                                                       'cartodb_id',
-                                                       dtype=int)
-        self.source_ids = self.data_provider.get_column(source_table,
-                                                        'cartodb_id',
-                                                        dtype=int)
+        self.ids = {
+            'drain': self.data_provider.get_column(drain_table,
+                                                   'cartodb_id',
+                                                   dtype=int),
+            'source': self.data_provider.get_column(source_table,
+                                                    'cartodb_id',
+                                                    dtype=int)}
         # derivative data
-        self.n_sources = len(self.source_ids)
-        self.n_drains = len(self.drain_ids)
+        self.n_sources = len(self.ids['source'])
+        self.n_drains = len(self.ids['drain'])
         self.cost = self.calc_cost(source_table,
                                    drain_table)
 
     def _check_constraints(self):
         """Check if inputs are within constraints"""
-        if self.model_data['waste_in_area'].sum() > self.model_data['plant_capacity'].sum():
+        if self.model_data['source_amount'].sum() > self.model_data['drain_capacity'].sum():
             plpy.error("Solution not possible. Drain capacity is smaller "
                        "than total source production.")
 
@@ -65,12 +65,12 @@ class Optim(object):
 
         # crosswalks for matrix index -> cartodb_id
         drain_id_crosswalk = {}
-        for idx, cid in enumerate(self.drain_ids):
+        for idx, cid in enumerate(self.ids['drain']):
             # matrix index -> cartodb_id
             drain_id_crosswalk[idx] = cid
 
         source_id_crosswalk = {}
-        for idx, cid in enumerate(self.source_ids):
+        for idx, cid in enumerate(self.ids['source']):
             # matrix index -> cartodb_id
             source_id_crosswalk[idx] = cid
 
@@ -92,7 +92,7 @@ class Optim(object):
         :param distance: distance (in km)
         :type distance: float
         :param waste: number of tons of waste. This was previously calculated
-        as self.model_params['waste_per_person'] * number of people minus the recycle_rate
+        as self.model_params['amount_per_unit'] * number of people minus the recycle_rate
         :type waste: numeric
         :param marginal: intrinsic cost per ton of a plant
         :type marginal: numeric
@@ -113,7 +113,7 @@ class Optim(object):
         distances = self.data_provider.get_pairwise_distances(source_table,
                                                               drain_table)
         costs = np.array([self.cost_func(distance,
-                                         self.model_data['waste_in_area'][pair[1]],
+                                         self.model_data['source_amount'][pair[1]],
                                          self.model_data['marginal_cost'][pair[0]])
                           for pair, distance in np.ndenumerate(distances)])
         return costs.reshape(distances.shape)
@@ -126,32 +126,42 @@ class Optim(object):
         subject to G*x <= h
                    A*x = b
                    x[k] is binary
+        :returns: Assignments array (of 1s and 0s) of shape c.T
+        :rtype: NumPy array
         """
+        # ---
         # costs
         # elements chosen to minimize sum
-        # NOTE: used to be ravel('F')
-        c = cvxopt.matrix(self.cost.ravel('F'))
+        cost = cvxopt.matrix(self.cost.ravel('F'))
 
+        # ---
         # equality constraint variables
         # each area is serviced once
-        A = cvxopt.spmatrix(1., 
+        A = cvxopt.spmatrix(1.,
                             [i // self.n_drains
                              for i in range(self.n_drains * self.n_sources)],
                             range(self.n_drains * self.n_sources))
         b = cvxopt.matrix(np.ones((self.n_sources, 1)), tc='d')
 
+        # ---
         # inequality constraint variables
         # each plant never goes over capacity
-        h = cvxopt.matrix(self.model_data['plant_capacity'], tc='d')
-        G = cvxopt.spmatrix(np.repeat(self.model_data['waste_in_area'], self.n_drains),
-                            [i % self.n_drains
-                             for i in range(self.n_drains * self.n_sources)],
-                            range(self.n_drains * self.n_sources))
-        binary_entries = set(range(len(c)))
+        drain_capacity = cvxopt.matrix(self.model_data['drain_capacity'],
+                                       tc='d')
+        source_amounts = cvxopt.spmatrix(
+            np.repeat(self.model_data['source_amount'], self.n_drains),
+            [i % self.n_drains for i in range(self.n_drains * self.n_sources)],
+            range(self.n_drains * self.n_sources))
+
+        binary_entries = set(range(self.n_drains * self.n_sources))
+
         # solve
-        (sol, x) = ilp(c=c, G=G, h=h, A=A, b=b, B=binary_entries)
+        (sol, assignments) = ilp(c=cost, G=source_amounts, h=drain_capacity,
+                                 A=A, b=b, B=binary_entries)
         if sol != 'optimal':
             raise Exception("No solution possible: {}".format(sol))
-        x_shape = (self.cost.shape[1], self.cost.shape[0])
-        # Note: x needs to be shaped like self.cost.T
-        return np.array(x, dtype=int).flatten().reshape(x_shape)
+        assign_shape = (self.cost.shape[1], self.cost.shape[0])
+
+        # Note: assignments needs to be shaped like self.cost.T
+        return np.array(assignments,
+                        dtype=int).flatten().reshape(assign_shape)
