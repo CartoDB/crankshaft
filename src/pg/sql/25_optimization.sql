@@ -12,10 +12,13 @@ RETURNS table(drain_id bigint, source_id int, cost numeric) AS $$
 
 from crankshaft.optimization import Optim
 
-params = {'waste_per_person': waste_per_person,
-          'recycle_rate': recycle_rate,
-          'dist_rate': dist_rate,
-          'dist_threshold': dist_threshold}
+def cast_val(val):
+    return float(val) if val is not None else None
+
+params = {'waste_per_person': cast_val(waste_per_person),
+          'recycle_rate': cast_val(recycle_rate), 
+          'dist_rate': cast_val(dist_rate),
+          'dist_threshold': cast_val(dist_threshold)}
 
 optim = Optim(drain, source, drain_capacity, source_production, marginal_cost,
               **params)

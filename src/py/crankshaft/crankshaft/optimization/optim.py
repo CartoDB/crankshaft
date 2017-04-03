@@ -39,10 +39,9 @@ class Optim(object):
             'marginal_cost': self.data_provider.get_column(drain_table,
                                                            marginal_column),
             'distance': self.data_provider.get_pairwise_distances(source_table,
-                                                                  drain_table),
-            'cost': self.calc_cost()
-        }
-
+                                                                  drain_table)
+            }
+        self.model_data['cost'] = self.calc_cost()
         # database ids
         self.ids = {
             'drain': self.data_provider.get_column(drain_table,
@@ -74,8 +73,8 @@ class Optim(object):
                 self.model_params['amount_per_unit'] < 0):
             raise ValueError("`amount_per_unit` must be greater than zero.")
 
-        if (self.model_params['dist_threshold'] is None or
-                self.model_params['dist_threshold'] < 0):
+        if (self.model_params['dist_threshold'] <= 0 and
+                self.model_params['dist_threshold'] is not None):
             raise ValueError("`dist_threshold` must be greater than zero")
 
         if (self.model_params['dist_cost'] is None or
