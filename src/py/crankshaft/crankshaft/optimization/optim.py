@@ -14,7 +14,7 @@ class Optim(object):
     That is, `cost ~ population * distance`
     """
 
-    def __init__(self, drain_table, source_table, capacity_column,
+    def __init__(self, drain_table, source_table, capacity_column, # pylint: disable=too-many-arguments
                  production_column, marginal_column, **kwargs):
 
         # set data provider (defaults to SQL database access
@@ -167,11 +167,11 @@ class Optim(object):
         # ---
         # equality constraint variables
         # each area is serviced once
-        A = cvxopt.spmatrix(1.,
+        A = cvxopt.spmatrix(1., # pylint: disable=invalid-name
                             [i // self.n_drains
                              for i in range(self.n_drains * self.n_sources)],
                             range(self.n_drains * self.n_sources))
-        b = cvxopt.matrix(np.ones((self.n_sources, 1)), tc='d')
+        b = cvxopt.matrix(np.ones((self.n_sources, 1)), tc='d') # pylint: disable=invalid-name
 
         # knock out values above distance threshold
         if self.model_params['dist_threshold']:
@@ -196,7 +196,9 @@ class Optim(object):
                                  A=A, b=b, B=binary_entries)
         if sol != 'optimal':
             raise Exception("No solution possible: {}".format(sol))
-        assign_shape = (self.model_data['cost'].shape[1], self.model_data['cost'].shape[0])
+
+        assign_shape = (self.model_data['cost'].shape[1],
+                        self.model_data['cost'].shape[0])
 
         # Note: assignments needs to be shaped like self.model_data['cost'].T
         return np.array(assignments,
