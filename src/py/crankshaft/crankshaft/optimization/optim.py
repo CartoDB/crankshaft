@@ -55,10 +55,19 @@ class Optim(object):
 
     def _check_constraints(self):
         """Check if inputs are within constraints"""
-        if (self.model_data['source_amount'].sum() >
-                self.model_data['drain_capacity'].sum()):
-            plpy.error("Solution not possible. Drain capacity is smaller "
-                       "than total source production.")
+        total_capacity = self.model_data['drain_capacity'].sum()
+        total_amount = self.model_data['source_amount'].sum()
+        if total_amount > total_capacity:
+            raise ValueError("Solution not possible. Drain capacity is "
+                             "smaller than total source production.")
+        elif total_capacity <= 0:
+            raise ValueError("Capacity must be greater than zero")
+
+        plpy.notice('Capacity: {total_capacity}, '
+                    'Amount: {total_amount} '
+                    '({perc}%)'.format(total_capacity=total_capacity,
+                                       total_amount=total_amount,
+                                       perc=100.0 * total_amount / total_capacity))
         return None
 
     def _check_model_params(self):
