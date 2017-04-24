@@ -14,10 +14,10 @@ class Optim(object):
     That is, `cost ~ population * distance`
     """
 
-    def __init__(self, drain_table, source_table, capacity_column, # pylint: disable=too-many-arguments
+    def __init__(self, drain_query, source_table, capacity_column, # pylint: disable=too-many-arguments
                  production_column, marginal_column, **kwargs):
 
-        # set data provider (defaults to SQL database access
+        # set data provider - defaults to SQL database access
         self.data_provider = kwargs.get('data_provider',
                                         AnalysisDataProvider())
         # model parameters
@@ -30,21 +30,21 @@ class Optim(object):
 
         # model data
         self.model_data = {
-            'drain_capacity': self.data_provider.get_column(drain_table,
+            'drain_capacity': self.data_provider.get_column(drain_query,
                                                             capacity_column),
             'source_amount': (self.model_params['amount_per_unit'] *
                               (1. - self.model_params['recycle_rate']) *
                               self.data_provider.get_column(source_table,
                                                             production_column)),
-            'marginal_cost': self.data_provider.get_column(drain_table,
+            'marginal_cost': self.data_provider.get_column(drain_query,
                                                            marginal_column),
             'distance': self.data_provider.get_pairwise_distances(source_table,
-                                                                  drain_table)
+                                                                  drain_query)
             }
         self.model_data['cost'] = self.calc_cost()
         # database ids
         self.ids = {
-            'drain': self.data_provider.get_column(drain_table,
+            'drain': self.data_provider.get_column(drain_query,
                                                    'cartodb_id',
                                                    dtype=int),
             'source': self.data_provider.get_column(source_table,
