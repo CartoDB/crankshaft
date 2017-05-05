@@ -1,6 +1,7 @@
 -- Calculate the distance matrix using underlying road network
 -- Sample usage:
---   select * from cdb_distancematrix("fake_drains", "cvxopt_fake_sources")
+--   select * from cdb_distancematrix('fake_drains'::regclass,
+--                                    'cvxopt_fake_sources'::regclass)
 CREATE OR REPLACE FUNCTION CDB_DistanceMatrix(
     origin_table regclass,
     destination_table regclass,
@@ -9,10 +10,9 @@ CREATE OR REPLACE FUNCTION CDB_DistanceMatrix(
                   the_geom geometry(geometry, 4326),
                   length_km numeric, duration_sec numeric)
 AS $$
-DECLARE
-    query_string text;
 BEGIN
-    query_string := format('
+    RETURN QUERY
+    EXECUTE format('
         WITH pairs AS (
             SELECT
                 o."cartodb_id" AS origin_id,
@@ -28,7 +28,7 @@ BEGIN
                 destination_id,
                 (cdb_route_point_to_point(origin_point,
                                           destination_point,
-                                          ''%s'')).*
+                                          $1)).*
             FROM pairs)
         SELECT
             origin_id::bigint AS origin_id,
@@ -36,10 +36,8 @@ BEGIN
             shape AS the_geom,
             length::numeric AS length_km,
             duration::numeric AS duration_sec
-        FROM results;', origin_table, destination_table, transit_mode);
-    RAISE NOTICE '%', query_string;
-    RETURN QUERY
-    EXECUTE query_string;
+        FROM results;', origin_table, destination_table)
+        USING transit_mode;
     RETURN;
 END;
 $$ LANGUAGE plpgsql;
