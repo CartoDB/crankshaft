@@ -4,6 +4,8 @@ import pysal_utils as pu
 import numpy as np
 
 class AnalysisDataProvider(object):
+    """Analysis providers for crankshaft functions. These rely on database
+    access through `plpy`"""
     def get_getis(self, w_type, params):
         """fetch data for getis ord's g"""
         try:
@@ -90,6 +92,44 @@ class AnalysisDataProvider(object):
 
         resp = plpy.execute(query)
         return np.array(resp[0]['col'], dtype=dtype)
+
+    def get_distance_matrix(self, query, origin_ids, destination_ids):
+        """Transforms a SQL table origin-destination table into a distance
+        matrix.
+
+        :param query: Query that exposes the data needed for building the
+            distance matrix. Query should have the following columns:
+            - origin_id (int)
+            - destination_id (int)
+            - length_km (numeric)
+        :type query: str
+        :param origin_ids: List of origin IDs
+        :type origin_ids: list of ints
+        :param destination_ids: List of origin IDs
+        :type destination_ids: list of ints
+        :returns: 2D array of distances from all origins to all destinations
+        :rtype: numpy.array
+        """
+        try:
+            resp = plpy.execute('''
+                SELECT "origin_id", "destination_id", "length_km"
+                FROM ({query}) as _wrap
+            '''.format(query=query))
+        except plpy.SPIError as err:
+            plpy.error("Failed to build distance matrix: {}".format(err))
+
+        pairs = {(row['origin_id'], row['destination_id']): row['length_km']
+                 for row in resp}
+        distance_matrix = np.array([
+            pairs[(origin, destination)]
+            for destination in destination_ids
+            for origin in origin_ids
+        ])
+
+        return np.array(distance_matrix,
+                        dtype=float).reshape((len(destination_ids),
+                                              len(origin_ids)))
+
 
     def get_pairwise_distances(self, drain_query, source_query,
                                id_col='cartodb_id'):
