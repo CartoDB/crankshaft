@@ -13,10 +13,10 @@ def construct_neighbor_query(w_type, query_vals):
         @param query_vals dict: values used to construct the query
     """
 
-    if w_type.lower() == 'knn':
-        return knn(query_vals)
-    else:
+    if w_type.lower() == 'queen':
         return queen(query_vals)
+    else:
+        return knn(query_vals)
 
 
 # Build weight object
@@ -60,16 +60,17 @@ def query_attr_select(params):
     attr_string = ""
     template = "i.\"%(col)s\"::numeric As attr%(alias_num)s, "
 
-    if 'time_cols' in params:
+    if ('time_cols' in params) or ('colnames' in params):
         # if markov analysis
-        attrs = params['time_cols']
+        attrs = (params['time_cols'] if 'time_cols' in params
+                 else params['colnames'])
 
         for idx, val in enumerate(attrs):
             attr_string += template % {"col": val, "alias_num": idx + 1}
     else:
         # if moran's analysis
         attrs = [k for k in params
-                 if k not in ('id_col', 'geom_col', 'subquery',
+                 if k not in ('id_col', 'geom_col',
                               'num_ngbrs', 'subquery')]
 
         for idx, val in enumerate(attrs):
@@ -100,9 +101,12 @@ def query_attr_where(params):
     attr_string = []
     template = "idx_replace.\"%s\" IS NOT NULL"
 
-    if 'time_cols' in params:
-        # markov where clauses
-        attrs = params['time_cols']
+    # TODO: generalize to colnames or not only?
+    #       this would reduce the complexity of the code here
+    if ('time_cols' in params) or ('colnames' in params):
+        # markov and max-p where clauses
+        attrs = (params['time_cols'] if 'time_cols' in params
+                 else params['colnames'])
         # add values to template
         for attr in attrs:
             attr_string.append(template % attr)
@@ -111,7 +115,7 @@ def query_attr_where(params):
 
         # get keys
         attrs = [k for k in params
-                 if k not in ('id_col', 'geom_col', 'subquery',
+                 if k not in ('id_col', 'geom_col',
                               'num_ngbrs', 'subquery')]
 
         # add values to template
@@ -190,10 +194,24 @@ def queen(params):
 # to add more weight methods open a ticket or pull request
 
 
-def get_attributes(query_res, attr_num=1):
+def get_attributes(query_resp, n_cols):
     """
-        @param query_res: query results with attributes and neighbors
+        Extract the time columns and bin appropriately
+    """
+    return np.array([[x['attr' + str(i + 1)] for x in query_resp]
+                     for i in range(n_cols)], dtype=float).transpose()
+
+
+def get_attribute(query_res, attr_num=1):
+    """
+        Inputs:
+        @param query_res: query results with attributes and other info, of the
+                          form [{'attr1': ..., 'id_col': ...},
+                                {'attr1': ..., 'id_col': ...},
+                                ...]
         @param attr_num: attribute number (1, 2, ...)
+        Returns:
+        a numpy array that represents the column in 'attr' number attr_num
     """
     return np.array([x['attr' + str(attr_num)] for x in query_res],
                     dtype=np.float)

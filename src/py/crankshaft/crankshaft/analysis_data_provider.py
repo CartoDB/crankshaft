@@ -65,3 +65,17 @@ class AnalysisDataProvider:
             return data
         except plpy.SPIError, err:
             plpy.error('Analysis failed: %s' % err)
+
+    def get_maxp(self, params):
+        """fetch data for max-p"""
+        try:
+            query = pu.construct_neighbor_query('queen', params)
+            data = plpy.execute(query)
+
+            if len(data) == 0:
+                # TODO: replace with better message in PR#157
+                plpy.error('No non-null valued rows')
+
+            return data
+        except plpy.SPIError, err:
+            plpy.error('Analysis failed: %s' % err)

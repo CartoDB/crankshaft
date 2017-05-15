@@ -38,7 +38,7 @@ class Getis:
                              ("num_ngbrs", num_ngbrs)])
 
         result = self.data_provider.get_getis(w_type, qvals)
-        attr_vals = pu.get_attributes(result)
+        attr_vals = pu.get_attribute(result)
 
         # build PySAL weight object
         weight = pu.get_weight(result, w_type, num_ngbrs)
