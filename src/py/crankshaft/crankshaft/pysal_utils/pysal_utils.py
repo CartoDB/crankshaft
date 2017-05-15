@@ -42,7 +42,7 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
     return built_weight
 
 
-def query_attr_select(params):
+def query_attr_select(params, table_ref=True):
     """
         Create portion of SELECT statement for attributes inolved in query.
         Defaults to order in the params
@@ -58,11 +58,17 @@ def query_attr_select(params):
     """
 
     attr_string = ""
-    template = "i.\"%(col)s\"::numeric As attr%(alias_num)s, "
+    template = "\"%(col)s\"::numeric As attr%(alias_num)s, "
 
-    if 'time_cols' in params:
-        # if markov analysis
-        attrs = params['time_cols']
+    if table_ref:
+        template = "i." + template
+
+    if ('time_cols' in params) or ('ind_vars' in params):
+        # if markov or gwr analysis
+        attrs = (params['time_cols'] if 'time_cols' in params
+                 else params['ind_vars'])
+        if 'ind_vars' in params:
+            template = "array_agg(\"%(col)s\"::numeric) As attr%(alias_num)s, "
 
         for idx, val in enumerate(attrs):
             attr_string += template % {"col": val, "alias_num": idx + 1}
@@ -79,7 +85,7 @@ def query_attr_select(params):
     return attr_string
 
 
-def query_attr_where(params):
+def query_attr_where(params, table_ref=True):
     """
       Construct where conditions when building neighbors query
         Create portion of WHERE clauses for weeding out NULL-valued geometries
@@ -98,11 +104,14 @@ def query_attr_where(params):
           NULL AND idx_replace."time3" IS NOT NULL'
     """
     attr_string = []
-    template = "idx_replace.\"%s\" IS NOT NULL"
+    template = "\"%s\" IS NOT NULL"
+    if table_ref:
+        template = "idx_replace." + template
 
-    if 'time_cols' in params:
-        # markov where clauses
-        attrs = params['time_cols']
+    if ('time_cols' in params) or ('ind_vars' in params):
+        # markov or gwr where clauses
+        attrs = (params['time_cols'] if 'time_cols' in params
+                 else params['ind_vars'])
         # add values to template
         for attr in attrs:
             attr_string.append(template % attr)
@@ -110,17 +119,18 @@ def query_attr_where(params):
         # moran where clauses
 
         # get keys
-        attrs = [k for k in params
-                 if k not in ('id_col', 'geom_col', 'subquery',
-                              'num_ngbrs', 'subquery')]
-
+        attrs = sorted([k for k in params
+                        if k not in ('id_col', 'geom_col',
+                                     'subquery', 'num_ngbrs', 'ind_vars')])
         # add values to template
         for attr in attrs:
             attr_string.append(template % params[attr])
 
         if 'denominator' in attrs:
-            attr_string.append(
-              "idx_replace.\"%s\" <> 0" % params['denominator'])
+            check_zero = "\"%s\" <> 0" % params['denominator']
+            if table_ref is not None:
+                check_zero = "idx_replace." + check_zero
+            attr_string.append(check_zero)
 
     out = " AND ".join(attr_string)
 
@@ -132,8 +142,8 @@ def knn(params):
         @param vars: dict of values to fill template
     """
 
-    attr_select = query_attr_select(params)
-    attr_where = query_attr_where(params)
+    attr_select = query_attr_select(params, table_ref=True)
+    attr_where = query_attr_where(params, table_ref=True)
 
     replacements = {"attr_select": attr_select,
                     "attr_where_i": attr_where.replace("idx_replace", "i"),
@@ -187,7 +197,145 @@ def queen(params):
 
     return query.format(**params)
 
+
 # to add more weight methods open a ticket or pull request
+
+def spint_gravity_query(params):
+    """
+    gravity spatial interaction  query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg("{dep_var}") As dep_var,
+        %(ind_vars_select)s
+        array_agg("{id_col}") As rowid,
+        array_agg("{cost}") As cost
+      FROM ({subquery}) As q
+      WHERE
+        "{dep_var}" IS NOT NULL AND
+        "{cost}" IS NOT NULL AND
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
+
+
+def spint_local_gravity_query(params):
+    """
+    gravity spatial interaction  query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg("{dep_var}") As dep_var,
+        %(ind_vars_select)s
+        array_agg("{id_col}") As rowid,
+        array_agg("{locs}") As locs,
+        array_agg("{cost}") As cost
+      FROM ({subquery}) As q
+      WHERE
+        "{dep_var}" IS NOT NULL AND
+        "{locs}" IS NOT NULL AND
+        "{cost}" IS NOT NULL AND
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
+
+
+def spint_production_query(params):
+    """
+    production-constrained spatial interaction  query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg("{dep_var}") As dep_var,
+        %(ind_vars_select)s
+        array_agg("{id_col}") As rowid,
+        array_agg("{origins}") As origins,
+        array_agg("{cost}") As cost
+      FROM ({subquery}) As q
+      WHERE
+        "{dep_var}" IS NOT NULL AND
+        "{origins}" IS NOT NULL AND
+        "{cost}" IS NOT NULL AND
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
+
+
+def spint_attraction_query(params):
+    """
+    attraction-constrained spatial interaction  query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg("{dep_var}") As dep_var,
+        %(ind_vars_select)s
+        array_agg("{id_col}") As rowid,
+        array_agg("{destinations}") As destinations,
+        array_agg("{cost}") As cost
+      FROM ({subquery}) As q
+      WHERE
+        "{dep_var}" IS NOT NULL AND
+        "{destinations}" IS NOT NULL AND
+        "{cost}" IS NOT NULL AND
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
+
+
+def spint_doubly_query(params):
+    """
+    attraction-constrained spatial interaction  query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg("{dep_var}") As dep_var,
+        array_agg("{id_col}") As rowid,
+        array_agg("{origins}") As origins,
+        array_agg("{destinations}") As destinations,
+        array_agg("{cost}") As cost
+      FROM ({subquery}) As q
+      WHERE
+        "{dep_var}" IS NOT NULL AND
+        "{origins}" IS NOT NULL AND
+        "{destinations}" IS NOT NULL AND
+        "{cost}" IS NOT NULL
+        '''
+
+    return query.format(**params).strip()
 
 
 def get_attributes(query_res, attr_num=1):
