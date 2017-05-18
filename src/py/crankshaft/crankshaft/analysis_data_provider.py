@@ -68,7 +68,8 @@ class AnalysisDataProvider(object):
         except plpy.SPIError as err:
             plpy.error('Analysis failed: %s' % err)
 
-    def get_column(self, subquery, column, dtype=float, id_col='cartodb_id'):
+    def get_column(self, subquery, column, dtype=float, id_col='cartodb_id',
+                   condition=None):
         """
         Retrieve the column from the specified table from a connected
         PostgreSQL database.
@@ -85,19 +86,68 @@ class AnalysisDataProvider(object):
         """
         query = '''
             SELECT array_agg("{column}" ORDER BY "{id_col}" ASC) as col
-              FROM ({subquery}) As _wrap
+              FROM ({subquery}) As _wrap {filter}
         '''.format(subquery=subquery,
                    column=column,
-                   id_col=id_col)
+                   id_col=id_col,
+                   filter='WHERE {}'.format(condition) if condition else '')
 
         resp = plpy.execute(query)
         return np.array(resp[0]['col'], dtype=dtype)
 
-    def get_distance_matrix(self, query, origin_ids, destination_ids):
+    def get_reduced_column(self, drain_query, capacity,
+                           source_query, amount,
+                           dtype=float, id_col='cartodb_id'):
+        """
+        Retrieve the column from the specified table from a connected
+        PostgreSQL database.
+
+        Args:
+            source_query (str): source_query to retrieve column from
+            column (str): column to retrieve
+            dtype (type): data type in column (e.g, float, int, str)
+            id_col (str, optional): Column name for index. Defaults to
+                `cartodb_id`.
+
+        Returns:
+            numpy.array: column from table as a NumPy array
+
+        """
+        query = '''
+            WITH cte AS (
+              SELECT
+                  d."{capacity}" - coalesce(s."source_claimed", 0) As
+                    reduced_capacity,
+                  d."{id_col}"
+                FROM
+                  ({drain_query}) As d
+              LEFT JOIN
+                  (SELECT
+                      "drain_id",
+                      sum("{amount}") As source_claimed
+                     FROM ({source_query}) As _wrap
+                   GROUP BY "drain_id") As s
+                  ON
+                  d."{id_col}" = s."drain_id"
+              )
+            SELECT
+                array_agg("reduced_capacity"
+                          ORDER BY "{id_col}" ASC) As col
+              FROM cte
+        '''.format(capacity=capacity,
+                   id_col=id_col,
+                   drain_query=drain_query,
+                   amount=amount,
+                   source_query=source_query)
+
+        resp = plpy.execute(query)
+        return np.array(resp[0]['col'], dtype=dtype)
+
+    def get_distance_matrix(self, table, origin_ids, destination_ids):
         """Transforms a SQL table origin-destination table into a distance
         matrix.
 
-        :param query: Query that exposes the data needed for building the
+        :param query: Table that has the data needed for building the
             distance matrix. Query should have the following columns:
             - origin_id (int)
             - destination_id (int)
@@ -113,8 +163,8 @@ class AnalysisDataProvider(object):
         try:
             resp = plpy.execute('''
                 SELECT "origin_id", "destination_id", "length_km"
-                FROM ({query}) as _wrap
-            '''.format(query=query))
+                FROM (SELECT * FROM "{table}") as _wrap
+            '''.format(table=table))
         except plpy.SPIError as err:
             plpy.error("Failed to build distance matrix: {}".format(err))
 
