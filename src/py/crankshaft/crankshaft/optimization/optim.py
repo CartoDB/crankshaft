@@ -2,7 +2,7 @@
 import plpy
 import numpy as np
 import cvxopt
-from cvxopt.glpk import ilp
+from cvxopt import solvers
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 class Optim(object):
@@ -12,7 +12,7 @@ class Optim(object):
       - source_amount * (marginal_cost + transport_cost * distance)
     """
 
-    def __init__(self, source_query, drain_query, dist_matrix_query,
+    def __init__(self, source_query, drain_query, dist_matrix_table,
                  capacity_column, production_column, marginal_column,
                  **kwargs):
 
@@ -26,28 +26,55 @@ class Optim(object):
             'solver': kwargs.get('solver', 'glpk')}
         self._check_model_params()
 
+        # TODO: add source_fixed and source_free ids
+        # NOTE: this means that fixed sources will need to have their costs
+        #  calculated separately
+        # TODO: drain_capacity will not be just reading the column - it will
+        #  be reading the column and subtracting already-claimed values
+        # NOTE: after this, the rest of the algorithm _may_ be unchanged
+        #  other than adding back the fixed sources to the table at the end of
+        #  the calcuation
         # database ids
         self.ids = {
             'drain': self.data_provider.get_column(drain_query,
                                                    'cartodb_id',
+                                                   id_col='cartodb_id',
                                                    dtype=int),
-            'source': self.data_provider.get_column(source_query,
-                                                    'cartodb_id',
-                                                    dtype=int)}
+            'source_free': self.data_provider.get_column(
+                source_query,
+                'cartodb_id',
+                dtype=int,
+                condition='drain_id is null'),
+            'source_fixed': self.data_provider.get_column(
+                source_query,
+                'cartodb_id',
+                dtype=int,
+                condition='drain_id is not null')}
+        plpy.notice('self.ids[drain]: {}'.format(self.ids['drain']))
+        plpy.notice('self.ids[source_free]: {}'.format(self.ids['source_free']))
+        plpy.notice('self.ids[source_fixed]: {}'.format(self.ids['source_fixed']))
         # model data
         self.model_data = {
-            'drain_capacity': self.data_provider.get_column(drain_query,
-                                                            capacity_column),
+            'drain_capacity': self.data_provider.get_reduced_column(
+                drain_query,
+                capacity_column,
+                source_query,
+                production_column,
+                id_col='cartodb_id',
+                dtype=int),
             'source_amount': self.data_provider.get_column(source_query,
-                                                           production_column),
-            'marginal_cost': self.data_provider.get_column(drain_query,
-                                                           marginal_column),
+                                                           production_column,
+                                                           condition='drain_id is null'),
+            'marginal_cost': self.data_provider.get_column(
+                drain_query,
+                marginal_column),
             'distance':
-                self.data_provider.get_distance_matrix(dist_matrix_query,
-                                                       self.ids['source'],
+                self.data_provider.get_distance_matrix(dist_matrix_table,
+                                                       self.ids['source_free'],
                                                        self.ids['drain'])}
+        plpy.notice(self.model_data)
         self.model_data['cost'] = self.calc_cost()
-        self.n_sources = len(self.ids['source'])
+        self.n_sources = len(self.ids['source_free'])
         self.n_drains = len(self.ids['drain'])
 
     def _check_constraints(self):
@@ -101,7 +128,7 @@ class Optim(object):
             drain_id_crosswalk[idx] = cid
 
         source_id_crosswalk = {}
-        for idx, cid in enumerate(self.ids['source']):
+        for idx, cid in enumerate(self.ids['source_free']):
             # matrix index -> cartodb_id
             source_id_crosswalk[idx] = cid
 
@@ -216,10 +243,12 @@ class Optim(object):
                             range(n_pairings),
                             range(n_pairings))
             ], tc='d')
-
+        for var in (cost, ineq_maxs, drain_capacity, A, b):
+            plpy.notice('size: {}'.format(var.size))
+        plpy.notice('{}, {}, {}'.format(n_pairings, self.n_sources, self.n_drains))
         # solve
-        sol = cvxopt.solvers.lp(c=cost, G=ineq_maxs, h=drain_capacity,
-                                A=A, b=b, solver=self.model_params['solver'])
+        sol = solvers.lp(c=cost, G=ineq_maxs, h=drain_capacity,
+                         A=A, b=b, solver=self.model_params['solver'])
         if sol['status'] != 'optimal':
             raise Exception("No solution possible: {}".format(sol))
 
