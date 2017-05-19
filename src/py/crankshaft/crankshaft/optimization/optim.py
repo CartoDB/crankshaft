@@ -150,7 +150,8 @@ class Optim(object):
             source_id_crosswalk[source_val],
             self.model_data['cost'][drain_index[idx], source_val],
             round(self.model_data['source_amount'][source_val] *
-                  assignments[source_val, drain_index[idx]], 6)
+                  assignments[source_val, drain_index[idx]], 6),
+            False
             )
                           for idx, source_val in enumerate(source_index)]
         # Fixed vals:
@@ -179,7 +180,8 @@ class Optim(object):
         return zip(self.ids['drain_fixed'],
                    self.ids['source_fixed'],
                    [1.] * len(self.ids['source_fixed']),
-                   self.model_data['source_amount_fixed'])
+                   self.model_data['source_amount_fixed'],
+                   [True] * len(self.ids['drain_fixed']))
 
     def cost_func(self, distance, waste, marginal):
         """
