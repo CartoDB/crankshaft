@@ -1,11 +1,12 @@
 -- Calculate the distance matrix using underlying road network
 -- Sample usage:
---   select * from cdb_distancematrix('fake_drains'::regclass,
---                                    'cvxopt_fake_sources'::regclass)
+--   select * from cdb_distancematrix('drain_table'::regclass,
+--                                    'source_table'::regclass)
 CREATE OR REPLACE FUNCTION CDB_DistanceMatrix(
     origin_table regclass,
     destination_table regclass,
-    transit_mode text DEFAULT 'car')
+    transit_mode text DEFAULT 'car'
+    )
     RETURNS TABLE(origin_id bigint, destination_id bigint,
                   the_geom geometry(geometry, 4326),
                   length_km numeric, duration_sec numeric)
