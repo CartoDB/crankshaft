@@ -4,3 +4,4 @@ import crankshaft.clustering
 import crankshaft.space_time_dynamics
 import crankshaft.segmentation
 import analysis_data_provider
+import crankshaft.optimization
