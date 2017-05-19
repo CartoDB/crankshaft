@@ -28,7 +28,7 @@ class Optim(object):
 
         # database ids
         self.ids = {
-            'drain': self.data_provider.get_column(
+            'drain_free': self.data_provider.get_column(
                 drain_query,
                 'cartodb_id',
                 id_col='cartodb_id',
@@ -42,7 +42,13 @@ class Optim(object):
                 source_query,
                 'cartodb_id',
                 dtype=int,
-                condition='drain_id is not null')}
+                condition='drain_id is not null'),
+            'drain_fixed': self.data_provider.get_column(
+                source_query,
+                'drain_id',
+                dtype=int,
+                condition='drain_id is not null'
+            )}
 
         # model data
         self.model_data = {
@@ -53,19 +59,29 @@ class Optim(object):
                 production_column,
                 id_col='cartodb_id',
                 dtype=int),
-            'source_amount': self.data_provider.get_column(source_query,
-                                                           production_column,
-                                                           condition='drain_id is null'),
+            'source_amount': self.data_provider.get_column(
+                source_query,
+                production_column,
+                condition='drain_id is null'),
+            'source_amount_fixed': self.data_provider.get_column(
+                source_query,
+                production_column,
+                condition='drain_id is not null'),
             'marginal_cost': self.data_provider.get_column(
                 drain_query,
                 marginal_column),
-            'distance':
-                self.data_provider.get_distance_matrix(dist_matrix_table,
-                                                       self.ids['source_free'],
-                                                       self.ids['drain'])}
+            'distance': self.data_provider.get_distance_matrix(
+                dist_matrix_table,
+                self.ids['source_free'],
+                self.ids['drain_free']),
+            'distance_fixed': self.data_provider.get_distance_matrix(
+                dist_matrix_table,
+                self.ids['source_fixed'],
+                self.ids['drain_fixed']
+            )}
         self.model_data['cost'] = self.calc_cost()
         self.n_sources = len(self.ids['source_free'])
-        self.n_drains = len(self.ids['drain'])
+        self.n_drains = len(self.ids['drain_free'])
 
     def _check_constraints(self):
         """Check if inputs are within constraints"""
@@ -113,7 +129,7 @@ class Optim(object):
 
         # crosswalks for matrix index -> cartodb_id
         drain_id_crosswalk = {}
-        for idx, cid in enumerate(self.ids['drain']):
+        for idx, cid in enumerate(self.ids['drain_free']):
             # matrix index -> cartodb_id
             drain_id_crosswalk[idx] = cid
 
@@ -137,7 +153,33 @@ class Optim(object):
                   assignments[source_val, drain_index[idx]], 6)
             )
                           for idx, source_val in enumerate(source_index)]
-        return assigned_costs
+        # Fixed vals:
+        #  - self.ids['source_fixed']
+        #  - self.ids['drain_fixed']
+        #  -
+        fixed_costs = self.fixed_values()
+        # plpy.notice("FIXED COSTS: {}".format(fixed_costs))
+        return assigned_costs + fixed_costs
+
+    def fixed_values(self):
+        """Return the fixed source IDs, drain IDs, costs for transport, and the
+        amount that is transported.
+
+        """
+        margins = {k: val for k, val in zip(self.ids['drain_free'],
+                                            self.model_data['marginal_cost'])}
+        self.model_data['marginal_cost_fixed'] = [margins[d]
+                                                  for d in self.ids['drain_fixed']]
+        fixed_costs = self.calc_cost(source='source_amount_fixed',
+                                     distance='distance_fixed',
+                                     margin='marginal_cost_fixed')
+        # cost = [fixed_costs[self.ids['drain_fixed'][idx], source_val]
+        #         for idx, source_val in enumerate(self.ids['source_fixed'])]
+
+        return zip(self.ids['drain_fixed'],
+                   self.ids['source_fixed'],
+                   [1.] * len(self.ids['source_fixed']),
+                   self.model_data['source_amount_fixed'])
 
     def cost_func(self, distance, waste, marginal):
         """
@@ -153,11 +195,12 @@ class Optim(object):
         :returns: cost
         :rtype: numeric
 
-        Note: dist_cost is the cost per ton (0.15 GBP/ton)
+        Note: dist_cost is the cost per ton (e.g., 0.15 GBP/ton)
         """
         return waste * (marginal + self.model_params['dist_cost'] * distance)
 
-    def calc_cost(self):
+    def calc_cost(self, source='source_amount', distance='distance',
+                  margin='marginal_cost'):
         """
         Populate an d x s matrix according to the cost equation
 
@@ -165,11 +208,11 @@ class Optim(object):
         :rtype: numpy.array
         """
         costs = np.array(
-            [self.cost_func(distance,
-                            self.model_data['source_amount'][pair[1]],
-                            self.model_data['marginal_cost'][pair[0]])
-             for pair, distance in np.ndenumerate(self.model_data['distance'])])
-        return costs.reshape(self.model_data['distance'].shape)
+            [self.cost_func(dist,
+                            self.model_data[source][pair[1]],
+                            self.model_data[margin][pair[0]])
+             for pair, dist in np.ndenumerate(self.model_data[distance])])
+        return costs.reshape(self.model_data[distance].shape)
 
     def optim(self):
         """solve linear optimization problem
