@@ -7,7 +7,7 @@ CDB_OptimAssignments(source text,
                      dist_matrix_query text,
                      dist_rate numeric DEFAULT 0.15,
                      dist_threshold numeric DEFAULT null)
-RETURNS table(drain_id bigint, source_id int, cost numeric) AS $$
+RETURNS table(drain_id bigint, source_id int, cost numeric, amount numeric) AS $$
 
 from crankshaft.optimization import Optim
 

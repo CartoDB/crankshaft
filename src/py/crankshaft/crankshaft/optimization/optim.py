@@ -26,20 +26,13 @@ class Optim(object):
             'solver': kwargs.get('solver', 'glpk')}
         self._check_model_params()
 
-        # TODO: add source_fixed and source_free ids
-        # NOTE: this means that fixed sources will need to have their costs
-        #  calculated separately
-        # TODO: drain_capacity will not be just reading the column - it will
-        #  be reading the column and subtracting already-claimed values
-        # NOTE: after this, the rest of the algorithm _may_ be unchanged
-        #  other than adding back the fixed sources to the table at the end of
-        #  the calcuation
         # database ids
         self.ids = {
-            'drain': self.data_provider.get_column(drain_query,
-                                                   'cartodb_id',
-                                                   id_col='cartodb_id',
-                                                   dtype=int),
+            'drain': self.data_provider.get_column(
+                drain_query,
+                'cartodb_id',
+                id_col='cartodb_id',
+                dtype=int),
             'source_free': self.data_provider.get_column(
                 source_query,
                 'cartodb_id',
@@ -50,9 +43,7 @@ class Optim(object):
                 'cartodb_id',
                 dtype=int,
                 condition='drain_id is not null')}
-        plpy.notice('self.ids[drain]: {}'.format(self.ids['drain']))
-        plpy.notice('self.ids[source_free]: {}'.format(self.ids['source_free']))
-        plpy.notice('self.ids[source_fixed]: {}'.format(self.ids['source_fixed']))
+
         # model data
         self.model_data = {
             'drain_capacity': self.data_provider.get_reduced_column(
@@ -72,7 +63,6 @@ class Optim(object):
                 self.data_provider.get_distance_matrix(dist_matrix_table,
                                                        self.ids['source_free'],
                                                        self.ids['drain'])}
-        plpy.notice(self.model_data)
         self.model_data['cost'] = self.calc_cost()
         self.n_sources = len(self.ids['source_free'])
         self.n_drains = len(self.ids['drain'])
@@ -133,13 +123,19 @@ class Optim(object):
             source_id_crosswalk[idx] = cid
 
         # find non-zero entries
-        nonzeros = np.nonzero(assignments)
-        source_index, drain_index = nonzeros[0], nonzeros[1]
-        #
-        assigned_costs = [(drain_id_crosswalk[drain_index[idx]],
-                           source_id_crosswalk[source_val],
-                           self.model_data['cost'][drain_index[idx],
-                                                   source_val])
+        source_index, drain_index = np.nonzero(assignments)
+        # returns:
+        #   - drain_id
+        #   - source_id
+        #   - cost of that pairing
+        #   - amount sent via that pairing
+        assigned_costs = [(
+            drain_id_crosswalk[drain_index[idx]],
+            source_id_crosswalk[source_val],
+            self.model_data['cost'][drain_index[idx], source_val],
+            round(self.model_data['source_amount'][source_val] *
+                  assignments[source_val, drain_index[idx]], 6)
+            )
                           for idx, source_val in enumerate(source_index)]
         return assigned_costs
 
