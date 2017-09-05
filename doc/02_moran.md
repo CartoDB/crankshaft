@@ -102,7 +102,7 @@ A table with the following columns.
 | quads | TEXT | Classification of geometry. Result is one of 'HH' (a high value with neighbors high on average), 'LL' (opposite of 'HH'), 'HL' (a high value surrounded by lows on average), and 'LH' (opposite of 'HL'). Null values are returned when nulls exist in the original data. |
 | significance | NUMERIC | The statistical significance (from 0 to 1) of a cluster or outlier classification. Lower numbers are more significant. |
 | rowid | INT | Row id of the values which correspond to the input rows. |
-| vals | NUMERIC | Values from `'column_name'` that are standardized (centered on the mean and normalized by the standard deviation). This is carried out by [`Assuncao Rate`](https://github.com/pysal/pysal/blob/b18652a8e4d51e114de1345d55e754556fc41895/pysal/esda/smoothing.py#L505-L554) in the PySAL library. |
+| vals | NUMERIC | Standardized rate (centered on the mean and normalized by the standard deviation) calculated from `numerator` and `denominator`. This is calculated by [Assuncao Rate](http://pysal.readthedocs.io/en/latest/library/esda/smoothing.html?highlight=assuncao#pysal.esda.smoothing.assuncao_rate) in the PySAL library. |
 
 
 #### Example Usage
