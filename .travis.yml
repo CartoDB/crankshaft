@@ -1,4 +1,6 @@
 language: c
+dist: precise
+sudo: required
 
 env:
   global:
