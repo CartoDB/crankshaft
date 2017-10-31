@@ -6,4 +6,4 @@ _cdb_random_seeds (seed_value INTEGER) RETURNS VOID
 AS $$
   from crankshaft import random_seeds
   random_seeds.set_random_seeds(seed_value)
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;

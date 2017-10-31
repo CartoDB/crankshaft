@@ -139,8 +139,7 @@ BEGIN
     where final.bin is not null
     ;
 END;
-$$ language plpgsql;
-
+$$ language plpgsql VOLATILE PARALLEL RESTRICTED;
 
 
 -- =====================================================================
@@ -205,4 +204,4 @@ BEGIN
     RETURN output;
 END;
 $$
-language plpgsql;
+language plpgsql IMMUTABLE PARALLEL SAFE;
