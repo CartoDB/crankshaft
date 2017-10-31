@@ -25,7 +25,7 @@ $(DATA): $(SOURCES_DATA)
 	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > $@
 
 TEST_DIR = test
-REGRESS = $(notdir $(basename $(wildcard $(TEST_DIR)/sql/*test.sql)))
+REGRESS = $(sort $(notdir $(basename $(wildcard $(TEST_DIR)/sql/*test.sql))))
 REGRESS_OPTS = --inputdir='$(TEST_DIR)' --outputdir='$(TEST_DIR)'
 
 PG_CONFIG = pg_config
