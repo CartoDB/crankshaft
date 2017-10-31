@@ -9,7 +9,7 @@ BEGIN
   RETURN column_value > threshold;
 
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE ;
 
 -- Find outliers by a percentage above the threshold
 -- TODO: add symmetric option? `is_symmetric boolean DEFAULT false`
@@ -38,7 +38,7 @@ BEGIN
          unnest(ids) As rowid;
 
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;
 
 -- Find outliers above a given number of standard deviations from the mean
 
@@ -72,4 +72,4 @@ BEGIN
   SELECT unnest(out_vals) As is_outlier,
          unnest(ids) As rowid;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;

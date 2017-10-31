@@ -14,6 +14,6 @@ AS $$
   from crankshaft.clustering import Getis
   getis = Getis()
   return getis.getis_ord(subquery, column_name, w_type, num_ngbrs, permutations, geom_col, id_col)
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 -- TODO: make a version that accepts the values as arrays
