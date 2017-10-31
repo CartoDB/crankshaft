@@ -23,6 +23,13 @@ REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g'
 
 $(DATA): $(SOURCES_DATA)
 	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > $@
+ifeq ($(PG_PARALLEL), 0)
+# Remove PARALLEL in aggregates and functions
+	$(eval TMPFILE := $(shell mktemp /tmp/$(basename $0).XXXXXXXX))
+	$(SED) -e 's/PARALLEL \= [A-Z]*,/''/g' \
+		-e 's/PARALLEL [A-Z]*/''/g' $@ > $(TMPFILE)
+	mv $(TMPFILE) $@
+endif
 
 TEST_DIR = test
 REGRESS = $(sort $(notdir $(basename $(wildcard $(TEST_DIR)/sql/*test.sql))))
