@@ -1,6 +1,6 @@
 -- Install dependencies
 CREATE EXTENSION plpythonu;
-CREATE EXTENSION postgis VERSION '2.2.2';
+CREATE EXTENSION postgis;
 
 -- Create role publicuser if it does not exist
 DO
