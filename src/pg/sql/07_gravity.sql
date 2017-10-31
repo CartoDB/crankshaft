@@ -27,7 +27,7 @@ BEGIN
     RETURN QUERY
     SELECT g.* FROM t, s, CDB_Gravity(t_id, t_geom, t_weight, s_id, s_geom, s_pop, target, radius, minval) g;
 END;
-$$ language plpgsql;
+$$ language plpgsql VOLATILE PARALLEL UNSAFE;
 
 CREATE OR REPLACE FUNCTION CDB_Gravity(
     IN t_id bigint[],
@@ -112,4 +112,4 @@ BEGIN
             p.targ_id = target AND
             p.sourc_id = d.sourc_id;
 END;
-$$ language plpgsql;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;

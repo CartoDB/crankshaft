@@ -91,7 +91,7 @@ BEGIN
     RETURN ST_transform(ST_Centroid(best_c), 4326);
 
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;
 
 
 -- signed distance point to polygon with holes
@@ -120,4 +120,4 @@ BEGIN
     dist := dist * within::numeric;
     RETURN dist;
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;
