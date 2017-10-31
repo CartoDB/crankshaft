@@ -33,7 +33,7 @@ AS $$
             target_ids,
             model_params)
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpythonu VOLATILE PARALLEL RESTRICTED;
 
 CREATE OR REPLACE FUNCTION
   CDB_CreateAndPredictSegment (
@@ -50,4 +50,4 @@ AS $$
   from crankshaft.segmentation import create_and_predict_segment
   model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf}
   return create_and_predict_segment(query,variable_name,target_table, model_params)
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
