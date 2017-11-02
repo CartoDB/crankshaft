@@ -55,3 +55,7 @@ sudo make install
 #  Run the tests against the installed extension.
 make test
 ```
+
+## Submitting contributions
+
+Before opening a pull request (or submitting a contribution) you will need to sign a Contributor License Agreement (CLA) before making a submission, [learn more here](https://carto.com/contributions).
