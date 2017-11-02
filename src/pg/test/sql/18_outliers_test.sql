@@ -1,5 +1,6 @@
 SET client_min_messages TO WARNING;
 \set ECHO none
+\set VERBOSITY TERSE
 \pset format unaligned
 
 --
