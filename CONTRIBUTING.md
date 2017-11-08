@@ -5,6 +5,12 @@ refactoring or bugfixing, a topic branch must be created out of the `develop`.
 
 Modifications are done inside `src/pg/sql` and `src/py/crankshaft`.
 
+When adding a new PostgreSQL function or modifying an exiting one make sure that the
+[VOLATILITY](https://www.postgresql.org/docs/current/static/xfunc-volatility.html) and [PARALLEL](https://www.postgresql.org/docs/9.6/static/parallel-safety.html) categories are updated accordingly.
+As PARALLEL labels need to be stripped for incompatible PostgreSQL versions
+please use _PARALLEL SAFE/RESTRICTED/UNSAFE_ in uppercase so it's handled
+automatically.
+
 Take into account:
 
 *  Tests must be added for any new functionality
