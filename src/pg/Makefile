@@ -24,12 +24,11 @@ REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g'
 $(DATA): $(SOURCES_DATA)
 	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > $@
 ifeq ($(PG_PARALLEL), 0)
-# Remove PARALLEL in aggregates and functions
-	$(eval TMPFILE := $(shell mktemp /tmp/$(basename $0).XXXXXXXX))
-	$(SED) -e 's/PARALLEL \= [A-Z]*,/''/g' \
-		-e 's/PARALLEL [A-Z]*/''/g' $@ > $(TMPFILE)
+	$(eval TMPFILE := $(shell mktemp /tmp/$@.XXXXXXXXXX))
+	$(SED) -e 's/PARALLEL \= [A-Z]*,/''/g' -e 's/PARALLEL [A-Z]*/''/g' $@ > $(TMPFILE);
 	mv $(TMPFILE) $@
 endif
+
 
 TEST_DIR = test
 REGRESS = $(sort $(notdir $(basename $(wildcard $(TEST_DIR)/sql/*test.sql))))
@@ -57,7 +56,18 @@ test: installcheck
 release: ../../release/$(EXTENSION).control $(SOURCES_DATA)
 	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > ../../release/$(EXTENSION)--$(EXTVERSION).sql
 
-# Install the current relese into the PostgreSQL extensions directory
-deploy:
+# If needed remove PARALLEL tags from the release files
+release_remove_parallel_deploy:
+ifeq ($(PG_PARALLEL), 0)
+	for n in $(wildcard ../../release/*.sql); do \
+		$(eval TMPFILE := $(shell mktemp /tmp/XXXXXXXXXX)) \
+		$(SED) -e 's/PARALLEL \= [A-Z]*,/''/g' -e 's/PARALLEL [A-Z]*/''/g' $$n > $(TMPFILE); \
+		mv $(TMPFILE) $$n; \
+	done
+endif
+
+# Install the current release into the PostgreSQL extensions directory
+deploy: release_remove_parallel_deploy
 	$(INSTALL_DATA) ../../release/$(EXTENSION).control '$(DESTDIR)$(datadir)/extension/'
 	$(INSTALL_DATA) ../../release/*.sql '$(DESTDIR)$(datadir)/extension/'
+
