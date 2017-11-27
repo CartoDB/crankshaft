@@ -1,5 +1,5 @@
 comment = 'CartoDB Spatial Analysis extension'
-default_version = '0.6.0'
+default_version = '0.6.1'
 requires = 'plpythonu, postgis'
 superuser = true
 schema = cdb_crankshaft
