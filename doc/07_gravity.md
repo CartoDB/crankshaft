@@ -54,9 +54,9 @@ with t as (
 SELECT
     array_agg(cartodb_id::bigint) as id,
     array_agg(the_geom) as g,
-    array_agg(coalesce(gla,0)::numeric) as w
+    array_agg(coalesce(gla, 0)::numeric) as w
 FROM
-    abel.centros_comerciales_de_madrid
+    centros_comerciales_de_madrid
 WHERE not no_cc
 ),
 s as (
@@ -67,12 +67,15 @@ SELECT
 FROM
     sscc_madrid
 )
-select
+SELECT
     g.the_geom,
-    trunc(g.h,2) as h,
+    trunc(g.h, 2) as h,
     round(g.hpop) as hpop,
-    trunc(g.dist/1000,2) as dist_km
-FROM t, s, CDB_Gravity1(t.id, t.g, t.w, s.id, s.g, s.p, newmall_ID, 100000, 5000) g
+    trunc(g.dist/1000, 2) as dist_km
+FROM
+    t,
+    s,
+    cdb_crankshaft.CDB_Gravity(t.id, t.g, t.w, s.id, s.g, s.p, newmall_ID, 100000, 5000) as g
 ```
 
 
