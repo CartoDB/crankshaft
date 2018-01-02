@@ -58,5 +58,5 @@ A table with the following columns.
 
 ```sql 
 SELECT ST_TRANSFORM(the_geom, 3857) as the_geom_webmercator, class 
-FROM cdb_weighted_mean('SELECT *, customer_value FROM customers','customer_value','cluster_no')
+FROM cdb_crankshaft.cdb_weighted_mean('SELECT *, customer_value FROM customers','customer_value','cluster_no')
 ```
