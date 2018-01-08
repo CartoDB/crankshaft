@@ -1,3 +1,10 @@
+0.6.1 (2017-11-23)
+* Add VOLATILITY and PARALLEL categories to PostgreSQL functions
+
+0.6.0 (2017-11-08)
+------------------
+* Adds new functions: `CDB_GWR` and `CDB_GWR_Predict`
+
 0.5.2 (2017-05-12)
 ------------------
 * Fixes missing comma for dict creation #172

@@ -93,7 +93,7 @@ BEGIN
 
   RETURN;
 END
-$$ LANGUAGE 'plpgsql' IMMUTABLE;
+$$ LANGUAGE 'plpgsql' IMMUTABLE PARALLEL SAFE;
 
 --
 -- Calculate the equal interval bins for a given column
@@ -131,7 +131,7 @@ BEGIN
     END LOOP;
     RETURN reply;
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;
 
 --
 -- Determine the Heads/Tails classifications from a numeric array
@@ -178,7 +178,7 @@ BEGIN
     END LOOP;
     RETURN reply;
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;
 
 --
 -- Determine the Jenks classifications from a numeric array
@@ -299,7 +299,7 @@ BEGIN
 
     RETURN (best_result)[2:array_upper(best_result, 1)];
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql VOLATILE PARALLEL RESTRICTED;
 
 
 
@@ -399,7 +399,7 @@ BEGIN
     RETURN array_prepend(gvf, reply);
 
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;
 
 
 --
@@ -444,4 +444,4 @@ BEGIN
     END LOOP;
     RETURN reply;
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE STRICT PARALLEL SAFE;
