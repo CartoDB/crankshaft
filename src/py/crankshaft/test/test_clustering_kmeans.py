@@ -71,7 +71,6 @@ class KMeansNonspatialTest(unittest.TestCase):
         random_seeds.set_random_seeds(1234)
         kmeans = Kmeans(FakeDataProvider(data_raw))
         clusters = kmeans.nonspatial('subquery', ['col1', 'col2'], 2)
-        print str([c[0] for c in clusters])
 
         cl1 = clusters[0][0]
         cl2 = clusters[3][0]
@@ -81,3 +80,8 @@ class KMeansNonspatialTest(unittest.TestCase):
                 self.assertEqual(val[0], cl1)
             else:
                 self.assertEqual(val[0], cl2)
+
+        # raises exception for no data
+        with self.assertRaises(Exception):
+            kmeans = Kmeans(FakeDataProvider([]))
+            kmeans.nonspatial('subquery', ['col1', 'col2'], 2)
