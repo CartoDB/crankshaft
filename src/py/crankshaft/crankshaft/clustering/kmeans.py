@@ -97,7 +97,7 @@ def _extract_columns(data):
         data (list of dicts): result of the kmeans request
     """
     # number of columns minus rowid column
-    n_cols = len(data) - 1
+    n_cols = len(data[0]) - 1
     return np.array([data[0]['arr_col{0}'.format(i+1)]
                      for i in xrange(n_cols)],
                     dtype=float).T
