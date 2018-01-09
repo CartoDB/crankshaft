@@ -8,7 +8,7 @@ CREATE OR REPLACE FUNCTION
         end if;
         return array_cat(current_state,current_row) ;
     END
-    $$ LANGUAGE plpgsql;
+    $$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;
 
 -- Create aggregate if it did not exist
 DO $$
@@ -24,6 +24,7 @@ BEGIN
         CREATE AGGREGATE CDB_PyAgg(NUMERIC[]) (
             SFUNC = CDB_PyAggS,
             STYPE = Numeric[],
+            PARALLEL = SAFE,
             INITCOND = "{}"
         );
     END IF;

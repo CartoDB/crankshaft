@@ -4,7 +4,7 @@ import numpy as np
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 
-class Kmeans:
+class Kmeans(object):
     def __init__(self, data_provider=None):
         if data_provider is None:
             self.data_provider = AnalysisDataProvider()
@@ -20,12 +20,12 @@ class Kmeans:
                   "geom_col": "the_geom",
                   "id_col": "cartodb_id"}
 
-        data = self.data_provider.get_spatial_kmeans(params)
+        result = self.data_provider.get_spatial_kmeans(params)
 
         # Unpack query response
-        xs = data[0]['xs']
-        ys = data[0]['ys']
-        ids = data[0]['ids']
+        xs = result[0]['xs']
+        ys = result[0]['ys']
+        ids = result[0]['ids']
 
         km = KMeans(n_clusters=no_clusters, n_init=no_init)
         labels = km.fit_predict(zip(xs, ys))

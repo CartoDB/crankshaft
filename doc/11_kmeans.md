@@ -2,7 +2,7 @@
 
 k-means clustering is a popular technique for finding clusters in data by minimizing the intra-cluster 'distance' and maximizing the inter-cluster 'distance'. The distance is defined in the parameter space of the variables entered.
 
-### CDB_KMeans(subquery text, no_clusters INTEGER)
+### CDB_KMeans(subquery text, no_clusters integer)
 
 This function attempts to find `no_clusters` clusters within the input data based on the geographic distribution. It will return a table with ids and the cluster classification of each point input assuming `the_geom` is not null-valued. If `the_geom` is null-valued, the point will not be considered in the analysis.
 

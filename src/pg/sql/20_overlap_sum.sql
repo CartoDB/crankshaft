@@ -35,4 +35,4 @@ BEGIN
   INTO result;
   RETURN result;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql STABLE PARALLEL SAFE;
