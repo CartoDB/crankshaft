@@ -26,7 +26,7 @@ SELECT
     inertia,
     rowid
 FROM cdb_crankshaft.CDB_KMeansNonspatial(
-    'select unnest(Array[1, 1, 10, 10]) as col1, unnest(100, 100, 2, 2) as col2 from ppoints',
+    'SELECT unnest(Array[1, 1, 10, 10]) As col1, unnest(Array[100, 100, 2, 2]) As col2 FROM ppoints',
     Array['col1', 'col2']::text[],
     2);
 cluster_label|cluster_center|silhouettes|inertia|rowid
