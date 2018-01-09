@@ -26,12 +26,12 @@ SELECT
     inertia,
     rowid
 FROM cdb_crankshaft.CDB_KMeansNonspatial(
-    'SELECT unnest(Array[1, 1, 10, 10]) As col1, unnest(Array[100, 100, 2, 2]) As col2 FROM ppoints',
+    'SELECT unnest(Array[1, 1, 10, 10]) As col1, unnest(Array[100, 100, 2, 2]) As col2, unnest(Array[1, 2, 3, 4]) As cartodb_id',
     Array['col1', 'col2']::text[],
     2);
-cluster_label|cluster_center|silhouettes|inertia|rowid
-0|'{"col1":1,"col2":100}'||0|1
-0|'{"col1":1,"col2":100}'||0|2
-1|'{"col1":10,"col2":2}'||0|3
-1|'{"col1":10,"col2":2}'||0|4
+cluster_label|cc_col1|cc_col2|silhouettes|inertia|rowid
+t|-1.0|1.0|1.0|0.0|1
+t|-1.0|1.0|1.0|0.0|2
+t|1.0|-1.0|1.0|0.0|3
+t|1.0|-1.0|1.0|0.0|4
 (4 rows)
