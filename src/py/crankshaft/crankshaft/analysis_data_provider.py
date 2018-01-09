@@ -14,7 +14,7 @@ def verify_data(f):
                 plpy.error(NULL_VALUE_ERROR)
             else:
                 return data
-        except Exception, err:
+        except Exception as err:
             plpy.error('Analysis failed: {}'.format(err))
 
         return []
