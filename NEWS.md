@@ -1,4 +1,19 @@
-0.5.0 (2016-12-15)
+0.6.1 (2017-11-23)
+* Add VOLATILITY and PARALLEL categories to PostgreSQL functions
+
+0.6.0 (2017-11-08)
+------------------
+* Adds new functions: `CDB_GWR` and `CDB_GWR_Predict`
+
+0.5.2 (2017-05-12)
+------------------
+* Fixes missing comma for dict creation #172
+
+0.5.1 (2016-12-12)
+------------------
+* Fixed problem with the upgrade file from 0.4.2 to 0.5.0 that hasn't changes that should be there (as per ethervoid).
+
+0.5.0 (2016-12-12)
 ------------------
 * Updated PULL_REQUEST_TEMPLATE
 * Fixed a bug that flips the order of the numerator in denominator for calculating using Moran Local Rate because previously the code sorted the keys alphabetically.

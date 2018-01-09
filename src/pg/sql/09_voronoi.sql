@@ -167,7 +167,7 @@ BEGIN
         clipped_voro;
     RETURN geomout;
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;
 
 /** ----------------------------------------------------------------------------------------
   * @function   : FindCircle
@@ -181,6 +181,7 @@ $$ language plpgsql IMMUTABLE;
   *                              or NULL if three points do not form a circle.
   * @history    : Simon Greener - Feb 2012 - Original coding.
   *               Rafa de la Torre - Aug 2016 - Small fix for type checking
+  *               Raul Marin - Sept 2017 - Remove unnecessary NULL checks and set function categories
   * @copyright  : Simon Greener @ 2012
   *               Licensed under a Creative Commons Attribution-Share Alike 2.5 Australia License. (http://creativecommons.org/licenses/by-sa/2.5/au/)
 **/
@@ -203,10 +204,6 @@ DECLARE
    v_dF     NUMERIC;
    v_dG     NUMERIC;
 BEGIN
-   IF ( p_pt1 IS NULL OR p_pt2 IS NULL OR p_pt3 IS NULL ) THEN
-      RAISE EXCEPTION 'All supplied points must be not null.';
-      RETURN NULL;
-   END IF;
    IF ( ST_GeometryType(p_pt1) <> 'ST_Point' OR
         ST_GeometryType(p_pt2) <> 'ST_Point' OR
         ST_GeometryType(p_pt3) <> 'ST_Point' ) THEN
@@ -232,5 +229,5 @@ BEGIN
    RETURN ST_SetSRID(ST_MakePoint(v_CX, v_CY, v_radius),ST_Srid(p_pt1));
 END;
 $BODY$
-  LANGUAGE plpgsql VOLATILE STRICT;
+  LANGUAGE plpgsql IMMUTABLE STRICT PARALLEL SAFE;
 

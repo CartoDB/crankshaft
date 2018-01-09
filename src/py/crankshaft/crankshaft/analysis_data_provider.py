@@ -6,11 +6,13 @@ NULL_VALUE_ERROR = ('No usable data passed to analysis. Check your input rows '
                     'for null values and fill in appropriately.')
 
 
-def verify_data(f):
+def verify_data(func):
+    """decorator to verify data result before returning to algorithm"""
     def wrapper(*args, **kwargs):
+        """Error checking"""
         try:
-            data = f(*args, **kwargs)
-            if len(data) == 0:
+            data = func(*args, **kwargs)
+            if not data:
                 plpy.error(NULL_VALUE_ERROR)
             else:
                 return data
@@ -58,4 +60,15 @@ class AnalysisDataProvider(object):
                 WHERE "{geom_col}" IS NOT NULL
                 '''.format(**params)
 
+        return plpy.execute(query)
+
+    @verify_data
+    def get_gwr(self, params):
+        """fetch data for gwr analysis"""
+        query = pu.gwr_query(params)
+        return plpy.execute(query)
+
+    def get_gwr_predict(self, params):
+        """fetch data for gwr predict"""
+        query = pu.gwr_predict_query(params)
         return plpy.execute(query)
