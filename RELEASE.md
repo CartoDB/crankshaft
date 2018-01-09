@@ -4,33 +4,35 @@ The release process of a new version of the extension
 shall be performed by the designated *Release Manager*.
 
 ## Release steps
-1. Make sure `develop` branch passes all the tests.
-1. Merge `develop` into `master`
-1. Update the version number in `src/pg/crankshaft.control`.
-1. Generate the next release files with this command:
+* Make sure `develop` branch passes all the tests.
+* Merge `develop` into `master`
+* Update the version number in `src/pg/crankshaft.control`.
+* Generate the next release files with this command:
 
   ```shell
   make release
   ```
-1. Generate an upgrade path from the previous to the next release by copying the generated release file. E.g:
+* Generate an upgrade path from the previous to the next release by copying the generated release file. E.g:
 
   ```shell
   cp release/crankshaft--X.Y.Z.sql release/crankshaft--A.B.C--X.Y.Z.sql
   ```
-  NOTE: you can rely on this thanks to the compatibility checks. 
-  
+  NOTE: you can rely on this thanks to the compatibility checks.
   TODO: automate this step [#94](https://github.com/CartoDB/crankshaft/issues/94)
-2. Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/master/NEWS.md) file
-1. Commit and push the generated files.
-1. Tag the release:
+
+    * Update the [NEWS.md](https://github.com/CartoDB/crankshaft/blob/master/NEWS.md) file
+    * Commit and push the generated files.
+    * Tag the release:
 
   ```
   git tag -a X.Y.Z -m "Release X.Y.Z"
   git push origin X.Y.Z
   ```
-1. Deploy and test in staging
-1. Deploy and test in production
-1. Merge back into develop
+
+* Deploy and test in staging
+* Merge `master` into **`stable`**
+* Deploy and test in production
+* Merge `master` into **`develop`**
 
 
 ## Some remarks

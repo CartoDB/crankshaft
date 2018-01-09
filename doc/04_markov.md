@@ -47,8 +47,12 @@ SELECT
   m.trend_up,
   m.trend_down,
   m.volatility
-FROM CDB_SpatialMarkovTrend('SELECT * FROM nyc_real_estate'
-                            Array['m03y2009','m03y2010','m03y2011','m03y2012','m03y2013','m03y2014','m03y2015','m03y2016']) As m
+FROM
+  cdb_crankshaft.CDB_SpatialMarkovTrend(
+    'SELECT * FROM nyc_real_estate'
+    Array['m03y2009', 'm03y2010', 'm03y2011',
+          'm03y2012', 'm03y2013', 'm03y2014',
+          'm03y2015','m03y2016']) As m
 JOIN nyc_real_estate As c
 ON c.cartodb_id = m.rowid;
 ```

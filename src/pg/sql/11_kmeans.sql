@@ -7,7 +7,7 @@ RETURNS table (cartodb_id integer, cluster_no integer) as $$
     kmeans = Kmeans()
     return kmeans.spatial(query, no_clusters, no_init)
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(state Numeric[],the_geom GEOMETRY(Point, 4326), weight NUMERIC)
@@ -30,7 +30,7 @@ BEGIN
     RETURN Array[newX,newY,newW];
 
 END
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanF(state Numeric[])
 RETURNS GEOMETRY AS
@@ -42,7 +42,7 @@ BEGIN
         RETURN ST_SETSRID(ST_MakePoint(state[1]/state[3], state[2]/state[3]),4326);
     END IF;
 END
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;
 
 -- Create aggregate if it did not exist
 DO $$
@@ -59,6 +59,7 @@ BEGIN
             SFUNC = CDB_WeightedMeanS,
             FINALFUNC = CDB_WeightedMeanF,
             STYPE = Numeric[],
+            PARALLEL = SAFE,
             INITCOND = "{0.0,0.0,0.0}"
         );
     END IF;
