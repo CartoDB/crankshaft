@@ -1,5 +1,6 @@
 \pset format unaligned
 \set ECHO all
+-- spatial kmeans
 SELECT
     count(DISTINCT cluster_no) as clusters
 FROM
@@ -7,6 +8,7 @@ FROM
 clusters
 2
 (1 row)
+-- weighted mean
 SELECT
     count(*) clusters
 FROM (
@@ -19,6 +21,7 @@ FROM (
 clusters
 52
 (1 row)
+-- nonspatial kmeans
 SELECT
     cluster_label::int in (0, 1) As cluster_label,
     cluster_center::json->>'col1' As cc_col1,
