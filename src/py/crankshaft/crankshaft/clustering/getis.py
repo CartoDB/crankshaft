@@ -12,7 +12,7 @@ from crankshaft.analysis_data_provider import AnalysisDataProvider
 # High level interface ---------------------------------------
 
 
-class Getis:
+class Getis(object):
     def __init__(self, data_provider=None):
         if data_provider is None:
             self.data_provider = AnalysisDataProvider()
@@ -31,13 +31,13 @@ class Getis:
         # geometries with attributes that are null are ignored
         # resulting in a collection of not as near neighbors if kNN is chosen
 
-        qvals = OrderedDict([("id_col", id_col),
-                             ("attr1", attr),
-                             ("geom_col", geom_col),
-                             ("subquery", subquery),
-                             ("num_ngbrs", num_ngbrs)])
+        params = OrderedDict([("id_col", id_col),
+                              ("attr1", attr),
+                              ("geom_col", geom_col),
+                              ("subquery", subquery),
+                              ("num_ngbrs", num_ngbrs)])
 
-        result = self.data_provider.get_getis(w_type, qvals)
+        result = self.data_provider.get_getis(w_type, params)
         attr_vals = pu.get_attributes(result)
 
         # build PySAL weight object
