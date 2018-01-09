@@ -1,13 +1,13 @@
 -- Spatial k-means clustering
 
 CREATE OR REPLACE FUNCTION CDB_KMeans(
-  query text,
-  no_clusters integer,
-  no_init integer default 20
+  query TEXT,
+  no_clusters INTEGER,
+  no_init INTEGER DEFAULT 20
 )
 RETURNS TABLE(
-  cartodb_id integer,
-  cluster_no integer
+  cartodb_id INTEGER,
+  cluster_no INTEGER
 ) AS $$
 
 from crankshaft.clustering import Kmeans
@@ -48,7 +48,7 @@ $$ LANGUAGE plpythonu;
 
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(
-  state Numeric[],
+  state NUMERIC[],
   the_geom GEOMETRY(Point, 4326),
   weight NUMERIC
 )
@@ -73,7 +73,7 @@ END
 $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE FUNCTION CDB_WeightedMeanF(state Numeric[])
+CREATE OR REPLACE FUNCTION CDB_WeightedMeanF(state NUMERIC[])
 RETURNS GEOMETRY AS
 $$
 BEGIN
