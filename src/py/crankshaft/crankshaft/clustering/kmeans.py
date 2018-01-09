@@ -34,7 +34,7 @@ class Kmeans:
     def nonspatial(self, subquery, colnames, no_clusters=5,
                    standardize=True, id_col='cartodb_id'):
         """
-            Inputs:
+        Arguments:
             query (string): A SQL query to retrieve the data required to do the
                             k-means clustering analysis, like so:
                             SELECT * FROM iris_flower_data
@@ -46,7 +46,7 @@ class Kmeans:
             no_clusters (int): number of clusters (greater than zero)
             id_col (string): name of the input id_column
 
-            Output:
+        Returns:
             A list of tuples with the following columns:
             cluster labels: a label for the cluster that the row belongs to
             centers: center of the cluster that this row belongs to
@@ -57,19 +57,20 @@ class Kmeans:
         import json
         from sklearn import metrics
 
-        # TODO: need a random seed?
-        params = {"colnames": colnames,
-                  "subquery": subquery,
-                  "id_col": id_col}
+        params = {
+            "colnames": colnames,
+            "subquery": subquery,
+            "id_col": id_col
+        }
 
         data = self.data_provider.get_nonspatial_kmeans(params)
 
         # fill array with values for k-means clustering
         if standardize:
             cluster_columns = _scale_data(
-              _extract_columns(data, len(colnames)))
+              _extract_columns(data))
         else:
-            cluster_columns = _extract_columns(data, len(colnames))
+            cluster_columns = _extract_columns(data)
 
         kmeans = KMeans(n_clusters=no_clusters,
                         random_state=0).fit(cluster_columns)
@@ -84,18 +85,19 @@ class Kmeans:
         return zip(kmeans.labels_,
                    centers,
                    silhouettes,
+                   [kmeans.inertia_] * kmeans.labels_.shape[0],
                    data[0]['rowid'])
 
 
 # -- Preprocessing steps
 
-def _extract_columns(data, n_cols):
+def _extract_columns(data):
     """
         Extract the features from the query and pack them into a NumPy array
         data (list of dicts): result of the kmeans request
-        id_col_name (string): name of column which has the row id (not a
-                              feature of the analysis)
     """
+    # number of columns minus rowid column
+    n_cols = len(data) - 1
     return np.array([data[0]['arr_col{0}'.format(i+1)]
                      for i in xrange(n_cols)],
                     dtype=float).T
