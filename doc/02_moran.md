@@ -1,5 +1,14 @@
 ## Areas of Interest Functions
 
+A family of analyses to uncover groupings of areas with consistently high or low values (clusters) and smaller areas with values unlike those around them (outliers). A cluster is labeled by an 'HH' (high value compared to the entire dataset in an area with other high values), or its opposite 'LL'. An outlier is labeled by an 'LH' (low value surrounded by high values) or an 'HL' (the opposite). Each cluster and outlier classification has an associated p-value, a measure of how significant the pattern of highs and lows is compared to a random distribution.
+
+These functions have two forms: local and global. The local versions classify every input geometry while the global function gives a rating of the overall clustering characteristics of the dataset. Both forms accept an optional denomiator (see the rate versions) if, for example, working with count data and a denominator is needed.
+
+### Notes
+
+*   Rows with null values will be omitted from this analysis. To ensure they are added to the analysis, fill the null-valued cells with an appropriate value such as the mean of a column, the mean of the most recent two time steps, or use a `LEFT JOIN` to get null outputs from the analysis.
+*   Input query can only accept tables (datasets) in the users database account. Common table expressions (CTEs) do not work as an input unless specified within the `subquery` argument.
+
 ### CDB_AreasOfInterestLocal(subquery text, column_name text)
 
 This function classifies your data as being part of a cluster, as an outlier, or not part of a pattern based the significance of a classification. The classification happens through an autocorrelation statistic called Local Moran's I.
@@ -28,11 +37,6 @@ A table with the following columns.
 | rowid | INT | Row id of the values which correspond to the input rows. |
 | vals | NUMERIC | Values from `'column_name'`. |
 
-
-#### Notes
-
-*   Rows will null values will be omitted from this analysis. To ensure they are added to the analysis, fill the null-valued cells with an appropriate value such as the mean of a column, the mean of the most recent two time steps, or use a `LEFT JOIN` to get null outputs from the analysis.
-*   Input query can only accept tables (datasets) in the users database account. Common table expressions (CTEs) do not work as an input unless specified in the `subquery` parameter.
 
 
 #### Example Usage
