@@ -121,12 +121,6 @@ A table with the following columns.
 | vals | NUMERIC | Values from `'column_name'`. |
 
 
-#### Notes
-
-*   Rows will null values will be omitted from this analysis. To ensure they are added to the analysis, fill the null-valued cells with an appropriate value such as the mean of a column, the mean of the most recent two time steps, or use a `LEFT JOIN` to get null outputs from the analysis.
-*   Input query can only accept tables (datasets) in the users database account. Common table expressions (CTEs) do not work as an input unless specified in the `subquery` parameter.
-
-
 #### Example Usage
 
 ```sql
