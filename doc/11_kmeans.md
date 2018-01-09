@@ -1,8 +1,8 @@
 ## K-Means Functions
 
-### CDB_KMeans(subquery text, no_clusters INTEGER)
+### CDB_KMeans(subquery text, no_clusters integer)
 
-This function attempts to find n clusters within the input data. It will return a table to CartoDB ids and 
+This function attempts to find n clusters within the input data. It will return a table to CartoDB ids and
 the number of the cluster each point in the input was assigend to.
 
 
@@ -26,18 +26,20 @@ A table with the following columns.
 #### Example Usage
 
 ```sql
-SELECT 
-    customers.*, 
-    km.cluster_no 
-    FROM cdb_crankshaft.CDB_Kmeans('SELECT * from customers' , 6) km, customers_3
-    WHERE customers.cartodb_id = km.cartodb_id
+SELECT
+    customers.*,
+    km.cluster_no
+FROM
+   cdb_crankshaft.CDB_Kmeans('SELECT * from customers' , 6) km, customers_3
+WHERE
+    customers.cartodb_id = km.cartodb_id
 ```
 
 ### CDB_WeightedMean(subquery text, weight_column text, category_column text)
 
 Function that computes the weighted centroid of a number of clusters by some weight column.
 
-### Arguments 
+### Arguments
 
 | Name | Type | Description |
 |------|------|-------------|
@@ -45,18 +47,24 @@ Function that computes the weighted centroid of a number of clusters by some wei
 | weight\_column | TEXT | The name of the column to use as a weight |
 | category\_column | TEXT | The name of the column to use as a category |
 
-### Returns 
+### Returns
 
 A table with the following columns.
 
 | Column Name | Type | Description |
 |-------------|------|-------------|
 | the\_geom | GEOMETRY | A point for the weighted cluster center |
-| class | INTEGER | The cluster class | 
+| class | INTEGER | The cluster class |
 
-### Example Usage 
+### Example Usage
 
-```sql 
-SELECT ST_TRANSFORM(the_geom, 3857) as the_geom_webmercator, class 
-FROM cdb_weighted_mean('SELECT *, customer_value FROM customers','customer_value','cluster_no')
+```sql
+SELECT
+    ST_Transform(m.the_geom, 3857) AS the_geom_webmercator,
+    m.class
+FROM
+    cdb_crankshaft.cdb_WeightedMean(
+        'SELECT * FROM customers',
+        'customer_value',
+        'cluster_no') AS m
 ```
