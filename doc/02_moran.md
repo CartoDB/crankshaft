@@ -37,8 +37,10 @@ SELECT
   aoi.quads,
   aoi.significance,
   c.num_cyclists_per_total_population
-FROM CDB_AreasOfInterestLocal('SELECT * FROM commute_data'
-                                 'num_cyclists_per_total_population') As aoi
+FROM
+  cdb_crankshaft.CDB_AreasOfInterestLocal(
+    'SELECT * FROM commute_data'
+    'num_cyclists_per_total_population') As aoi
 JOIN commute_data As c
 ON c.cartodb_id = aoi.rowid;
 ```
@@ -71,8 +73,12 @@ A table with the following columns.
 #### Examples
 
 ```sql
-SELECT *
-FROM CDB_AreasOfInterestGlobal('SELECT * FROM commute_data', 'num_cyclists_per_total_population')
+SELECT
+    *
+FROM
+    cdb_crankshaft.CDB_AreasOfInterestGlobal(
+        'SELECT * FROM commute_data',
+        'num_cyclists_per_total_population')
 ```
 
 ### CDB_AreasOfInterestLocalRate(subquery text, numerator_column text, denominator_column text)
@@ -113,9 +119,11 @@ SELECT
   aoi.quads,
   aoi.significance,
   c.cyclists_per_total_population
-FROM CDB_AreasOfInterestLocalRate('SELECT * FROM commute_data'
-                                     'num_cyclists',
-                                     'total_population') As aoi
+FROM
+    cdb_crankshaft.CDB_AreasOfInterestLocalRate(
+        'SELECT * FROM commute_data'
+        'num_cyclists',
+        'total_population') As aoi
 JOIN commute_data As c
 ON c.cartodb_id = aoi.rowid;
 ```
@@ -149,10 +157,13 @@ A table with the following columns.
 #### Examples
 
 ```sql
-SELECT *
-FROM CDB_AreasOfInterestGlobalRate('SELECT * FROM commute_data',          
-                                   'num_cyclists',
-                                   'total_population')
+SELECT
+    *
+FROM
+    cdb_crankshaft.CDB_AreasOfInterestGlobalRate(
+        'SELECT * FROM commute_data',
+        'num_cyclists',
+        'total_population')
 ```
 
 ## Hotspot, Coldspot, and Outlier Functions
