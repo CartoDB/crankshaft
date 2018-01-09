@@ -59,7 +59,6 @@ class AnalysisDataProvider(object):
                 FROM ({subquery}) As a
                 WHERE "{geom_col}" IS NOT NULL
                 '''.format(**params)
-
         return plpy.execute(query)
 
     @verify_data
@@ -68,6 +67,7 @@ class AnalysisDataProvider(object):
         query = pu.gwr_query(params)
         return plpy.execute(query)
 
+    @verify_data
     def get_gwr_predict(self, params):
         """fetch data for gwr predict"""
         query = pu.gwr_predict_query(params)
