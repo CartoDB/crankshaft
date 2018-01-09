@@ -1,17 +1,25 @@
 -- Spatial k-means clustering
 
-CREATE OR REPLACE FUNCTION CDB_KMeans(query text, no_clusters integer, no_init integer default 20)
-RETURNS table (cartodb_id integer, cluster_no integer) as $$
+CREATE OR REPLACE FUNCTION CDB_KMeans(
+  query text,
+  no_clusters integer,
+  no_init integer default 20
+)
+RETURNS TABLE(
+  cartodb_id integer,
+  cluster_no integer
+) AS $$
 
-    from crankshaft.clustering import Kmeans
-    kmeans = Kmeans()
-    return kmeans.spatial(query, no_clusters, no_init)
+from crankshaft.clustering import Kmeans
+kmeans = Kmeans()
+return kmeans.spatial(query, no_clusters, no_init)
 
 $$ LANGUAGE plpythonu;
 
 -- Non-spatial k-means clustering
 -- query: sql query to retrieve all the needed data
 -- colnames: text array of column names for doing the clustering analysis
+-- no_clusters: number of requested clusters
 -- standardize: whether to scale variables to a mean of zero and a standard
 --              deviation of 1
 -- id_colname: name of the id column
@@ -19,24 +27,32 @@ $$ LANGUAGE plpythonu;
 CREATE OR REPLACE FUNCTION CDB_KMeansNonspatial(
   query TEXT,
   colnames TEXT[],
-  num_clusters INTEGER,
+  no_clusters INTEGER,
   standardize BOOLEAN DEFAULT true,
   id_col TEXT DEFAULT 'cartodb_id'
 )
-RETURNS TABLE(cluster_label text, cluster_center json, silhouettes numeric, rowid bigint) AS $$
+RETURNS TABLE(
+  cluster_label text,
+  cluster_center json,
+  silhouettes numeric,
+  inertia numeric,
+  rowid bigint
+) AS $$
 
-    from crankshaft.clustering import Kmeans
-    kmeans = Kmeans()
-    return kmeans.nonspatial(query, colnames, num_clusters,
-                             standardize=standardize,
-                             id_col=id_col)
+from crankshaft.clustering import Kmeans
+kmeans = Kmeans()
+return kmeans.nonspatial(query, colnames, no_clusters,
+                         standardize=standardize,
+                         id_col=id_col)
 $$ LANGUAGE plpythonu;
 
 
-
-CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(state Numeric[],the_geom GEOMETRY(Point, 4326), weight NUMERIC)
-RETURNS Numeric[] AS
-$$
+CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(
+  state Numeric[],
+  the_geom GEOMETRY(Point, 4326),
+  weight NUMERIC
+)
+RETURNS Numeric[] AS $$
 DECLARE
     newX NUMERIC;
     newY NUMERIC;
@@ -55,6 +71,7 @@ BEGIN
 
 END
 $$ LANGUAGE plpgsql;
+
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanF(state Numeric[])
 RETURNS GEOMETRY AS
