@@ -3,7 +3,7 @@
 
 ### CDB_CreateAndPredictSegment(query TEXT, variable_name TEXT, target_query TEXT)
 
-This function trains a [Gradient Boosting](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html) model to attempt to predict the target data and then generates predictions for new data.  
+This function trains a [Gradient Boosting](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html) model to attempt to predict the target data and then generates predictions for new data.
 
 #### Arguments
 
@@ -34,12 +34,12 @@ A table with the following columns.
 SELECT * from cdb_crankshaft.CDB_CreateAndPredictSegment(
 'SELECT agg, median_rent::numeric, male_pop::numeric, female_pop::numeric FROM late_night_agg',
 'agg',
-'SELECT row_number() OVER () As cartodb_id, median_rent, male_pop, female_pop FROM ml_learning_ny');                               
+'SELECT row_number() OVER () As cartodb_id, median_rent, male_pop, female_pop FROM ml_learning_ny');
 ```
 
 ### CDB_CreateAndPredictSegment(target numeric[], train_features numeric[], prediction_features numeric[], prediction_ids numeric[])
 
-This function trains a [Gradient Boosting](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html) model to attempt to predict the target data and then generates predictions for new data.  
+This function trains a [Gradient Boosting](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html) model to attempt to predict the target data and then generates predictions for new data.
 
 
 #### Arguments
@@ -76,7 +76,7 @@ WITH training As (
     FROM late_night_agg),
 target AS (
     SELECT cdb_crankshaft.CDB_PyAgg(Array[median_rent, male_pop, female_pop]::Numeric[]) As features,
-     array_agg(cartodb_id) As cartodb_ids FROM late_night_agg)  
+     array_agg(cartodb_id) As cartodb_ids FROM late_night_agg)
 
 SELECT cdb_crankshaft.CDB_CreateAndPredictSegment(training.target, training.features, target.features, target.cartodb_ids)
 FROM training, target;

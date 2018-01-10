@@ -25,13 +25,6 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
         Construct PySAL weight from return value of query
         @param query_res dict-like: query results with attributes and neighbors
     """
-    # if w_type.lower() == 'knn':
-    #     row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
-    #     weights = {x['id']: row_normed_weights for x in query_res}
-    # else:
-    #     weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
-    #                         if len(x['neighbors']) > 0
-    #                         else [] for x in query_res}
 
     neighbors = {x['id']: x['neighbors'] for x in query_res}
     print 'len of neighbors: %d' % len(neighbors)
@@ -42,7 +35,7 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
     return built_weight
 
 
-def query_attr_select(params):
+def query_attr_select(params, table_ref=True):
     """
         Create portion of SELECT statement for attributes inolved in query.
         Defaults to order in the params
@@ -58,11 +51,17 @@ def query_attr_select(params):
     """
 
     attr_string = ""
-    template = "i.\"%(col)s\"::numeric As attr%(alias_num)s, "
+    template = "\"%(col)s\"::numeric As attr%(alias_num)s, "
 
-    if 'time_cols' in params:
-        # if markov analysis
-        attrs = params['time_cols']
+    if table_ref:
+        template = "i." + template
+
+    if ('time_cols' in params) or ('ind_vars' in params):
+        # if markov or gwr analysis
+        attrs = (params['time_cols'] if 'time_cols' in params
+                 else params['ind_vars'])
+        if 'ind_vars' in params:
+            template = "array_agg(\"%(col)s\"::numeric) As attr%(alias_num)s, "
 
         for idx, val in enumerate(attrs):
             attr_string += template % {"col": val, "alias_num": idx + 1}
@@ -79,7 +78,7 @@ def query_attr_select(params):
     return attr_string
 
 
-def query_attr_where(params):
+def query_attr_where(params, table_ref=True):
     """
       Construct where conditions when building neighbors query
         Create portion of WHERE clauses for weeding out NULL-valued geometries
@@ -98,11 +97,14 @@ def query_attr_where(params):
           NULL AND idx_replace."time3" IS NOT NULL'
     """
     attr_string = []
-    template = "idx_replace.\"%s\" IS NOT NULL"
+    template = "\"%s\" IS NOT NULL"
+    if table_ref:
+        template = "idx_replace." + template
 
-    if 'time_cols' in params:
-        # markov where clauses
-        attrs = params['time_cols']
+    if ('time_cols' in params) or ('ind_vars' in params):
+        # markov or gwr where clauses
+        attrs = (params['time_cols'] if 'time_cols' in params
+                 else params['ind_vars'])
         # add values to template
         for attr in attrs:
             attr_string.append(template % attr)
@@ -132,29 +134,28 @@ def knn(params):
         @param vars: dict of values to fill template
     """
 
-    attr_select = query_attr_select(params)
-    attr_where = query_attr_where(params)
+    attr_select = query_attr_select(params, table_ref=True)
+    attr_where = query_attr_where(params, table_ref=True)
 
     replacements = {"attr_select": attr_select,
                     "attr_where_i": attr_where.replace("idx_replace", "i"),
                     "attr_where_j": attr_where.replace("idx_replace", "j")}
 
-    query = "SELECT " \
-                "i.\"{id_col}\" As id, " \
-                "%(attr_select)s" \
-                "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                              "FROM ({subquery}) As j " \
-                              "WHERE " \
-                                "i.\"{id_col}\" <> j.\"{id_col}\" AND " \
-                                "%(attr_where_j)s " \
-                              "ORDER BY " \
-                                "j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
-                              "LIMIT {num_ngbrs})" \
-                ") As neighbors " \
-            "FROM ({subquery}) As i " \
-            "WHERE " \
-                "%(attr_where_i)s " \
-            "ORDER BY i.\"{id_col}\" ASC;" % replacements
+    query = '''
+            SELECT
+              i."{id_col}" As id,
+              %(attr_select)s
+              (SELECT ARRAY(SELECT j."{id_col}"
+                FROM ({subquery}) As j
+                WHERE i."{id_col}" <> j."{id_col}" AND
+                      %(attr_where_j)s AND
+                      j."{geom_col}" IS NOT NULL
+                ORDER BY j."{geom_col}" <-> i."{geom_col}" ASC
+                LIMIT {num_ngbrs})) As neighbors
+             FROM ({subquery}) As i
+            WHERE %(attr_where_i)s AND i."{geom_col}" IS NOT NULL
+            ORDER BY i."{id_col}" ASC;
+            ''' % replacements
 
     return query.format(**params)
 
@@ -171,22 +172,73 @@ def queen(params):
                     "attr_where_i": attr_where.replace("idx_replace", "i"),
                     "attr_where_j": attr_where.replace("idx_replace", "j")}
 
-    query = "SELECT " \
-                "i.\"{id_col}\" As id, " \
-                "%(attr_select)s" \
-                "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                 "FROM ({subquery}) As j " \
-                 "WHERE i.\"{id_col}\" <> j.\"{id_col}\" AND " \
-                       "ST_Touches(i.\"{geom_col}\", j.\"{geom_col}\") AND " \
-                       "%(attr_where_j)s)" \
-                ") As neighbors " \
-            "FROM ({subquery}) As i " \
-            "WHERE " \
-                "%(attr_where_i)s " \
-            "ORDER BY i.\"{id_col}\" ASC;" % replacements
+    query = '''
+            SELECT
+              i."{id_col}" As id,
+              %(attr_select)s
+              (SELECT ARRAY(SELECT j."{id_col}"
+                 FROM ({subquery}) As j
+                WHERE i."{id_col}" <> j."{id_col}" AND
+                      ST_Touches(i."{geom_col}", j."{geom_col}") AND
+                      %(attr_where_j)s)) As neighbors
+            FROM ({subquery}) As i
+            WHERE
+                %(attr_where_i)s
+            ORDER BY i."{id_col}" ASC;
+            ''' % replacements
 
     return query.format(**params)
 
+
+def gwr_query(params):
+    """
+    GWR query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg(ST_X(ST_Centroid("{geom_col}"))) As x,
+        array_agg(ST_Y(ST_Centroid("{geom_col}"))) As y,
+        array_agg("{dep_var}") As dep_var,
+        %(ind_vars_select)s
+        array_agg("{id_col}") As rowid
+      FROM ({subquery}) As q
+      WHERE
+        "{dep_var}" IS NOT NULL AND
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
+
+
+def gwr_predict_query(params):
+    """
+    GWR query
+    """
+
+    replacements = {"ind_vars_select": query_attr_select(params,
+                                                         table_ref=None),
+                    "ind_vars_where": query_attr_where(params,
+                                                       table_ref=None)}
+
+    query = '''
+      SELECT
+        array_agg(ST_X(ST_Centroid({geom_col}))) As x,
+        array_agg(ST_Y(ST_Centroid({geom_col}))) As y,
+        array_agg({dep_var}) As dep_var,
+        %(ind_vars_select)s
+        array_agg({id_col}) As rowid
+      FROM ({subquery}) As q
+      WHERE
+        %(ind_vars_where)s
+        ''' % replacements
+
+    return query.format(**params).strip()
 # to add more weight methods open a ticket or pull request
 
 
@@ -197,15 +249,3 @@ def get_attributes(query_res, attr_num=1):
     """
     return np.array([x['attr' + str(attr_num)] for x in query_res],
                     dtype=np.float)
-
-
-def empty_zipped_array(num_nones):
-    """
-        prepare return values for cases of empty weights objects (no neighbors)
-        Input:
-        @param num_nones int: number of columns (e.g., 4)
-        Output:
-        [(None, None, None, None)]
-    """
-
-    return [tuple([None] * num_nones)]
