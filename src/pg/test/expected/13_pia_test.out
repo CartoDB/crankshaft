@@ -5,3 +5,8 @@ SET client_min_messages TO WARNING;
  POINT(-3.67484492582767 40.4394914243877)
 (1 row)
 
+ st_astext  
+------------
+ POINT(0 0)
+(1 row)
+
