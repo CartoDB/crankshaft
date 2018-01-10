@@ -43,7 +43,7 @@ With a table `website_visits` and a column of the number of website visits in un
 ```sql
 SELECT
   id,
-  CDB_StaticOutlier(visits_10k, 11.0) As outlier,
+  cdb_crankshaft.CDB_StaticOutlier(visits_10k, 11.0) As outlier,
   visits_10k
 FROM website_visits
 ```
@@ -93,7 +93,7 @@ WITH cte As (
     unnest(Array[1,3,5,1,32,3,57,2]) As visits_10k
   )
 SELECT
-  (CDB_PercentOutlier(array_agg(visits_10k), 2.0, array_agg(id))).*
+  (cdb_crankshaft.CDB_PercentOutlier(array_agg(visits_10k), 2.0, array_agg(id))).*
 FROM cte;
 ```
 
@@ -144,7 +144,7 @@ WITH cte As (
     unnest(Array[1,3,5,1,32,3,57,2]) As visits_10k
   )
 SELECT
-  (CDB_StdDevOutlier(array_agg(visits_10k), 2.0, array_agg(id))).*
+  (cdb_crankshaft.CDB_StdDevOutlier(array_agg(visits_10k), 2.0, array_agg(id))).*
 FROM cte;
 ```
 

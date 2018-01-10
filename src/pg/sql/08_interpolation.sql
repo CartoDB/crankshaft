@@ -24,7 +24,7 @@ BEGIN
     RETURN output;
 END;
 $$
-language plpgsql IMMUTABLE;
+language plpgsql VOLATILE PARALLEL UNSAFE;
 
 CREATE OR REPLACE FUNCTION CDB_SpatialInterpolation(
     IN geomin geometry[],
@@ -141,4 +141,4 @@ BEGIN
 
 END;
 $$
-language plpgsql IMMUTABLE;
+language plpgsql IMMUTABLE PARALLEL SAFE;

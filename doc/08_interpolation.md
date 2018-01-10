@@ -44,11 +44,18 @@ Default values:
 #### Example Usage
 
 ```sql
-with a as (
-    select
+WITH a as (
+    SELECT
         array_agg(the_geom) as geomin,
         array_agg(temp::numeric) as colin
-    from table_4804232032
+    FROM table_4804232032
 )
-SELECT CDB_SpatialInterpolation(geomin, colin, CDB_latlng(41.38, 2.15),1) FROM a;
+SELECT
+    cdb_crankshaft.CDB_SpatialInterpolation(
+        geomin,
+        colin,
+        CDB_latlng(41.38, 2.15),
+        1)
+FROM
+    a
 ```

@@ -4,3 +4,8 @@ PACKAGE           = crankshaft
 EXTVERSION        = $(shell grep default_version $(SELF_DIR)/src/pg/$(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 RELEASE_VERSION  ?= $(EXTVERSION)
 SED               = sed
+PIP               = pip
+NOSETESTS         = nosetests
+AWK               = awk
+PG_CONFIG         = pg_config
+PG_PARALLEL      := $(shell $(PG_CONFIG) --version | ($(AWK) '{$$2*=1000; if ($$2 >= 9600) print 1; else print 0;}' 2> /dev/null || echo 0))
