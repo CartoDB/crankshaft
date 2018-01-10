@@ -44,7 +44,7 @@ kmeans = Kmeans()
 return kmeans.nonspatial(query, colnames, no_clusters,
                          standardize=standardize,
                          id_col=id_col)
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(
