@@ -12,4 +12,15 @@ WITH square AS (
   SELECT 'SRID=4326;POLYGON((-1 1, 1 1, 1 -1, -1 -1, -1 1))'::geometry as g
 )
 SELECT ST_AsText(cdb_crankshaft.CDB_PIA(g))
+  FROM square;
+
+-- MultiPolygon test
+-- square centered on 0,0 with sides of length 2
+-- expectation: point(0, 0)
+WITH square AS (
+  SELECT
+    ST_Multi('SRID=4326;POLYGON((-1 1, 1 1, 1 -1, -1 -1, -1 1))'::geometry) as g
+)
+SELECT ST_AsText(cdb_crankshaft.CDB_PIA(g))
   FROM square
+
