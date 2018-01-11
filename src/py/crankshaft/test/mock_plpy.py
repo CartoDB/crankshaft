@@ -44,6 +44,7 @@ class MockPlPy:
 
     def error(self, msg):
         self.infos.append(msg)
+        self.notices.append(msg)
 
     def cursor(self, query):
         data = self.execute(query)

@@ -64,4 +64,4 @@ BEGIN
     END LOOP;
     RETURN QUERY SELECT unnest(geotemp ) as geomout, unnest(coltemp ) as colout;
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;

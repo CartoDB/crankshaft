@@ -31,7 +31,7 @@ DECLARE
     sqr numeric;
     p geometry;
 BEGIN
-    sqr := |/2;
+    sqr := 0.5*(|/2.0);
     polygon := ST_Transform(polygon, 3857);
 
     -- grid #0 cell size
@@ -46,6 +46,7 @@ BEGIN
     SELECT array_agg(c) INTO cells FROM c1;
 
     -- 1st guess: centroid
+    best_c := polygon;
     best_d := cdb_crankshaft._Signed_Dist(polygon, ST_Centroid(Polygon));
 
     -- looping the loop
@@ -56,6 +57,7 @@ BEGIN
         EXIT WHEN i > n;
 
         cell := cells[i];
+
         i := i+1;
 
         -- cell side size, it's square
@@ -63,13 +65,14 @@ BEGIN
 
         -- check distance
         test_d := cdb_crankshaft._Signed_Dist(polygon, ST_Centroid(cell));
+
         IF test_d > best_d THEN
             best_d := test_d;
-            best_c := cells[i];
+            best_c := cell;
         END IF;
 
         -- longest distance within the cell
-        test_mx := test_d + (test_h/2 * sqr);
+        test_mx := test_d + (test_h * sqr);
 
         -- if the cell has no chance to contains the desired point, continue
         CONTINUE WHEN test_mx - best_d <= tolerance;
@@ -91,33 +94,50 @@ BEGIN
     RETURN ST_transform(ST_Centroid(best_c), 4326);
 
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;
+
 
 
 -- signed distance point to polygon with holes
 -- negative is the point is out the polygon
+-- rev 1. adding MULTIPOLYGON and GEOMETRYCOLLECTION support by @abelvm
 CREATE OR REPLACE FUNCTION _Signed_Dist(
     IN polygon geometry,
     IN point geometry
     )
 RETURNS numeric  AS $$
 DECLARE
+    pols geometry[];
+    pol geometry;
     i integer;
+    j integer;
     within integer;
+    w integer;
     holes integer;
     dist numeric;
+    d numeric;
 BEGIN
     dist := 1e999;
-    SELECT LEAST(dist, ST_distance(point, ST_ExteriorRing(polygon))::numeric) INTO dist;
-    SELECT CASE WHEN ST_Within(point,polygon) THEN 1 ELSE -1 END INTO within;
-    SELECT ST_NumInteriorRings(polygon) INTO holes;
-    IF holes > 0 THEN
-        FOR i IN 1..holes
-        LOOP
-            SELECT LEAST(dist, ST_distance(point, ST_InteriorRingN(polygon, i))::numeric) INTO dist;
-        END LOOP;
-    END IF;
+    WITH collection as (SELECT (ST_dump(polygon)).geom as geom) SELECT array_agg(geom) into pols FROM collection;
+    FOR j in 1..array_length(pols, 1)
+    LOOP
+        pol := pols[j];
+        d := dist;
+        SELECT LEAST(dist, ST_distance(point, ST_ExteriorRing(pol))::numeric) INTO d;
+        SELECT CASE WHEN ST_Within(point,pol) THEN 1 ELSE -1 END INTO w;
+        SELECT ST_NumInteriorRings(pol) INTO holes;
+        IF holes > 0 THEN
+            FOR i IN 1..holes
+            LOOP
+                SELECT LEAST(d, ST_distance(point, ST_InteriorRingN(pol, i))::numeric) INTO d;
+            END LOOP;
+        END IF;
+        IF d < dist THEN
+            dist:= d;
+            within := w;
+        END IF;
+    END LOOP;
     dist := dist * within::numeric;
     RETURN dist;
 END;
-$$ language plpgsql IMMUTABLE;
+$$ language plpgsql IMMUTABLE PARALLEL SAFE;

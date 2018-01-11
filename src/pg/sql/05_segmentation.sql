@@ -34,7 +34,7 @@ AS $$
             target_ids,
             model_params)
 
-$$ LANGUAGE plpythonu;
+$$ LANGUAGE plpythonu VOLATILE PARALLEL RESTRICTED;
 
 CREATE OR REPLACE FUNCTION
   CDB_CreateAndPredictSegment (
@@ -48,11 +48,11 @@ CREATE OR REPLACE FUNCTION
       min_samples_leaf INTEGER DEFAULT 1)
 RETURNS TABLE (cartodb_id TEXT, prediction NUMERIC, accuracy NUMERIC)
 AS $$
-  from crankshaft.segmentation import Segmentation
-  seg = Segmentation()
-  model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf}
-  return seg.create_and_predict_segment(query,variable_name,target_table, model_params)
-$$ LANGUAGE plpythonu;
+    from crankshaft.segmentation import Segmentation
+    seg = Segmentation()
+    model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf}
+    return seg.create_and_predict_segment(query,variable_name,target_table, model_params)
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 CREATE OR REPLACE FUNCTION
   CDB_CreateAndPredictSegment (
@@ -67,8 +67,8 @@ CREATE OR REPLACE FUNCTION
       min_samples_leaf INTEGER DEFAULT 1)
 RETURNS TABLE (cartodb_id TEXT, prediction NUMERIC, accuracy NUMERIC)
 AS $$
-  from crankshaft.segmentation import Segmentation
-  seg = Segmentation()
-  model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf}
-  return seg.create_and_predict_segment(query, variable, feature_columns, target_query, model_params)
-$$ LANGUAGE plpythonu;
+    from crankshaft.segmentation import Segmentation
+    seg = Segmentation()
+    model_params = {'n_estimators': n_estimators, 'max_depth':max_depth, 'subsample' : subsample, 'learning_rate': learning_rate, 'min_samples_leaf' : min_samples_leaf}
+    return seg.create_and_predict_segment(query, variable, feature_columns, target_query, model_params)
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;

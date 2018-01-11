@@ -2,6 +2,7 @@
 import random
 import numpy
 
+
 def set_random_seeds(value):
     """
     Set the seeds of the RNGs (Random Number Generators)
