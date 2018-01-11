@@ -7,7 +7,8 @@ import numpy as np
 
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 from crankshaft.segmentation import Segmentation
-from .fixtures import fixture_file
+from helper import fixture_file
+from mock_plpy import MockCursor
 
 
 class RawDataProvider(AnalysisDataProvider):
@@ -62,23 +63,18 @@ class SegmentationTest(unittest.TestCase):
     def test_replace_nan_with_mean(self):
         """test segmentation.test_replace_nan_with_mean"""
         from crankshaft.segmentation import replace_nan_with_mean
-        # from numpy.testing import assert_array_equal
         test_array = np.array([1.2, np.nan, 3.2, np.nan, np.nan])
         result = replace_nan_with_mean(test_array, means=None)[0]
         expectation = np.array([1.2, 2.2, 3.2, 2.2, 2.2], dtype=float)
         self.assertItemsEqual(result, expectation)
-        # assert_array_equal(result, expectation)
 
     def test_create_and_predict_segment(self):
         """test segmentation.test_create_and_predict"""
         from crankshaft.segmentation import replace_nan_with_mean
-        batch_size = 1000
         results = []
         feature_columns = ['m1', 'm2']
-        target = [d['target'] for d in self.model_data]
         feat = np.column_stack([np.array(self.model_data[0][col])
                                 for col in feature_columns]).astype(float)
-        target_mean = replace_nan_with_mean(target[0])[1]
         feature_means = replace_nan_with_mean(feat)[1]
 
         # data_model is of the form:
@@ -115,10 +111,10 @@ class SegmentationTest(unittest.TestCase):
                                            data_predict))
 
         result = seg.create_and_predict_segment(
-            'select * from  segmentation_test',
+            'SELECT * FROM segmentation_test',
             'x_value',
             ['m1', 'm2'],
-            'select * from  segmentation_result',
+            'SELECT * FROM segmentation_result',
             model_parameters,
             id_col='cartodb_id')
         results = [(row[1], row[2]) for row in result]
@@ -127,13 +123,16 @@ class SegmentationTest(unittest.TestCase):
         acc_res = [r[1] for r in self.result_seg]
 
         # test values
-        for ([res_pre, res_acc], [exp_pre, exp_acc]) in zipped_values:
-            self.assertAlmostEqual(res_pre, exp_pre)
-            self.assertEqual(res_acc, exp_acc)
+        for (res_pre, _), (exp_pre, _) in zipped_values:
+            diff = abs(res_pre - exp_pre) / np.mean([res_pre, exp_pre])
+            self.assertTrue(diff <= 0.05, msg='diff: {}'.format(diff))
+            diff = abs(res_pre - exp_pre) / np.mean([res_pre, exp_pre])
+            self.assertTrue(diff <= 0.05, msg='diff: {}'.format(diff))
         prediction = [r[0] for r in results]
 
-        accuracy = np.sqrt(np.mean(np.square(np.array(prediction) -
-                                             np.array(pre_res))))
+        accuracy = np.sqrt(np.mean(
+            (np.array(prediction) - np.array(pre_res))**2
+        ))
 
         self.assertEqual(len(results), len(self.result_seg))
         self.assertTrue(accuracy < 0.3 * np.mean(pre_res))
