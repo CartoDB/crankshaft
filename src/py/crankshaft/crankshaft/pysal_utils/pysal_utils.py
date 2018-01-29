@@ -25,13 +25,6 @@ def get_weight(query_res, w_type='knn', num_ngbrs=5):
         Construct PySAL weight from return value of query
         @param query_res dict-like: query results with attributes and neighbors
     """
-    # if w_type.lower() == 'knn':
-    #     row_normed_weights = [1.0 / float(num_ngbrs)] * num_ngbrs
-    #     weights = {x['id']: row_normed_weights for x in query_res}
-    # else:
-    #     weights = {x['id']: [1.0 / len(x['neighbors'])] * len(x['neighbors'])
-    #                         if len(x['neighbors']) > 0
-    #                         else [] for x in query_res}
 
     neighbors = {x['id']: x['neighbors'] for x in query_res}
     print 'len of neighbors: %d' % len(neighbors)
@@ -148,22 +141,21 @@ def knn(params):
                     "attr_where_i": attr_where.replace("idx_replace", "i"),
                     "attr_where_j": attr_where.replace("idx_replace", "j")}
 
-    query = "SELECT " \
-                "i.\"{id_col}\" As id, " \
-                "%(attr_select)s" \
-                "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                              "FROM ({subquery}) As j " \
-                              "WHERE " \
-                                "i.\"{id_col}\" <> j.\"{id_col}\" AND " \
-                                "%(attr_where_j)s " \
-                              "ORDER BY " \
-                                "j.\"{geom_col}\" <-> i.\"{geom_col}\" ASC " \
-                              "LIMIT {num_ngbrs})" \
-                ") As neighbors " \
-            "FROM ({subquery}) As i " \
-            "WHERE " \
-                "%(attr_where_i)s " \
-            "ORDER BY i.\"{id_col}\" ASC;" % replacements
+    query = '''
+            SELECT
+              i."{id_col}" As id,
+              %(attr_select)s
+              (SELECT ARRAY(SELECT j."{id_col}"
+                FROM ({subquery}) As j
+                WHERE i."{id_col}" <> j."{id_col}" AND
+                      %(attr_where_j)s AND
+                      j."{geom_col}" IS NOT NULL
+                ORDER BY j."{geom_col}" <-> i."{geom_col}" ASC
+                LIMIT {num_ngbrs})) As neighbors
+             FROM ({subquery}) As i
+            WHERE %(attr_where_i)s AND i."{geom_col}" IS NOT NULL
+            ORDER BY i."{id_col}" ASC;
+            ''' % replacements
 
     return query.format(**params)
 
@@ -180,19 +172,20 @@ def queen(params):
                     "attr_where_i": attr_where.replace("idx_replace", "i"),
                     "attr_where_j": attr_where.replace("idx_replace", "j")}
 
-    query = "SELECT " \
-                "i.\"{id_col}\" As id, " \
-                "%(attr_select)s" \
-                "(SELECT ARRAY(SELECT j.\"{id_col}\" " \
-                 "FROM ({subquery}) As j " \
-                 "WHERE i.\"{id_col}\" <> j.\"{id_col}\" AND " \
-                       "ST_Touches(i.\"{geom_col}\", j.\"{geom_col}\") AND " \
-                       "%(attr_where_j)s)" \
-                ") As neighbors " \
-            "FROM ({subquery}) As i " \
-            "WHERE " \
-                "%(attr_where_i)s " \
-            "ORDER BY i.\"{id_col}\" ASC;" % replacements
+    query = '''
+            SELECT
+              i."{id_col}" As id,
+              %(attr_select)s
+              (SELECT ARRAY(SELECT j."{id_col}"
+                 FROM ({subquery}) As j
+                WHERE i."{id_col}" <> j."{id_col}" AND
+                      ST_Touches(i."{geom_col}", j."{geom_col}") AND
+                      %(attr_where_j)s)) As neighbors
+            FROM ({subquery}) As i
+            WHERE
+                %(attr_where_i)s
+            ORDER BY i."{id_col}" ASC;
+            ''' % replacements
 
     return query.format(**params)
 
@@ -256,15 +249,3 @@ def get_attributes(query_res, attr_num=1):
     """
     return np.array([x['attr' + str(attr_num)] for x in query_res],
                     dtype=np.float)
-
-
-def empty_zipped_array(num_nones):
-    """
-        prepare return values for cases of empty weights objects (no neighbors)
-        Input:
-        @param num_nones int: number of columns (e.g., 4)
-        Output:
-        [(None, None, None, None)]
-    """
-
-    return [tuple([None] * num_nones)]
