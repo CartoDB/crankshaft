@@ -10,6 +10,15 @@ RETURNS table (cartodb_id integer, cluster_no integer) as $$
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 
+CREATE OR REPLACE FUNCTION CDB_KMeansBalanced(query text, no_clusters integer, value_col TEXT default NULL, no_init integer default 20, max_per_cluster float default NULL )
+RETURNS table (cartodb_id integer, cluster_no integer) as $$
+
+  from crakshaft.clustering import KmeansBallanced
+  kmeans = KmeansBallanced()
+  return kmeans.spatial_balanced(query,no_clusters,no_init, max_per_cluster, value_col)
+
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(state Numeric[],the_geom GEOMETRY(Point, 4326), weight NUMERIC)
 RETURNS Numeric[] AS
 $$
