@@ -1,5 +1,5 @@
 from sklearn.cluster import KMeans
-from balanced_kmeans import BalancedGroupsKMeans
+from .balanced_kmeans import BalancedGroupsKMeans
 
 import numpy as np
 
@@ -51,7 +51,7 @@ class Kmeans(object):
         if target_per_cluster is None:
            target_per_cluster = total_value / float(no_clusters)
 
-        km = KmeansBallanced(n_clusters=17,max_iter=100, max_cluster_size=target_per_cluster)
+        km = BalancedGroupsKMeans(n_clusters=17,max_iter=100, max_cluster_size=target_per_cluster)
         labels = km.fit_predict(zip(xs,ys), values=values)
         return zip(ids,labels)
 

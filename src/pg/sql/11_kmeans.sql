@@ -24,12 +24,18 @@ $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 --              deviation of 1
 -- id_colname: name of the id column
 
-CREATE OR REPLACE FUNCTION CDB_KMeansBalanced(query text, no_clusters integer, value_col TEXT default NULL, no_init integer default 20, max_per_cluster float default NULL )
-RETURNS table (cartodb_id integer, cluster_no integer) as $$
+CREATE OR REPLACE FUNCTION CDB_KMeansBalanced(
+    query text,
+    no_clusters integer,
+    value_col TEXT default NULL,
+    no_init integer default 20,
+    max_per_cluster float default NULL)
+RETURNS table(cartodb_id integer, cluster_no integer)
+AS $$
 
-  from crakshaft.clustering import KmeansBallanced
-  kmeans = KmeansBallanced()
-  return kmeans.spatial_balanced(query,no_clusters,no_init, max_per_cluster, value_col)
+from crankshaft.clustering import KmeansBalanced
+kmeans = KmeansBalanced()
+return kmeans.spatial_balanced(query,no_clusters,no_init, max_per_cluster, value_col)
 
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
