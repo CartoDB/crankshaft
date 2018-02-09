@@ -39,21 +39,21 @@ class Kmeans(object):
                    "id_col": "cartodb_id",
                    "value_column" : value_column }
 
-       data = self.data_provider.get_spatial_balanced_kmeans(params)
+        data = self.data_provider.get_spatial_balanced_kmeans(params)
 
-       xs = data[0]['xs']
-       ts = data[0]['ys']
-       ids = data[0]['ids']
-       values = data[0]['values']
+        xs = data[0]['xs']
+        ts = data[0]['ys']
+        ids = data[0]['ids']
+        values = data[0]['values']
 
-       total_value  = np.sum(values)
+        total_value  = np.sum(values)
 
-       if target_per_cluster is None:
+        if target_per_cluster is None:
            target_per_cluster = total_value / float(no_clusters)
 
-       km = KmeansBallanced(n_clusters=17,max_iter=100, max_cluster_size=target_per_cluster)
-       labels = km.fit_predict(zip(xs,ys), values=values)
-       return zip(ids,labels)
+        km = KmeansBallanced(n_clusters=17,max_iter=100, max_cluster_size=target_per_cluster)
+        labels = km.fit_predict(zip(xs,ys), values=values)
+        return zip(ids,labels)
 
     def nonspatial(self, subquery, colnames, no_clusters=5,
                    standardize=True, id_col='cartodb_id'):
