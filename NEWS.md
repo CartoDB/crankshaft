@@ -1,4 +1,4 @@
-0.7.0 (2018-mm-dd)
+0.7.0 (2018-02-23)
 ------------------
 * Updated Moran and Markov documentation [#179](https://github.com/CartoDB/crankshaft/pull/179) [#155](https://github.com/CartoDB/crankshaft/pull/155)
 * Updated examples in documentation [#193](https://github.com/CartoDB/crankshaft/pull/193)
