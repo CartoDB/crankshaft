@@ -36,8 +36,10 @@ RETURNS TABLE (
 AS $$
   from crankshaft.clustering import Moran
   moran = Moran()
-  return moran.local_stat(subquery, column_name, w_type,
-                          num_ngbrs, permutations, geom_col, id_col)
+  result = moran.local_stat(subquery, column_name, w_type,
+                            num_ngbrs, permutations, geom_col, id_col)
+  # remove spatial lag
+  return [r[:-1] for r in result]
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Local (internal function)
@@ -210,7 +212,9 @@ AS $$
   from crankshaft.clustering import Moran
   moran = Moran()
   # TODO: use named parameters or a dictionary
-  return moran.local_rate_stat(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
+  result = moran.local_rate_stat(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
+  # remove spatial lag
+  return [r[:-1] for r in result]
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Local Rate (public-facing function) - DEPRECATED
