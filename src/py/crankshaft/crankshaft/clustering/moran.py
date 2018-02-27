@@ -16,6 +16,8 @@ import crankshaft.pysal_utils as pu
 
 
 class Moran(object):
+    """Class for calculation of Moran's I statistics (global, local, and local
+    rate"""
     def __init__(self, data_provider=None):
         if data_provider is None:
             self.data_provider = AnalysisDataProvider()
@@ -199,8 +201,7 @@ def map_quads(coord):
         return 'LL'
     elif coord == 4:
         return 'HL'
-    else:
-        return None
+    return None
 
 
 def quad_position(quads):
