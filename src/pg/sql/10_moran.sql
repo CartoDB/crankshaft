@@ -17,9 +17,32 @@ AS $$
                            num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
--- Moran's I Local (internal function)
+-- Moran's I Local (internal function) - DEPRECATED
 CREATE OR REPLACE FUNCTION
   _CDB_AreasOfInterestLocal(
+      subquery TEXT,
+      column_name TEXT,
+      w_type TEXT,
+      num_ngbrs INT,
+      permutations INT,
+      geom_col TEXT,
+      id_col TEXT)
+RETURNS TABLE (
+    moran NUMERIC,
+    quads TEXT,
+    significance NUMERIC,
+    rowid INT,
+    vals NUMERIC)
+AS $$
+  from crankshaft.clustering import Moran
+  moran = Moran()
+  return moran.local_stat(subquery, column_name, w_type,
+                          num_ngbrs, permutations, geom_col, id_col)
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+
+-- Moran's I Local (internal function)
+CREATE OR REPLACE FUNCTION
+  _CDB_MoransILocal(
       subquery TEXT,
       column_name TEXT,
       w_type TEXT,
@@ -42,7 +65,8 @@ AS $$
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 
--- Moran's I Local (public-facing function) - deprecated
+-- Moran's I Local (public-facing function)
+--  Replaces CDB_AreasOfInterestLocal
 CREATE OR REPLACE FUNCTION
   CDB_MoransILocal(
     subquery TEXT,
@@ -62,7 +86,7 @@ RETURNS TABLE (
 AS $$
 
   SELECT moran, quads, significance, rowid, vals, spatial_lag
-  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(
+  FROM cdb_crankshaft._CDB_MoransILocal(
     subquery, column_name, w_type,
     num_ngbrs, permutations, geom_col, id_col);
 
@@ -164,7 +188,7 @@ AS $$
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 
--- Moran's I Local Rate (internal function)
+-- Moran's I Local Rate (internal function) - DEPRECATED
 CREATE OR REPLACE FUNCTION
   _CDB_AreasOfInterestLocalRate(
       subquery TEXT,
@@ -181,8 +205,7 @@ TABLE(
     quads TEXT,
     significance NUMERIC,
     rowid INT,
-    vals NUMERIC,
-    spatial_lag NUMERIC)
+    vals NUMERIC)
 AS $$
   from crankshaft.clustering import Moran
   moran = Moran()
@@ -210,6 +233,33 @@ AS $$
 
 $$ LANGUAGE SQL VOLATILE PARALLEL UNSAFE;
 
+-- Internal function
+CREATE OR REPLACE FUNCTION
+  _CDB_MoransILocalRate(
+      subquery TEXT,
+      numerator TEXT,
+      denominator TEXT,
+      w_type TEXT,
+      num_ngbrs INT,
+      permutations INT,
+      geom_col TEXT,
+      id_col TEXT)
+RETURNS
+TABLE(
+    moran NUMERIC,
+    quads TEXT,
+    significance NUMERIC,
+    rowid INT,
+    vals NUMERIC,
+    spatial_lag NUMERIC)
+AS $$
+  from crankshaft.clustering import Moran
+  moran = Moran()
+  # TODO: use named parameters or a dictionary
+  return moran.local_rate_stat(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+
+-- Moran's I Rate
 -- Replaces CDB_AreasOfInterestLocalRate
 CREATE OR REPLACE FUNCTION
   CDB_MoransILocalRate(
@@ -232,7 +282,7 @@ TABLE(
 AS $$
 
   SELECT moran, quads, significance, rowid, vals, spatial_lag
-  FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(
+  FROM cdb_crankshaft._CDB_MoransILocalRate(
     subquery, numerator, denominator, w_type,
     num_ngbrs, permutations, geom_col, id_col);
 
