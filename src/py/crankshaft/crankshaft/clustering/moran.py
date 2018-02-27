@@ -78,7 +78,11 @@ class Moran(object):
         # find quadrants for each geometry
         quads = quad_position(lisa.q)
 
-        return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
+        # calculate spatial lag
+        lag = ps.weights.spatial_lag.lag_spatial(weight, lisa.y)
+
+        return zip(lisa.Is, quads, lisa.p_sim, weight.id_order,
+                   lisa.y, lag)
 
     def global_rate_stat(self, subquery, numerator, denominator,
                          w_type, num_ngbrs, permutations, geom_col, id_col):
@@ -138,7 +142,10 @@ class Moran(object):
         # find quadrants for each geometry
         quads = quad_position(lisa.q)
 
-        return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
+        # spatial lag
+        lag = ps.weights.spatial_lag.lag_spatial(weight, lisa.y)
+
+        return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y, lag)
 
     def local_bivariate_stat(self, subquery, attr1, attr2,
                              permutations, geom_col, id_col,

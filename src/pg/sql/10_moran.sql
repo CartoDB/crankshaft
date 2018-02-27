@@ -27,16 +27,48 @@ CREATE OR REPLACE FUNCTION
       permutations INT,
       geom_col TEXT,
       id_col TEXT)
-RETURNS TABLE (moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, vals NUMERIC)
+RETURNS TABLE (
+    moran NUMERIC,
+    quads TEXT,
+    significance NUMERIC,
+    rowid INT,
+    vals NUMERIC,
+    spatial_lag NUMERIC)
 AS $$
   from crankshaft.clustering import Moran
   moran = Moran()
-  # TODO: use named parameters or a dictionary
   return moran.local_stat(subquery, column_name, w_type,
                           num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
--- Moran's I Local (public-facing function)
+
+-- Moran's I Local (public-facing function) - deprecated
+CREATE OR REPLACE FUNCTION
+  CDB_MoransILocal(
+    subquery TEXT,
+    column_name TEXT,
+    w_type TEXT DEFAULT 'knn',
+    num_ngbrs INT DEFAULT 5,
+    permutations INT DEFAULT 99,
+    geom_col TEXT DEFAULT 'the_geom',
+    id_col TEXT DEFAULT 'cartodb_id')
+RETURNS TABLE (
+    moran NUMERIC,
+    quads TEXT,
+    significance NUMERIC,
+    rowid INT,
+    vals NUMERIC,
+    spatial_lag NUMERIC)
+AS $$
+
+  SELECT moran, quads, significance, rowid, vals, spatial_lag
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocal(
+    subquery, column_name, w_type,
+    num_ngbrs, permutations, geom_col, id_col);
+
+$$ LANGUAGE SQL VOLATILE PARALLEL UNSAFE;
+
+-- Moran's I Local (public-facing function) - DEPRECATED
 CREATE OR REPLACE FUNCTION
   CDB_AreasOfInterestLocal(
     subquery TEXT,
@@ -144,7 +176,13 @@ CREATE OR REPLACE FUNCTION
       geom_col TEXT,
       id_col TEXT)
 RETURNS
-TABLE(moran NUMERIC, quads TEXT, significance NUMERIC, rowid INT, vals NUMERIC)
+TABLE(
+    moran NUMERIC,
+    quads TEXT,
+    significance NUMERIC,
+    rowid INT,
+    vals NUMERIC,
+    spatial_lag NUMERIC)
 AS $$
   from crankshaft.clustering import Moran
   moran = Moran()
@@ -152,7 +190,7 @@ AS $$
   return moran.local_rate_stat(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
--- Moran's I Local Rate (public-facing function)
+-- Moran's I Local Rate (public-facing function) - DEPRECATED
 CREATE OR REPLACE FUNCTION
   CDB_AreasOfInterestLocalRate(
       subquery TEXT,
@@ -169,6 +207,34 @@ AS $$
 
   SELECT moran, quads, significance, rowid, vals
   FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col);
+
+$$ LANGUAGE SQL VOLATILE PARALLEL UNSAFE;
+
+-- Replaces CDB_AreasOfInterestLocalRate
+CREATE OR REPLACE FUNCTION
+  CDB_MoransILocalRate(
+      subquery TEXT,
+      numerator TEXT,
+      denominator TEXT,
+      w_type TEXT DEFAULT 'knn',
+      num_ngbrs INT DEFAULT 5,
+      permutations INT DEFAULT 99,
+      geom_col TEXT DEFAULT 'the_geom',
+      id_col TEXT DEFAULT 'cartodb_id')
+RETURNS
+TABLE(
+    moran NUMERIC,
+    quads TEXT,
+    significance NUMERIC,
+    rowid INT,
+    vals NUMERIC,
+    spatial_lag NUMERIC)
+AS $$
+
+  SELECT moran, quads, significance, rowid, vals, spatial_lag
+  FROM cdb_crankshaft._CDB_AreasOfInterestLocalRate(
+    subquery, numerator, denominator, w_type,
+    num_ngbrs, permutations, geom_col, id_col);
 
 $$ LANGUAGE SQL VOLATILE PARALLEL UNSAFE;
 
