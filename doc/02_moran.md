@@ -37,9 +37,9 @@ A table with the following columns.
 | quads | TEXT | Classification of geometry. Result is one of 'HH' (a high value with neighbors high on average), 'LL' (opposite of 'HH'), 'HL' (a high value surrounded by lows on average), and 'LH' (opposite of 'HL'). Null values are returned when nulls exist in the original data. |
 | significance | NUMERIC | The statistical significance (from 0 to 1) of a cluster or outlier classification. Lower numbers are more significant. |
 | spatial\_lag | NUMERIC | The 'average' of the neighbors of the value in this row. The average is calculated from it's neighborhood -- defined by `weight_type`. |
-| spatial\_lag\_std | NUMERIC | The standardized version of `spatial\_lag` -- that is, centered on the mean and divided by the standard deviation. |
-| orig\_val | NUMERIC | Values from `'column_name'`. |
-| orig\_val\_std | NUMERIC | Values from `'column_name'` but centered on the mean and divided by the standard devation. Useful as the x-axis in Moran's I scatter plots. |
+| spatial\_lag\_std | NUMERIC | The standardized version of `spatial_lag` -- that is, centered on the mean and divided by the standard deviation. Useful as the y-axis in a Moran's I scatter plot. |
+| orig\_val | NUMERIC | Values from `column_name`. |
+| orig\_val\_std | NUMERIC | Values from `column_name` but centered on the mean and divided by the standard devation. Useful as the x-axis in Moran's I scatter plots. |
 | moran\_stat | NUMERIC | Value of Moran's I (spatial autocorrelation measure) for the geometry with id of `rowid` |
 | rowid | INT | Row id of the values which correspond to the input rows. |
 
@@ -50,15 +50,15 @@ A table with the following columns.
 ```sql
 SELECT
   c.the_geom,
-  aoi.quads,
-  aoi.significance,
+  m.quads,
+  m.significance,
   c.num_cyclists_per_total_population
 FROM
   cdb_crankshaft.CDB_MoransILocal(
     'SELECT * FROM commute_data'
-    'num_cyclists_per_total_population') As aoi
+    'num_cyclists_per_total_population') As m
 JOIN commute_data As c
-ON c.cartodb_id = aoi.rowid;
+ON c.cartodb_id = m.rowid;
 ```
 
 
@@ -76,8 +76,8 @@ Just like `CDB_MoransILocal`, this function classifies your data as being part o
 | weight type (optional) | TEXT | Type of weight to use when finding neighbors. Currently available options are 'knn' (default) and 'queen'. Read more about weight types in [PySAL's weights documentation](https://pysal.readthedocs.io/en/v1.11.0/users/tutorials/weights.html). |
 | num_ngbrs (optional) | INT | Number of neighbors if using k-nearest neighbors weight type. Defaults to 5. |
 | permutations (optional) | INT | Number of permutations to check against a random arrangement of the values in `column_name`. This influences the accuracy of the output field `significance`. Defaults to 99. |
-| geom_col (optional) | TEXT | The column name for the geometries. Defaults to `'the_geom'` |
-| id_col (optional) | TEXT | The column name for the unique ID of each geometry/value pair. Defaults to `'cartodb_id'`. |
+| geom_col (optional) | TEXT | The column name for the geometries. Defaults to `the_geom` |
+| id_col (optional) | TEXT | The column name for the unique ID of each geometry/value pair. Defaults to `cartodb_id`. |
 
 #### Returns
 
@@ -88,29 +88,30 @@ A table with the following columns.
 | quads | TEXT | Classification of geometry. Result is one of 'HH' (a high value with neighbors high on average), 'LL' (opposite of 'HH'), 'HL' (a high value surrounded by lows on average), and 'LH' (opposite of 'HL'). Null values are returned when nulls exist in the original data. |
 | significance | NUMERIC | The statistical significance (from 0 to 1) of a cluster or outlier classification. Lower numbers are more significant. |
 | spatial\_lag | NUMERIC | The 'average' of the neighbors of the value in this row. The average is calculated from it's neighborhood -- defined by `weight_type`. |
-| spatial\_lag\_std | NUMERIC | The standardized version of `spatial\_lag` -- that is, centered on the mean and divided by the standard deviation. |
+| spatial\_lag\_std | NUMERIC | The standardized version of `spatial_lag` -- that is, centered on the mean and divided by the standard deviation. |
 | orig\_val | NUMERIC | Standardized rate (centered on the mean and normalized by the standard deviation) calculated from `numerator` and `denominator`. This is calculated by [Assuncao Rate](http://pysal.readthedocs.io/en/latest/library/esda/smoothing.html?highlight=assuncao#pysal.esda.smoothing.assuncao_rate) in the PySAL library. |
-| orig\_val\_std | NUMERIC | Values from `'column_name'` but centered on the mean and divided by the standard devation. Useful as the x-axis in Moran's I scatter plots. |
+| orig\_val\_std | NUMERIC | Values from `column_name` but centered on the mean and divided by the standard devation. Useful as the x-axis in Moran's I scatter plots. |
 | moran\_stat | NUMERIC | Value of Moran's I (spatial autocorrelation measure) for the geometry with id of `rowid` |
 | rowid | INT | Row id of the values which correspond to the input rows. |
-A table with the following columns.
+A table with the following columns. |
 
 #### Example Usage
 
 ```sql
 SELECT
   c.the_geom,
-  aoi.quads,
-  aoi.significance,
+  m.quads,
+  m.significance,
   c.cyclists_per_total_population
 FROM
     cdb_crankshaft.CDB_MoransILocalRate(
         'SELECT * FROM commute_data'
         'num_cyclists',
-        'total_population') As aoi
+        'total_population') As m
 JOIN commute_data As c
-ON c.cartodb_id = aoi.rowid;
+ON c.cartodb_id = m.rowid;
 ```
+
 ### CDB_AreasOfInterestLocal(subquery text, column_name text) (deprecated)
 
 This function classifies your data as being part of a cluster, as an outlier, or not part of a pattern based the significance of a classification. The classification happens through an autocorrelation statistic called Local Moran's I.
