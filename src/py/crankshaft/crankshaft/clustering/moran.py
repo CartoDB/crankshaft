@@ -1,6 +1,9 @@
 """
 Moran's I geostatistics (global clustering & outliers presence)
-Functionality relies PySAL: http://pysal.readthedocs.io/en/latest/
+Functionality relies on a combination of `PySAL
+<http://pysal.readthedocs.io/en/latest/>`__ and the data providered provided in
+the class instantiation (which defaults to PostgreSQL's plpy module's `database
+access functions <https://www.postgresql.org/docs/10/static/plpython.html>`__).
 """
 
 from collections import OrderedDict
@@ -97,6 +100,18 @@ class Moran(object):
           geom_col (str): Name of the geometry column in the dataset for
             finding the spatial neighborhoods.
           id_col (str): Row index for each value. Usually the database index.
+
+        Returns:
+          list of tuples: Where each tuple consists of the following values:
+            - quadrants classification (one of `HH`, `HL`, `LL`, or `LH`)
+            - p-value
+            - spatial lag
+            - standardized spatial lag (centered on the mean, normalized by the
+              standard deviation)
+            - original value
+            - standardized value
+            - Moran's I statistic
+            - original row index
         """
 
         # geometries with attributes that are null are ignored
@@ -122,9 +137,18 @@ class Moran(object):
 
         # calculate spatial lag
         lag = ps.weights.spatial_lag.lag_spatial(weight, lisa.y)
+        lag_std = ps.weights.spatial_lag.lag_spatial(weight, lisa.z)
 
-        return zip(lisa.Is, quads, lisa.p_sim, weight.id_order,
-                   lisa.y, lag)
+        return zip(
+            quads,
+            lisa.p_sim,
+            lag,
+            lag_std,
+            lisa.y,
+            lisa.z,
+            lisa.Is,
+            weight.id_order
+        )
 
     def global_rate_stat(self, subquery, numerator, denominator,
                          w_type, num_ngbrs, permutations, geom_col, id_col):
@@ -196,6 +220,18 @@ class Moran(object):
           geom_col (str): Name of the geometry column in the dataset for
             finding the spatial neighborhoods.
           id_col (str): Row index for each value. Usually the database index.
+
+        Returns:
+          list of tuples: Where each tuple consists of the following values:
+            - quadrants classification (one of `HH`, `HL`, `LL`, or `LH`)
+            - p-value
+            - spatial lag
+            - standardized spatial lag (centered on the mean, normalized by the
+              standard deviation)
+            - original value (roughly numerator divided by denominator)
+            - standardized value
+            - Moran's I statistic
+            - original row index
         """
         # geometries with values that are null are ignored
         # resulting in a collection of not as near neighbors
@@ -224,8 +260,18 @@ class Moran(object):
 
         # spatial lag
         lag = ps.weights.spatial_lag.lag_spatial(weight, lisa.y)
+        lag_std = ps.weights.spatial_lag.lag_spatial(weight, lisa.z)
 
-        return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y, lag)
+        return zip(
+            quads,
+            lisa.p_sim,
+            lag,
+            lag_std,
+            lisa.y,
+            lisa.z,
+            lisa.Is,
+            weight.id_order
+        )
 
     def local_bivariate_stat(self, subquery, attr1, attr2,
                              permutations, geom_col, id_col,

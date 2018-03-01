@@ -39,7 +39,7 @@ AS $$
   result = moran.local_stat(subquery, column_name, w_type,
                             num_ngbrs, permutations, geom_col, id_col)
   # remove spatial lag
-  return [r[:-1] for r in result]
+  return [(r[6], r[0], r[1], r[7], r[5]) for r in result]
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Local (internal function)
@@ -53,17 +53,21 @@ CREATE OR REPLACE FUNCTION
       geom_col TEXT,
       id_col TEXT)
 RETURNS TABLE (
-    moran NUMERIC,
     quads TEXT,
     significance NUMERIC,
-    rowid INT,
-    vals NUMERIC,
-    spatial_lag NUMERIC)
+    spatial_lag NUMERIC,
+    spatial_lag_std NUMERIC,
+    orig_val NUMERIC,
+    orig_val_std NUMERIC,
+    moran_stat NUMERIC,
+    rowid INT)
 AS $$
-  from crankshaft.clustering import Moran
-  moran = Moran()
-  return moran.local_stat(subquery, column_name, w_type,
-                          num_ngbrs, permutations, geom_col, id_col)
+
+from crankshaft.clustering import Moran
+moran = Moran()
+return moran.local_stat(subquery, column_name, w_type,
+                        num_ngbrs, permutations, geom_col, id_col)
+
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 
@@ -79,15 +83,19 @@ CREATE OR REPLACE FUNCTION
     geom_col TEXT DEFAULT 'the_geom',
     id_col TEXT DEFAULT 'cartodb_id')
 RETURNS TABLE (
-    moran NUMERIC,
     quads TEXT,
     significance NUMERIC,
-    rowid INT,
-    vals NUMERIC,
-    spatial_lag NUMERIC)
+    spatial_lag NUMERIC,
+    spatial_lag_std NUMERIC,
+    orig_val NUMERIC,
+    orig_val_std NUMERIC,
+    moran_stat NUMERIC,
+    rowid INT)
 AS $$
 
-  SELECT moran, quads, significance, rowid, vals, spatial_lag
+  SELECT
+    quads, significance, spatial_lag, spatial_lag_std,
+    orig_val, orig_val_std, moran_stat, rowid
   FROM cdb_crankshaft._CDB_MoransILocal(
     subquery, column_name, w_type,
     num_ngbrs, permutations, geom_col, id_col);
@@ -214,7 +222,7 @@ AS $$
   # TODO: use named parameters or a dictionary
   result = moran.local_rate_stat(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
   # remove spatial lag
-  return [r[:-1] for r in result]
+  return [(r[6], r[0], r[1], r[7], r[4]) for r in result]
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Local Rate (public-facing function) - DEPRECATED
@@ -250,17 +258,27 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT)
 RETURNS
 TABLE(
-    moran NUMERIC,
     quads TEXT,
     significance NUMERIC,
-    rowid INT,
-    vals NUMERIC,
-    spatial_lag NUMERIC)
+    spatial_lag NUMERIC,
+    spatial_lag_std NUMERIC,
+    orig_val NUMERIC,
+    orig_val_std NUMERIC,
+    moran_stat NUMERIC,
+    rowid INT)
 AS $$
-  from crankshaft.clustering import Moran
-  moran = Moran()
-  # TODO: use named parameters or a dictionary
-  return moran.local_rate_stat(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
+from crankshaft.clustering import Moran
+moran = Moran()
+return moran.local_rate_stat(
+    subquery,
+    numerator,
+    denominator,
+    w_type,
+    num_ngbrs,
+    permutations,
+    geom_col,
+    id_col
+)
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Rate
@@ -277,18 +295,22 @@ CREATE OR REPLACE FUNCTION
       id_col TEXT DEFAULT 'cartodb_id')
 RETURNS
 TABLE(
-    moran NUMERIC,
     quads TEXT,
     significance NUMERIC,
-    rowid INT,
-    vals NUMERIC,
-    spatial_lag NUMERIC)
+    spatial_lag NUMERIC,
+    spatial_lag_std NUMERIC,
+    orig_val NUMERIC,
+    orig_val_std NUMERIC,
+    moran_stat NUMERIC,
+    rowid INT)
 AS $$
 
-  SELECT moran, quads, significance, rowid, vals, spatial_lag
-  FROM cdb_crankshaft._CDB_MoransILocalRate(
-    subquery, numerator, denominator, w_type,
-    num_ngbrs, permutations, geom_col, id_col);
+SELECT
+  quads, significance, spatial_lag, spatial_lag_std,
+  orig_val, orig_val_std, moran_stat, rowid
+FROM cdb_crankshaft._CDB_MoransILocalRate(
+  subquery, numerator, denominator, w_type,
+  num_ngbrs, permutations, geom_col, id_col);
 
 $$ LANGUAGE SQL VOLATILE PARALLEL UNSAFE;
 
