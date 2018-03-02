@@ -1,5 +1,15 @@
+0.7.0 (2018-02-23)
+------------------
+* Updated Moran and Markov documentation [#179](https://github.com/CartoDB/crankshaft/pull/179) [#155](https://github.com/CartoDB/crankshaft/pull/155)
+* Updated examples in documentation [#193](https://github.com/CartoDB/crankshaft/pull/193)
+* Better error management for empty values [#157](https://github.com/CartoDB/crankshaft/pull/157)
+* Added nonspatial kmeans with class framework [#150](https://github.com/CartoDB/crankshaft/pull/150)
+* Added multipolygons and geometry collections support to PIA analyssis [#165](https://github.com/CartoDB/crankshaft/pull/165)
+* Upgraded PySAL to v1.14.3 [#198](https://github.com/CartoDB/crankshaft/pull/198)
+
 0.6.1 (2017-11-23)
-* Add VOLATILITY and PARALLEL categories to PostgreSQL functions
+------------------
+* Added VOLATILITY and PARALLEL categories to PostgreSQL functions [#183](https://github.com/CartoDB/crankshaft/pull/183)
 
 0.6.0 (2017-11-08)
 ------------------

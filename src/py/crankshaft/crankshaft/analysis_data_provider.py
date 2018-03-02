@@ -44,8 +44,32 @@ class AnalysisDataProvider(object):
         return plpy.execute(query)
 
     @verify_data
-    def get_nonspatial_kmeans(self, query):
-        """fetch data for non-spatial kmeans"""
+    def get_nonspatial_kmeans(self, params):
+        """
+            Fetch data for non-spatial k-means.
+
+            Inputs - a dict (params) with the following keys:
+                colnames: a (text) list of column names (e.g.,
+                          `['andy', 'cookie']`)
+                id_col: the name of the id column (e.g., `'cartodb_id'`)
+                subquery: the subquery for exposing the data (e.g.,
+                          SELECT * FROM favorite_things)
+            Output:
+                A SQL query for packaging the data for consumption within
+                `KMeans().nonspatial`. Format will be a list of length one,
+                with the first element a dict with keys ('rowid', 'attr1',
+                'attr2', ...)
+        """
+        agg_cols = ', '.join([
+            'array_agg({0}) As arr_col{1}'.format(val, idx+1)
+            for idx, val in enumerate(params['colnames'])
+        ])
+        query = '''
+            SELECT {cols}, array_agg({id_col}) As rowid
+            FROM ({subquery}) As a
+        '''.format(subquery=params['subquery'],
+                   id_col=params['id_col'],
+                   cols=agg_cols).strip()
         return plpy.execute(query)
 
     @verify_data
