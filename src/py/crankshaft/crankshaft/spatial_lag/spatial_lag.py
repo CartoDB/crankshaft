@@ -2,17 +2,17 @@
 Spatial Lag (using local kNN neighbors identifying spatial lag for a feature)
 """
 
-import pysal as ps
 from collections import OrderedDict
-from crankshaft.analysis_data_provider import AnalysisDataProvider
+import pysal as ps
 
 # crankshaft module
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 import crankshaft.pysal_utils as pu
 
 # High level interface ---------------------------------------
 
 
-class Spatial:
+class SpatialLag(object):
     def __init__(self, data_provider=None):
         if data_provider is None:
             self.data_provider = AnalysisDataProvider()
