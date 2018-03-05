@@ -37,7 +37,7 @@ class Getis(object):
                               ("subquery", subquery),
                               ("num_ngbrs", num_ngbrs)])
 
-        result = self.data_provider.get_getis(w_type, params)
+        result = self.data_provider.get_weight_and_attrs(w_type, params)
         attr_vals = pu.get_attributes(result)
 
         # build PySAL weight object

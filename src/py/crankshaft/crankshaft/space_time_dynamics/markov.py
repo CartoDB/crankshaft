@@ -61,7 +61,7 @@ class Markov(object):
                   "subquery": subquery,
                   "num_ngbrs": num_ngbrs}
 
-        result = self.data_provider.get_markov(w_type, params)
+        result = self.data_provider.get_weight_and_attrs(w_type, params)
 
         # build weight
         weights = pu.get_weight(result, w_type)
