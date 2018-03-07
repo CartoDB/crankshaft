@@ -49,6 +49,20 @@ class AnalysisDataProvider(object):
               - `denominator` (str, optional): Used in conjunction with
                 `numerator`.
         """
+        if params.get('w_type') == 'queen':
+            geom_type = plpy.execute('''
+                SELECT DISTINCT ST_GeometryType("{geom_col}") as g
+                FROM ({subquery}) as _w
+                WHERE "{geom_col}" is not null;
+            '''.format(
+                geom_col=params.get('geom_col'),
+                subquery=prams.get('subquery')
+            ))
+            if geom_type[0]['g'] not in ('ST_Polygon', 'ST_MultiPolygon'):
+                raise plpy.error(
+                    'Polygon geometries are needed when using `queen` weights '
+                    'with this analysis. {} was found instead.'.format(
+                        geom_type[0]['g']))
         query = pu.construct_neighbor_query(w_type, params)
         return plpy.execute(query)
 
