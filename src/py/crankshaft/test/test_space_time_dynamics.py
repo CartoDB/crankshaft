@@ -17,7 +17,7 @@ class FakeDataProvider(AnalysisDataProvider):
     def __init__(self, data):
         self.mock_result = data
 
-    def get_markov(self, w_type, params):
+    def get_weight_and_attrs(self, w_type, params):
         return self.mock_result
 
 

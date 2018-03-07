@@ -9,14 +9,16 @@ import pysal as ps
 
 def construct_neighbor_query(w_type, query_vals):
     """Return query (a string) used for finding neighbors
-        @param w_type text: type of neighbors to calculate ('knn' or 'queen')
-        @param query_vals dict: values used to construct the query
+
+        Args:
+            w_type (:obj:`str`): type of neighbors to calculate. One of 'knn'
+              or 'queen')
+            query_vals (:obj:`dict`): values used to construct the query
     """
 
-    if w_type.lower() == 'knn':
-        return knn(query_vals)
-    else:
+    if w_type.lower() == 'queen':
         return queen(query_vals)
+    return knn(query_vals)
 
 
 # Build weight object

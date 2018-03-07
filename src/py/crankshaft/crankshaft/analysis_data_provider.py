@@ -26,39 +26,63 @@ def verify_data(func):
 
 class AnalysisDataProvider(object):
     @verify_data
-    def get_getis(self, w_type, params):
-        """fetch data for getis ord's g"""
-        query = pu.construct_neighbor_query(w_type, params)
-        return plpy.execute(query)
+    def get_weight_and_attrs(self, w_type, params):
+        """fetch data for moran's i, getis, and spark markov analyses
+        This method returns a feature id, a list of its neighbors ids, and the
+        attribute(s) of the feature.
 
-    @verify_data
-    def get_markov(self, w_type, params):
-        """fetch data for spatial markov"""
-        query = pu.construct_neighbor_query(w_type, params)
-        return plpy.execute(query)
-
-    @verify_data
-    def get_moran(self, w_type, params):
-        """fetch data for moran's i analyses"""
+        Args:
+            w_type (str): Type of weight. One of ``knn`` (default) or
+              ``queen``.
+            params (:obj:`dict`): Parameters for data retrieval. The keys are
+              defined below, with the descriptions of their values.
+              - `id_col` (str): Name of database index. Defaults to
+                `cartodb_id`
+              - `geom_col` (str): Geometry column. Defaults to `the_geom`.
+              - `subquery` (str): Query to get access to data
+              - `num_ngbrs` (int, optional): Number of neighbors if using kNN
+              - `time_cols` (list of str, optional): If using with spatial
+                markov, this is a list of columns for the analysis. They should
+                be ordered in time.
+              - `numerator` (str, optional): The numerator in Moran's I local
+                rate
+              - `denominator` (str, optional): Used in conjunction with
+                `numerator`.
+        """
+        if params.get('w_type') == 'queen':
+            geom_type = plpy.execute('''
+                SELECT DISTINCT ST_GeometryType("{geom_col}") as g
+                FROM ({subquery}) as _w
+                WHERE "{geom_col}" is not null;
+            '''.format(
+                geom_col=params.get('geom_col'),
+                subquery=prams.get('subquery')
+            ))
+            if geom_type[0]['g'] not in ('ST_Polygon', 'ST_MultiPolygon'):
+                raise plpy.error(
+                    'Polygon geometries are needed when using `queen` weights '
+                    'with this analysis. {} was found instead.'.format(
+                        geom_type[0]['g']))
         query = pu.construct_neighbor_query(w_type, params)
         return plpy.execute(query)
 
     @verify_data
     def get_nonspatial_kmeans(self, params):
         """
-            Fetch data for non-spatial k-means.
+        Fetch data for non-spatial k-means.
 
-            Inputs - a dict (params) with the following keys:
-                colnames: a (text) list of column names (e.g.,
-                          `['andy', 'cookie']`)
-                id_col: the name of the id column (e.g., `'cartodb_id'`)
-                subquery: the subquery for exposing the data (e.g.,
-                          SELECT * FROM favorite_things)
-            Output:
-                A SQL query for packaging the data for consumption within
-                `KMeans().nonspatial`. Format will be a list of length one,
-                with the first element a dict with keys ('rowid', 'attr1',
-                'attr2', ...)
+        Args:
+            params (:obj:`dict`) - A :obj:`dict` with the following keys:
+              - colnames: a (text) list of column names (e.g.,
+                        `['andy', 'cookie']`)
+              - id_col: the name of the id column (e.g., `'cartodb_id'`)
+              - subquery: the subquery for exposing the data (e.g.,
+                        SELECT * FROM favorite_things)
+        Returns:
+            `plpy.respone`: A response from the database. The data has been
+            packaged consumption within `KMeans().nonspatial`. Format will be a
+            list of length one, with the first element a dict with keys
+            ('rowid', 'attr1', 'attr2', ...)
         """
         agg_cols = ', '.join([
             'array_agg({0}) As arr_col{1}'.format(val, idx+1)
