@@ -36,7 +36,7 @@ class Moran(object):
                               ("subquery", subquery),
                               ("num_ngbrs", num_ngbrs)])
 
-        result = self.data_provider.get_neighbor(w_type, params)
+        result = self.data_provider.get_weight_and_attrs(w_type, params)
 
         # collect attributes
         attr_vals = pu.get_attributes(result)
@@ -93,7 +93,7 @@ class Moran(object):
                               ("subquery", subquery),
                               ("num_ngbrs", num_ngbrs)])
 
-        result = self.data_provider.get_neighbor(w_type, params)
+        result = self.data_provider.get_weight_and_attrs(w_type, params)
 
         # collect attributes
         numer = pu.get_attributes(result, 1)
@@ -123,7 +123,7 @@ class Moran(object):
                               ("subquery", subquery),
                               ("num_ngbrs", num_ngbrs)])
 
-        result = self.data_provider.get_neighbor(w_type, params)
+        result = self.data_provider.get_weight_and_attrs(w_type, params)
 
         # collect attributes
         numer = pu.get_attributes(result, 1)
@@ -154,7 +154,7 @@ class Moran(object):
                               ("subquery", subquery),
                               ("num_ngbrs", num_ngbrs)])
 
-        result = self.data_provider.get_neighbor(w_type, params)
+        result = self.data_provider.get_weight_and_attrs(w_type, params)
 
         # collect attributes
         attr1_vals = pu.get_attributes(result, 1)

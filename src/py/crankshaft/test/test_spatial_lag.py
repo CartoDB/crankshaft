@@ -15,8 +15,8 @@ class FakeDataProvider(AnalysisDataProvider):
     def __init__(self, mock_data):
         self.mock_result = mock_data
 
-    def get_neighbor(self, w_type, params):  # pylint: disable=unused-argument
-        """mock get_neighbor"""
+    def get_weight_and_attrs(self, w_type, params):  # pylint: disable=unused-argument
+        """mock get_weight_and_attrs"""
         return self.mock_result
 
 
