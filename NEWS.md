@@ -1,4 +1,4 @@
-0.8.0 (yyyy-mm-dd)
+0.8.0 (2018-03-12)
 ------------------
 * Adds `CDB_MoransILocal*` functions that return spatial lag [#202](https://github.com/CartoDB/crankshaft/pull/202)
 
