@@ -1,6 +1,6 @@
 ## Moran's I - Spatial Autocorrelation
 
-Note: these were formerly called _Areas of Interest_.
+Note: these functions are replacing the functions in the _Areas of Interest_ family (still documented below). `CDB_MoransILocal` and `CDB_MoransILocalRate` perform the same analysis as their `CDB_AreasOfInterest*` counterparts but return spatial lag information, which is needed for creating the Moran's I scatter plot. It recommended to use the `CDB_MoransILocal*` variants instead as they will be maintained and improved going foward.
 
 A family of analyses to uncover groupings of areas with consistently high or low values (clusters) and smaller areas with values unlike those around them (outliers). A cluster is labeled by an 'HH' (high value compared to the entire dataset in an area with other high values), or its opposite 'LL'. An outlier is labeled by an 'LH' (low value surrounded by high values) or an 'HL' (the opposite). Each cluster and outlier classification has an associated p-value, a measure of how significant the pattern of highs and lows is compared to a random distribution.
 
