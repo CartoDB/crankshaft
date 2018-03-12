@@ -1,21 +1,29 @@
 """
 Moran's I geostatistics (global clustering & outliers presence)
+Functionality relies on a combination of `PySAL
+<http://pysal.readthedocs.io/en/latest/>`__ and the data providered provided in
+the class instantiation (which defaults to PostgreSQL's plpy module's `database
+access functions <https://www.postgresql.org/docs/10/static/plpython.html>`__).
 """
 
-# TODO: Fill in local neighbors which have null/NoneType values with the
-#       average of the their neighborhood
-
-import pysal as ps
 from collections import OrderedDict
-from crankshaft.analysis_data_provider import AnalysisDataProvider
+import pysal as ps
 
 # crankshaft module
 import crankshaft.pysal_utils as pu
+from crankshaft.analysis_data_provider import AnalysisDataProvider
 
 # High level interface ---------------------------------------
 
 
 class Moran(object):
+    """Class for calculation of Moran's I statistics (global, local, and local
+    rate)
+
+    Parameters:
+      data_provider (:obj:`AnalysisDataProvider`): Class for fetching data. See
+        the `crankshaft.analysis_data_provider` module for more information.
+    """
     def __init__(self, data_provider=None):
         if data_provider is None:
             self.data_provider = AnalysisDataProvider()
@@ -28,7 +36,26 @@ class Moran(object):
         Moran's I (global)
         Implementation building neighbors with a PostGIS database and Moran's I
          core clusters with PySAL.
-        Andy Eschbacher
+
+        Args:
+
+          subquery (str): Query to give access to the data needed. This query
+            must give access to ``attr_name``, ``geom_col``, and ``id_col``.
+          attr_name (str): Column name of data to analyze
+          w_type (str): Type of spatial weight. Must be one of `knn`
+            or `queen`. See `PySAL documentation
+            <http://pysal.readthedocs.io/en/latest/users/tutorials/weights.html>`__
+            for more information.
+          num_ngbrs (int): If using `knn` for ``w_type``, this
+            specifies the number of neighbors to be used to define the spatial
+            neighborhoods.
+          permutations (int): Number of permutations for performing
+            conditional randomization to find the p-value. Higher numbers
+            takes a longer time for getting results.
+          geom_col (str): Name of the geometry column in the dataset for
+            finding the spatial neighborhoods.
+          id_col (str): Row index for each value. Usually the database index.
+
         """
         params = OrderedDict([("id_col", id_col),
                               ("attr1", attr_name),
@@ -53,8 +80,38 @@ class Moran(object):
     def local_stat(self, subquery, attr,
                    w_type, num_ngbrs, permutations, geom_col, id_col):
         """
-        Moran's I implementation for PL/Python
-        Andy Eschbacher
+        Moran's I (local)
+
+        Args:
+
+          subquery (str): Query to give access to the data needed. This query
+            must give access to ``attr_name``, ``geom_col``, and ``id_col``.
+          attr (str): Column name of data to analyze
+          w_type (str): Type of spatial weight. Must be one of `knn`
+            or `queen`. See `PySAL documentation
+            <http://pysal.readthedocs.io/en/latest/users/tutorials/weights.html>`__
+            for more information.
+          num_ngbrs (int): If using `knn` for ``w_type``, this
+            specifies the number of neighbors to be used to define the spatial
+            neighborhoods.
+          permutations (int): Number of permutations for performing
+            conditional randomization to find the p-value. Higher numbers
+            takes a longer time for getting results.
+          geom_col (str): Name of the geometry column in the dataset for
+            finding the spatial neighborhoods.
+          id_col (str): Row index for each value. Usually the database index.
+
+        Returns:
+          list of tuples: Where each tuple consists of the following values:
+            - quadrants classification (one of `HH`, `HL`, `LL`, or `LH`)
+            - p-value
+            - spatial lag
+            - standardized spatial lag (centered on the mean, normalized by the
+              standard deviation)
+            - original value
+            - standardized value
+            - Moran's I statistic
+            - original row index
         """
 
         # geometries with attributes that are null are ignored
@@ -78,13 +135,45 @@ class Moran(object):
         # find quadrants for each geometry
         quads = quad_position(lisa.q)
 
-        return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
+        # calculate spatial lag
+        lag = ps.weights.spatial_lag.lag_spatial(weight, lisa.y)
+        lag_std = ps.weights.spatial_lag.lag_spatial(weight, lisa.z)
+
+        return zip(
+            quads,
+            lisa.p_sim,
+            lag,
+            lag_std,
+            lisa.y,
+            lisa.z,
+            lisa.Is,
+            weight.id_order
+        )
 
     def global_rate_stat(self, subquery, numerator, denominator,
                          w_type, num_ngbrs, permutations, geom_col, id_col):
         """
         Moran's I Rate (global)
-        Andy Eschbacher
+
+        Args:
+
+          subquery (str): Query to give access to the data needed. This query
+            must give access to ``attr_name``, ``geom_col``, and ``id_col``.
+          numerator (str): Column name of numerator to analyze
+          denominator (str): Column name of the denominator
+          w_type (str): Type of spatial weight. Must be one of `knn`
+            or `queen`. See `PySAL documentation
+            <http://pysal.readthedocs.io/en/latest/users/tutorials/weights.html>`__
+            for more information.
+          num_ngbrs (int): If using `knn` for ``w_type``, this
+            specifies the number of neighbors to be used to define the spatial
+            neighborhoods.
+          permutations (int): Number of permutations for performing
+            conditional randomization to find the p-value. Higher numbers
+            takes a longer time for getting results.
+          geom_col (str): Name of the geometry column in the dataset for
+            finding the spatial neighborhoods.
+          id_col (str): Row index for each value. Usually the database index.
         """
         params = OrderedDict([("id_col", id_col),
                               ("attr1", numerator),
@@ -110,8 +199,39 @@ class Moran(object):
     def local_rate_stat(self, subquery, numerator, denominator,
                         w_type, num_ngbrs, permutations, geom_col, id_col):
         """
-            Moran's I Local Rate
-            Andy Eschbacher
+        Moran's I Local Rate
+
+        Args:
+
+          subquery (str): Query to give access to the data needed. This query
+            must give access to ``attr_name``, ``geom_col``, and ``id_col``.
+          numerator (str): Column name of numerator to analyze
+          denominator (str): Column name of the denominator
+          w_type (str): Type of spatial weight. Must be one of `knn`
+            or `queen`. See `PySAL documentation
+            <http://pysal.readthedocs.io/en/latest/users/tutorials/weights.html>`__
+            for more information.
+          num_ngbrs (int): If using `knn` for ``w_type``, this
+            specifies the number of neighbors to be used to define the spatial
+            neighborhoods.
+          permutations (int): Number of permutations for performing
+            conditional randomization to find the p-value. Higher numbers
+            takes a longer time for getting results.
+          geom_col (str): Name of the geometry column in the dataset for
+            finding the spatial neighborhoods.
+          id_col (str): Row index for each value. Usually the database index.
+
+        Returns:
+          list of tuples: Where each tuple consists of the following values:
+            - quadrants classification (one of `HH`, `HL`, `LL`, or `LH`)
+            - p-value
+            - spatial lag
+            - standardized spatial lag (centered on the mean, normalized by the
+              standard deviation)
+            - original value (roughly numerator divided by denominator)
+            - standardized value
+            - Moran's I statistic
+            - original row index
         """
         # geometries with values that are null are ignored
         # resulting in a collection of not as near neighbors
@@ -138,7 +258,20 @@ class Moran(object):
         # find quadrants for each geometry
         quads = quad_position(lisa.q)
 
-        return zip(lisa.Is, quads, lisa.p_sim, weight.id_order, lisa.y)
+        # spatial lag
+        lag = ps.weights.spatial_lag.lag_spatial(weight, lisa.y)
+        lag_std = ps.weights.spatial_lag.lag_spatial(weight, lisa.z)
+
+        return zip(
+            quads,
+            lisa.p_sim,
+            lag,
+            lag_std,
+            lisa.y,
+            lisa.z,
+            lisa.Is,
+            weight.id_order
+        )
 
     def local_bivariate_stat(self, subquery, attr1, attr2,
                              permutations, geom_col, id_col,
@@ -177,12 +310,12 @@ class Moran(object):
 
 def map_quads(coord):
     """
-        Map a quadrant number to Moran's I designation
-        HH=1, LH=2, LL=3, HL=4
-        Input:
-        @param coord (int): quadrant of a specific measurement
-        Output:
-            classification (one of 'HH', 'LH', 'LL', or 'HL')
+    Map a quadrant number to Moran's I designation
+    HH=1, LH=2, LL=3, HL=4
+    Args:
+      coord (int): quadrant of a specific measurement
+    Returns:
+      classification (one of 'HH', 'LH', 'LL', or 'HL')
     """
     if coord == 1:
         return 'HH'
@@ -192,17 +325,17 @@ def map_quads(coord):
         return 'LL'
     elif coord == 4:
         return 'HL'
-    else:
-        return None
+    return None
 
 
 def quad_position(quads):
     """
-        Produce Moran's I classification based of n
-        Input:
-        @param quads ndarray: an array of quads classified by
-          1-4 (PySAL default)
-        Output:
-        @param list: an array of quads classied by 'HH', 'LL', etc.
+    Map all quads
+
+    Args:
+      quads (:obj:`numpy.ndarray`): an array of quads classified by
+      1-4 (PySAL default)
+    Returns:
+      list: an array of quads classied by 'HH', 'LL', etc.
     """
     return [map_quads(q) for q in quads]
