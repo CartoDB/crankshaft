@@ -1,3 +1,11 @@
+0.8.1 (2018-03-12)
+------------------
+* Adds improperly added version files
+
+0.8.0 (2018-03-12)
+------------------
+* Adds `CDB_MoransILocal*` functions that return spatial lag [#202](https://github.com/CartoDB/crankshaft/pull/202)
+
 0.7.0 (2018-02-23)
 ------------------
 * Updated Moran and Markov documentation [#179](https://github.com/CartoDB/crankshaft/pull/179) [#155](https://github.com/CartoDB/crankshaft/pull/155)
