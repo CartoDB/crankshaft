@@ -29,26 +29,25 @@ class Segmentation(object):
             straight form the SQL calling the function.
 
             Input:
-                @param target: The 1D array of lenth NSamples containing the
+                @param target: The 1D array of length NSamples containing the
                 target variable we want the model to predict
                 @param features: The 2D array of size NSamples * NFeatures that
-                    form the imput to the model
+                    form the input to the model
                 @param target_ids: A 1D array of target_ids that will be used
                 to associate the results of the prediction with the rows which
                     they come from
                 @param model_parameters: A dictionary containing parameters for
                 the model.
         """
-        clean_target = replace_nan_with_mean(target)
-        clean_features = replace_nan_with_mean(features)
-        target_features = replace_nan_with_mean(target_features)
+        clean_target, _ = replace_nan_with_mean(target)
+        clean_features, _ = replace_nan_with_mean(features)
+        target_features,  _ = replace_nan_with_mean(target_features)
 
         model, accuracy = train_model(clean_target, clean_features,
                                       model_parameters, 0.2)
         prediction = model.predict(target_features)
         accuracy_array = [accuracy] * prediction.shape[0]
-        return zip(target_ids, prediction,
-                   np.full(prediction.shape, accuracy_array))
+        return zip(target_ids, prediction, accuracy_array)
 
     def create_and_predict_segment(self, query, variable, feature_columns,
                                    target_query, model_params,
@@ -65,7 +64,6 @@ class Segmentation(object):
                         scikit learn page for [GradientBoostingRegressor]
                         (http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html)
         """
-
         params = {"subquery": target_query,
                   "id_col": id_col}
 
@@ -198,7 +196,7 @@ def train_model(target, features, model_params, test_split):
         Input:
             @param target: 1D Array of the variable that the model is to be
                 trained to predict
-            @param features: 2D Array NSamples *NFeatures to use in trining
+            @param features: 2D Array NSamples *NFeatures to use in training
                 the model
             @param model_params: A dictionary of model parameters, the full
                 specification can be found on the

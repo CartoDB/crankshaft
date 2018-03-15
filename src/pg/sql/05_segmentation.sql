@@ -25,19 +25,20 @@ AS $$
 
     def unpack2D(data):
         dimension = data.pop(0)
-        a = np.array(data, dtype=float)
-        return a.reshape(len(a)/dimension, dimension)
+        a = np.array(data, dtype=np.float64)
+        return a.reshape(int(len(a)/dimension), int(dimension))
 
-    return seg.create_and_predict_segment_agg(np.array(target, dtype=float),
-            unpack2D(features),
-            unpack2D(target_features),
-            target_ids,
-            model_params)
+    return seg.create_and_predict_segment_agg(
+        np.array(target, dtype=np.float64),
+        unpack2D(features),
+        unpack2D(target_features),
+        target_ids,
+        model_params)
 
 $$ LANGUAGE plpythonu VOLATILE PARALLEL RESTRICTED;
 
 CREATE OR REPLACE FUNCTION
-  CDB_CreateAndPredictSegment (
+  CDB_CreateAndPredictSegment(
       query TEXT,
       variable_name TEXT,
       target_table TEXT,
@@ -57,9 +58,13 @@ AS $$
         'learning_rate': learning_rate,
         'min_samples_leaf': min_samples_leaf
     }
+    feature_cols = set(plpy.execute('''
+        select * from ({query}) as _w limit 0
+    '''.format(query=query)).colnames()) -  set([variable_name, 'cartodb_id', ])
     return seg.create_and_predict_segment(
         query,
         variable_name,
+        feature_cols,
         target_table,
         model_params
     )
