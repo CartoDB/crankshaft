@@ -1,7 +1,7 @@
 SET client_min_messages TO WARNING;
 \set ECHO none
-CREATE TABLE ml_values (cartodb_id integer, target float, the_geom geometry, x1 float , x2 float, x3 float, class text);
-INSERT INTO ml_values(cartodb_id, target,x1,x2,x3, class) VALUES 
+CREATE TABLE ml_values (cartodb_id integer, target float, the_geom geometry, x1 float, x2 float, x3 float, class text);
+INSERT INTO ml_values(cartodb_id, target, x1, x2, x3, class) VALUES
 (0,1.24382137034,0.811403626309,0.657584780869,0,'train'),
 (1,1.72727475342,0.447764244847,0.528687533966,1,'train'),
 (2,3.32104694099,0.62774565606,0.832647155118,2,'train'),

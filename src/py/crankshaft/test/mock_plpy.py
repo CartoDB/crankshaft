@@ -43,6 +43,7 @@ class MockPlPy:
         self.infos.append(msg)
 
     def error(self, msg):
+        self.infos.append(msg)
         self.notices.append(msg)
 
     def cursor(self, query):

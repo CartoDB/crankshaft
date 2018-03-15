@@ -1,64 +1,139 @@
+"""Tests for segmentation functionality"""
 import unittest
-import numpy as np
-from helper import plpy, fixture_file
-import crankshaft.segmentation as segmentation
 import json
+from collections import OrderedDict
+
+import numpy as np
+
+from crankshaft.analysis_data_provider import AnalysisDataProvider
+from crankshaft.segmentation import Segmentation
+from helper import fixture_file
+from mock_plpy import MockCursor
+
+
+class RawDataProvider(AnalysisDataProvider):
+    """Data Provider to overwrite the default SQL provider"""
+    def __init__(self, data, model, predict):
+        self.data = data
+        self.model = model
+        self.predict = predict
+
+    def get_segmentation_data(self, params):  # pylint: disable=unused-argument
+        """return data"""
+        return self.data
+
+    def get_segmentation_model_data(self, params):  # pylint: disable=W0613
+        """return model data"""
+        return self.model
+
+    def get_segmentation_predict_data(self, params):  # pylint: disable=W0613
+        """return predict data"""
+        return self.predict
+
 
 class SegmentationTest(unittest.TestCase):
-    """Testing class for Moran's I functions"""
+    """Testing class for Segmentation functions"""
 
     def setUp(self):
-        plpy._reset()
-
-    def generate_random_data(self,n_samples,random_state,  row_type=False):
-        x1 = random_state.uniform(size=n_samples)
-        x2 = random_state.uniform(size=n_samples)
-        x3 = random_state.randint(0, 4, size=n_samples)
-
-        y = x1+x2*x2+x3
-        cartodb_id  = range(len(x1))
-
-        if row_type:
-            return [ {'features': vals} for vals in zip(x1,x2,x3)], y
-        else:
-            return  [dict( zip(['x1','x2','x3','target', 'cartodb_id'],[x1,x2,x3,y,cartodb_id]))]
+        self.params = {
+            "query": 'SELECT * FROM segmentation_data',
+            "variable": 'price',
+            "feature_columns": ['m1', 'm2', 'm3', 'm4', 'm5', 'm6'],
+            "target_query": 'SELECT * FROM segmentation_result',
+            "id_col": 'cartodb_id',
+            "model_params": {
+                'n_estimators': 1200,
+                'max_depth': 3,
+                'subsample': 0.5,
+                'learning_rate': 0.01,
+                'min_samples_leaf': 1
+            }
+        }
+        self.model_data = json.loads(
+            open(fixture_file('model_data.json')).read())
+        self.data = json.loads(
+            open(fixture_file('data.json')).read())
+        self.predict_data = json.loads(
+            open(fixture_file('predict_data.json')).read())
+        self.result_seg = json.loads(
+            open(fixture_file('segmentation_result.json')).read())
+        self.true_result = json.loads(
+            open(fixture_file('true_result.json')).read())
 
     def test_replace_nan_with_mean(self):
+        """test segmentation.test_replace_nan_with_mean"""
+        from crankshaft.segmentation import replace_nan_with_mean
         test_array = np.array([1.2, np.nan, 3.2, np.nan, np.nan])
+        result = replace_nan_with_mean(test_array, means=None)[0]
+        expectation = np.array([1.2, 2.2, 3.2, 2.2, 2.2], dtype=float)
+        self.assertItemsEqual(result, expectation)
 
     def test_create_and_predict_segment(self):
-        n_samples = 1000
+        """test segmentation.test_create_and_predict"""
+        from crankshaft.segmentation import replace_nan_with_mean
+        results = []
+        feature_columns = ['m1', 'm2']
+        feat = np.column_stack([np.array(self.model_data[0][col])
+                                for col in feature_columns]).astype(float)
+        feature_means = replace_nan_with_mean(feat)[1]
 
-        random_state_train = np.random.RandomState(13)
-        random_state_test = np.random.RandomState(134)
-        training_data = self.generate_random_data(n_samples, random_state_train)
-        test_data, test_y = self.generate_random_data(n_samples, random_state_test, row_type=True)
+        # data_model is of the form:
+        #  [OrderedDict([('target', target),
+        #                ('features', feat),
+        #                ('target_mean', target_mean),
+        #                ('feature_means', feature_means),
+        #                ('feature_columns', feature_columns)])]
+        data_model = self.model_data
+        cursor = self.predict_data
+        batch = []
 
+        batches = np.row_stack([np.array(row['features'])
+                                for row in cursor]).astype(float)
+        batches = replace_nan_with_mean(batches, feature_means)[0]
+        batch.append(batches)
 
-        ids =  [{'cartodb_ids': range(len(test_data))}]
-        rows =  [{'x1': 0,'x2':0,'x3':0,'y':0,'cartodb_id':0}]
+        data_predict = [OrderedDict([('features', d['features']),
+                                     ('batch', batch)])
+                        for d in self.predict_data]
+        data_predict = MockCursor(data_predict)
 
-        plpy._define_result('select \* from  \(select \* from training\) a  limit 1',rows)
-        plpy._define_result('.*from \(select \* from training\) as a' ,training_data)
-        plpy._define_result('select array_agg\(cartodb\_id order by cartodb\_id\) as cartodb_ids from \(.*\) a',ids)
-        plpy._define_result('.*select \* from test.*' ,test_data)
+        model_parameters = {
+            'n_estimators': 1200,
+            'max_depth': 3,
+            'subsample': 0.5,
+            'learning_rate': 0.01,
+            'min_samples_leaf': 1
+        }
+        data = [OrderedDict([('ids', d['ids'])])
+                for d in self.data]
 
-        model_parameters =  {'n_estimators': 1200,
-                             'max_depth': 3,
-                             'subsample' : 0.5,
-                             'learning_rate': 0.01,
-                             'min_samples_leaf': 1}
+        seg = Segmentation(RawDataProvider(data, data_model,
+                                           data_predict))
 
-        result = segmentation.create_and_predict_segment(
-                'select * from training',
-                'target',
-                'select * from test',
-                model_parameters)
+        result = seg.create_and_predict_segment(
+            'SELECT * FROM segmentation_test',
+            'x_value',
+            ['m1', 'm2'],
+            'SELECT * FROM segmentation_result',
+            model_parameters,
+            id_col='cartodb_id')
+        results = [(row[1], row[2]) for row in result]
+        zipped_values = zip(results, self.result_seg)
+        pre_res = [r[0] for r in self.true_result]
+        acc_res = [r[1] for r in self.result_seg]
 
-        prediction = [r[1] for r in result]
+        # test values
+        for (res_pre, _), (exp_pre, _) in zipped_values:
+            diff = abs(res_pre - exp_pre) / np.mean([res_pre, exp_pre])
+            self.assertTrue(diff <= 0.05, msg='diff: {}'.format(diff))
+            diff = abs(res_pre - exp_pre) / np.mean([res_pre, exp_pre])
+            self.assertTrue(diff <= 0.05, msg='diff: {}'.format(diff))
+        prediction = [r[0] for r in results]
 
-        accuracy =np.sqrt(np.mean( np.square( np.array(prediction) - np.array(test_y))))
+        accuracy = np.sqrt(np.mean(
+            (np.array(prediction) - np.array(pre_res))**2
+        ))
 
-        self.assertEqual(len(result),len(test_data))
-        self.assertTrue( result[0][2] < 0.01)
-        self.assertTrue( accuracy < 0.5*np.mean(test_y)  )
+        self.assertEqual(len(results), len(self.result_seg))
+        self.assertTrue(accuracy < 0.3 * np.mean(pre_res))
+        self.assertTrue(results[0][1] < 0.01)

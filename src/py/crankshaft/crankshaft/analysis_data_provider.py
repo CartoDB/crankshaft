@@ -16,7 +16,7 @@ def verify_data(func):
                 plpy.error(NULL_VALUE_ERROR)
             else:
                 return data
-        except Exception as err:
+        except plpy.SPIError as err:
             plpy.error('Analysis failed: {}'.format(err))
 
         return []
@@ -25,26 +25,27 @@ def verify_data(func):
 
 
 class AnalysisDataProvider(object):
+    """Data fetching class for pl/python functions"""
     @verify_data
-    def get_getis(self, w_type, params):
+    def get_getis(self, w_type, params):  # pylint: disable=no-self-use
         """fetch data for getis ord's g"""
         query = pu.construct_neighbor_query(w_type, params)
         return plpy.execute(query)
 
     @verify_data
-    def get_markov(self, w_type, params):
+    def get_markov(self, w_type, params):  # pylint: disable=no-self-use
         """fetch data for spatial markov"""
         query = pu.construct_neighbor_query(w_type, params)
         return plpy.execute(query)
 
     @verify_data
-    def get_moran(self, w_type, params):
+    def get_moran(self, w_type, params):  # pylint: disable=no-self-use
         """fetch data for moran's i analyses"""
         query = pu.construct_neighbor_query(w_type, params)
         return plpy.execute(query)
 
     @verify_data
-    def get_nonspatial_kmeans(self, params):
+    def get_nonspatial_kmeans(self, params):  # pylint: disable=no-self-use
         """
             Fetch data for non-spatial k-means.
 
@@ -73,7 +74,57 @@ class AnalysisDataProvider(object):
         return plpy.execute(query)
 
     @verify_data
-    def get_spatial_kmeans(self, params):
+    def get_segmentation_model_data(self, params):  # pylint: disable=R0201
+        """
+           fetch data for Segmentation
+        params = {"subquery": query,
+                  "target": variable,
+                  "features": feature_columns}
+        """
+        columns = ', '.join(['array_agg("{col}") As "{col}"'.format(col=col)
+                             for col in params['features']])
+        query = '''
+                SELECT
+                  array_agg("{target}") As target,
+                  {columns}
+                FROM ({subquery}) As q
+                '''.format(subquery=params['subquery'],
+                           target=params['target'],
+                           columns=columns)
+        return plpy.execute(query)
+
+    @verify_data
+    def get_segmentation_data(self, params):  # pylint: disable=no-self-use
+        """
+            params = {"subquery": target_query,
+                      "id_col": id_col}
+        """
+        query = '''
+                SELECT
+                  array_agg("{id_col}" ORDER BY "{id_col}") as "ids"
+                FROM ({subquery}) as q
+                 '''.format(**params)
+        return plpy.execute(query)
+
+    @verify_data
+    def get_segmentation_predict_data(self, params):  # pylint: disable=R0201
+        """
+            fetch data for Segmentation
+            params = {"subquery": target_query,
+                      "feature_columns": feature_columns}
+        """
+        joined_features = ', '.join(['"{}"::numeric'.format(a)
+                                     for a in params['feature_columns']])
+        query = '''
+                SELECT
+                  Array[{joined_features}] As features
+                FROM ({subquery}) as q
+                '''.format(subquery=params['subquery'],
+                           joined_features=joined_features)
+        return plpy.cursor(query)
+
+    @verify_data
+    def get_spatial_kmeans(self, params):  # pylint: disable=no-self-use
         """fetch data for spatial kmeans"""
         query = '''
                 SELECT
@@ -86,13 +137,13 @@ class AnalysisDataProvider(object):
         return plpy.execute(query)
 
     @verify_data
-    def get_gwr(self, params):
+    def get_gwr(self, params):  # pylint: disable=no-self-use
         """fetch data for gwr analysis"""
         query = pu.gwr_query(params)
         return plpy.execute(query)
 
     @verify_data
-    def get_gwr_predict(self, params):
+    def get_gwr_predict(self, params):  # pylint: disable=no-self-use
         """fetch data for gwr predict"""
         query = pu.gwr_predict_query(params)
         return plpy.execute(query)
