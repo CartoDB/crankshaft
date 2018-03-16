@@ -42,6 +42,7 @@ CREATE OR REPLACE FUNCTION
       query TEXT,
       variable_name TEXT,
       target_table TEXT,
+      model_name text DEFAULT NULL,
       n_estimators INTEGER DEFAULT 1200,
       max_depth INTEGER DEFAULT 3,
       subsample DOUBLE PRECISION DEFAULT 0.5,
@@ -58,16 +59,50 @@ AS $$
         'learning_rate': learning_rate,
         'min_samples_leaf': min_samples_leaf
     }
-    feature_cols = set(plpy.execute('''
+    all_cols = list(plpy.execute('''
         select * from ({query}) as _w limit 0
-    '''.format(query=query)).colnames()) -  set([variable_name, 'cartodb_id', ])
+    '''.format(query=query)).colnames())
+    feature_cols = [a for a in all_cols
+                    if a not in [variable_name, 'cartodb_id', ]]
     return seg.create_and_predict_segment(
         query,
         variable_name,
         feature_cols,
         target_table,
-        model_params
+        model_params,
+        model_name=model_name
     )
+$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+
+CREATE OR REPLACE FUNCTION
+  CDB_RetrieveModelParams(
+    model_name text,
+    param_name text
+  )
+RETURNS TABLE(param numeric) AS $$
+
+import pickle
+from collections import Iterable
+
+plan = plpy.prepare('''
+    SELECT model FROM model_storage
+    WHERE name = $1;
+''', ['text', ])
+
+try:
+    model_encoded = plpy.execute(plan, [model_name, ])
+except plpy.SPIError as err:
+    plpy.error('ERROR: {}'.format(err))
+
+model = pickle.loads(
+    model_encoded[0]['model']
+)
+
+res = getattr(model, param_name) 
+if not isinstance(res, Iterable):
+    raise Exception('Cannot return `{}` as a table'.format(param_name))
+return res
+
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
 CREATE OR REPLACE FUNCTION
@@ -76,6 +111,7 @@ CREATE OR REPLACE FUNCTION
       variable TEXT,
       feature_columns TEXT[],
       target_query TEXT,
+      model_name TEXT DEFAULT NULL,
       n_estimators INTEGER DEFAULT 1200,
       max_depth INTEGER DEFAULT 3,
       subsample DOUBLE PRECISION DEFAULT 0.5,
@@ -97,6 +133,7 @@ AS $$
         variable,
         feature_columns,
         target_query,
-        model_params
+        model_params,
+        model_name=model_name
     )
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;

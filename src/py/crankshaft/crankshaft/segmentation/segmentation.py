@@ -2,11 +2,14 @@
 Segmentation creation and prediction
 """
 
+import pickle
+import plpy
 import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn import metrics
 from sklearn.cross_validation import train_test_split
 from crankshaft.analysis_data_provider import AnalysisDataProvider
+from crankshaft import model_storage
 
 # NOTE: added optional param here
 
@@ -51,6 +54,7 @@ class Segmentation(object):
 
     def create_and_predict_segment(self, query, variable, feature_columns,
                                    target_query, model_params,
+                                   model_name=None,
                                    id_col='cartodb_id'):
         """
         generate a segment with machine learning
@@ -70,15 +74,23 @@ class Segmentation(object):
         (target, features, target_mean,
             feature_means) = self.clean_data(query, variable, feature_columns)
 
-        model, accuracy = train_model(target, features, model_params, 0.2)
+        model_storage.create_model_table()
+
+        # find model if it exists and is specified
+        if model_name is not None:
+            model = model_storage.get_model(model_name)
+
+        if locals().get('model') is None:
+            model, accuracy = train_model(target, features, model_params, 0.2)
+
         result = self.predict_segment(model, feature_columns, target_query,
                                       feature_means)
         accuracy_array = [accuracy] * result.shape[0]
 
         rowid = self.data_provider.get_segmentation_data(params)
-        '''
-        rowid = [{'ids': [2.9, 4.9, 4, 5, 6]}]
-        '''
+
+        # store the model for later use
+        model_storage.set_model(model, model_name, feature_columns)
         return zip(rowid[0]['ids'], result, accuracy_array)
 
     def predict_segment(self, model, feature_columns, target_query,
