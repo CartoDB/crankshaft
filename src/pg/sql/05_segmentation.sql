@@ -79,13 +79,13 @@ CREATE OR REPLACE FUNCTION
     model_name text,
     param_name text
   )
-RETURNS TABLE(param numeric) AS $$
+RETURNS TABLE(param numeric, feature_name text) AS $$
 
 import pickle
 from collections import Iterable
 
 plan = plpy.prepare('''
-    SELECT model FROM model_storage
+    SELECT model, feature_names FROM model_storage
     WHERE name = $1;
 ''', ['text', ])
 
@@ -93,7 +93,7 @@ try:
     model_encoded = plpy.execute(plan, [model_name, ])
 except plpy.SPIError as err:
     plpy.error('ERROR: {}'.format(err))
-
+plpy.notice(model_encoded[0]['feature_names'])
 model = pickle.loads(
     model_encoded[0]['model']
 )
@@ -101,7 +101,7 @@ model = pickle.loads(
 res = getattr(model, param_name) 
 if not isinstance(res, Iterable):
     raise Exception('Cannot return `{}` as a table'.format(param_name))
-return res
+return zip(res, model_encoded[0]['feature_names'])
 
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 
