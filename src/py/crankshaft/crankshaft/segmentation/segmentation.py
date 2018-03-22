@@ -80,6 +80,11 @@ class Segmentation(object):
         # find model if it exists and is specified
         if model_name is not None:
             model = model_storage.get_model(model_name)
+            _, features_test, _, target_test = train_test_split(
+                features, target, test_size=0.2)
+            if model is not None:
+                accuracy = calculate_model_accuracy(
+                    model, features_test, target_test)
 
         if locals().get('model') is None:
             model, accuracy = train_model(target, features, model_params, 0.2)
