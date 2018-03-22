@@ -1,7 +1,11 @@
 import time
 import plpy
 import pickle
-from petname import generate
+# from petname import generate
+import uuid
+
+def generate():
+    return 'model_{}'.format(uuid.uuid4().hex)
 
 def create_model_table():
     q = '''
@@ -44,7 +48,7 @@ def get_model(model_name):
 def set_model(model, model_name, feature_names):
     """stores the model in the table model_storage"""
     if model_name is None:
-	model_name = generate(words=2, separator='_', letters=8)
+	model_name = generate()
 	existing_names = plpy.execute('''
 	    SELECT array_agg(name) as name
 	    FROM model_storage
@@ -57,7 +61,7 @@ def set_model(model, model_name, feature_names):
         plpy.notice('type existing_names: {}'.format(type(existing_names[0]['name'])))
         if existing_names[0]['name'] is not None:
             while model_name in existing_names[0]['name']:
-                model_name = generate(words=2, separator='_', letters=10)
+                model_name = generate()
                 plpy.notice(model_name)
 
     # store model
