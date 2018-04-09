@@ -119,6 +119,23 @@ CREATE OR REPLACE FUNCTION
       min_samples_leaf INTEGER DEFAULT 1)
 RETURNS TABLE (cartodb_id TEXT, prediction NUMERIC, accuracy NUMERIC)
 AS $$
+
+# get stored features if they exist to validate whether
+# model matches input data
+if model_name:
+    try:
+        stored_features = plpy.execute('''
+            select feature_names
+            from model_storage
+            where name = \'{}\'
+            '''.format(model_name)
+        )[0]['feature_names']
+    except plpy.SPIError:
+        stored_features = []
+else:
+    stored_features = []
+
+if set(feature_columns) == set(stored_features):
     from crankshaft.segmentation import Segmentation
     seg = Segmentation()
     model_params = {
@@ -136,4 +153,15 @@ AS $$
         model_params,
         model_name=model_name
     )
+else:
+    raise plpy.SPIError(
+        'Feature columns for stored model `{0}` does not match features '
+        'passed in this function.\n'
+            'Stored model: {1}\n'
+            'New model: {2}\n'
+            'Pick a new model name or adjust features.'.format(
+                model_name,
+                ', '.join(sorted(feature_columns)),
+                ', '.join(sorted(stored_columns))
+                    ))
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
