@@ -162,6 +162,6 @@ else:
             'Pick a new model name or adjust features.'.format(
                 model_name,
                 ', '.join(sorted(feature_columns)),
-                ', '.join(sorted(stored_columns))
+                ', '.join(sorted(stored_features))
                     ))
 $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
