@@ -2,3 +2,4 @@ envs/
 *.pyc
 .DS_Store
 .idea/
+.*.sw[nop]
