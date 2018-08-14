@@ -1,0 +1,16 @@
+{
+    "name": "crankshaft",
+    "current_version": {
+        "requires": {
+            "postgres": ">=9.5",
+            "postgis": ">=2.2"
+        },
+        "works_with": {
+            "_comment": "Crankshaft used from Windshaft-cartodb from camshaft@0.23.0",
+            "windshaft": ">=2.54.0"
+        }
+    },
+
+    "exceptional_versions": {
+    }
+}
