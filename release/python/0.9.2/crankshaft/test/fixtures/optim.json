@@ -1,0 +1,6 @@
+{
+    "production_col": [10, 10, 10],
+    "capacity_col": [0.09, 0.31],
+    "marginal_col": [5, 5],
+    "pairwise": [[1, 2, 3], [3, 2, 1]]
+}
