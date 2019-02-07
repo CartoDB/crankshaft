@@ -85,24 +85,16 @@ BEGIN
 END
 $$ LANGUAGE plpgsql IMMUTABLE PARALLEL SAFE;
 
+
 -- Create aggregate if it did not exist
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT *
-        FROM pg_catalog.pg_proc p
-            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
-        WHERE n.nspname = 'cdb_crankshaft'
-            AND p.proname = 'cdb_weightedmean'
-            AND p.proisagg)
-    THEN
-        CREATE AGGREGATE CDB_WeightedMean(geometry(Point, 4326), NUMERIC) (
-            SFUNC = CDB_WeightedMeanS,
-            FINALFUNC = CDB_WeightedMeanF,
-            STYPE = Numeric[],
-            PARALLEL = SAFE,
-            INITCOND = "{0.0,0.0,0.0}"
-        );
-    END IF;
-END
-$$ LANGUAGE plpgsql;
+DO $$ BEGIN
+    CREATE AGGREGATE CDB_WeightedMean(geometry(Point, 4326), NUMERIC) (
+        SFUNC = CDB_WeightedMeanS,
+        FINALFUNC = CDB_WeightedMeanF,
+        STYPE = Numeric[],
+        PARALLEL = SAFE,
+        INITCOND = "{0.0,0.0,0.0}"
+);
+EXCEPTION
+    WHEN duplicate_function THEN NULL;
+END $$;

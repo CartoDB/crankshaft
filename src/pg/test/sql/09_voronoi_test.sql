@@ -1,4 +1,4 @@
-SET client_min_messages TO WARNING;
+\pset format unaligned
 \set ECHO none
 
 WITH a AS (
@@ -11,5 +11,5 @@ b as(
     FROM a
 )
 SELECT
-    avg(st_area(result)) as avg_area
+    abs(avg(st_area(result)) - 0.000178661700690617) < 1e-6 as within_tolerance
 FROM b;
