@@ -1,4 +1,5 @@
 0.8.2 (2019-02-07)
+------------------
 * Update dependencies to match what it's being used in production.
 * Update travis to xenial, PG10 and 11, and postgis 2.6
 * Compatibility with PG11
