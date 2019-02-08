@@ -1,7 +1,5 @@
-SET client_min_messages TO WARNING;
+\pset format unaligned
 \set ECHO none
-       avg_area       
-----------------------
- 0.000178661700690617
+within_tolerance
+t
 (1 row)
-
