@@ -156,7 +156,7 @@ class GWR(GLM):
         self.kernel = kernel
         self.fixed = fixed
         if offset is None:
-        	self.offset = np.ones((self.n, 1))
+            self.offset = np.ones((self.n, 1))
         else:
             self.offset = offset * 1.0
         self.fit_params = {}
@@ -169,7 +169,7 @@ class GWR(GLM):
     def _build_W(self, fixed, kernel, coords, bw, points=None):
         if fixed:
             try:
-            	W = fk[kernel](coords, bw, points)
+                W = fk[kernel](coords, bw, points)
             except:
                 raise TypeError('Unsupported kernel function  ', kernel)
         else:
@@ -496,7 +496,7 @@ class GWRResults(GLMResults):
 
         """
         if exog_scale is not None:
-        	return cov*exog_scale
+            return cov*exog_scale
         else:
             return cov*self.scale
     
@@ -520,7 +520,7 @@ class GWRResults(GLMResults):
         weighted mean of y
         """
         if self.model.points is not None:
-        	n = len(self.model.points)
+            n = len(self.model.points)
         else:
             n = self.n
         off = self.offset.reshape((-1,1))
@@ -543,13 +543,13 @@ class GWRResults(GLMResults):
 
         """
         if self.model.points is not None:
-        	n = len(self.model.points)
+            n = len(self.model.points)
         else:
             n = self.n
         TSS = np.zeros(shape=(n,1))
         for i in range(n):
-	        TSS[i] = np.sum(np.reshape(np.array(self.W[i]), (-1,1)) *
-	                (self.y.reshape((-1,1)) - self.y_bar[i])**2)
+            TSS[i] = np.sum(np.reshape(np.array(self.W[i]), (-1,1)) *
+                    (self.y.reshape((-1,1)) - self.y_bar[i])**2)
         return TSS
 
     @cache_readonly
@@ -563,15 +563,15 @@ class GWRResults(GLMResults):
         relationships.
         """
         if self.model.points is not None:
-        	n = len(self.model.points)
-        	resid = self.model.exog_resid.reshape((-1,1))
+            n = len(self.model.points)
+            resid = self.model.exog_resid.reshape((-1,1))
         else:
             n = self.n
             resid = self.resid_response.reshape((-1,1))
-    	RSS = np.zeros(shape=(n,1))
+        RSS = np.zeros(shape=(n,1))
         for i in range(n):
             RSS[i] = np.sum(np.reshape(np.array(self.W[i]), (-1,1))
-	                * resid**2)
+                    * resid**2)
         return RSS
 
     @cache_readonly
@@ -617,10 +617,10 @@ class GWRResults(GLMResults):
         """
         if isinstance(self.family, (Poisson, Binomial)):
             return self.resid_ss/(self.n - 2.0*self.tr_S +
-	                self.tr_STS) #could be changed to SWSTW - nothing to test against
+                    self.tr_STS) #could be changed to SWSTW - nothing to test against
         else:
             return self.resid_ss/(self.n - 2.0*self.tr_S +
-	                self.tr_STS) #could be changed to SWSTW - nothing to test against
+                    self.tr_STS) #could be changed to SWSTW - nothing to test against
     @cache_readonly
     def sigma2_ML(self):
         """
@@ -673,14 +673,14 @@ class GWRResults(GLMResults):
         Note: in (9.11), p should be tr(S), that is, the effective number of parameters
         """
         return self.std_res**2 * self.influ / (self.tr_S * (1.0-self.influ))
-    
+
     @cache_readonly
     def deviance(self):
         off = self.offset.reshape((-1,1)).T
         y = self.y
         ybar = self.y_bar
         if isinstance(self.family, Gaussian):
-        	raise NotImplementedError('deviance not currently used for Gaussian')
+            raise NotImplementedError('deviance not currently used for Gaussian')
         elif isinstance(self.family, Poisson):
             dev = np.sum(2.0*self.W*(y*np.log(y/(ybar*off))-(y-ybar*off)),axis=1)
         elif isinstance(self.family, Binomial):
@@ -690,7 +690,7 @@ class GWRResults(GLMResults):
     @cache_readonly
     def resid_deviance(self):
         if isinstance(self.family, Gaussian):
-        	raise NotImplementedError('deviance not currently used for Gaussian')
+            raise NotImplementedError('deviance not currently used for Gaussian')
         else:
             off = self.offset.reshape((-1,1)).T
             y = self.y
@@ -708,7 +708,7 @@ class GWRResults(GLMResults):
         manual. Equivalent to 1 - (deviance/null deviance)
         """
         if isinstance(self.family, Gaussian):
-        	raise NotImplementedError('Not implemented for Gaussian')
+            raise NotImplementedError('Not implemented for Gaussian')
         else:
             return 1.0 - (self.resid_deviance/self.deviance)
 
@@ -831,8 +831,8 @@ class GWRResults(GLMResults):
     def predictions(self):
         P = self.model.P
         if P is None:
-        	raise NotImplementedError('predictions only avaialble if predict'
-        	'method called on GWR model')
+            raise NotImplementedError('predictions only avaialble if predict'
+            'method called on GWR model')
         else:
             predictions = np.sum(P*self.params, axis=1).reshape((-1,1)) 
         return predictions
@@ -985,7 +985,7 @@ class FBGWR(GWR):
         self.fixed = fixed
         self.constant = constant
         if constant:
-        	self.X = USER.check_constant(self.X)
+            self.X = USER.check_constant(self.X)
 
     def fit(self, ini_params=None, tol=1.0e-5, max_iter=20, solve='iwls'):
         """
