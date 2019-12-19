@@ -51,8 +51,7 @@ test: export PGUSER=postgres
 test: installcheck
 
 # Release tasks
-
-../../release/$(EXTENSION).control: $(EXTENSION).control
+.PHONY ../../release/$(EXTENSION).control: $(EXTENSION).control
 	cp $< $@
 
 # Prepare new release from the currently installed development version,
