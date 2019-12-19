@@ -14,7 +14,8 @@ DATA = \
     $(EXTENSION)--dev.sql \
     $(EXTENSION)--current--dev.sql \
     $(EXTENSION)--dev--current.sql \
-    $(EXTENSION)--$(RELEASE_VERSION)--dev.sql
+    $(EXTENSION)--$(RELEASE_VERSION)--dev.sql \
+    $(EXTENSION).control
 
 SOURCES_DATA_DIR = sql
 SOURCES_DATA = $(wildcard $(SOURCES_DATA_DIR)/*.sql)
