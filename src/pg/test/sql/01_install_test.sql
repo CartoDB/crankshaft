@@ -1,3 +1,6 @@
+\set ECHO none
+\set QUIET on
+SET client_min_messages TO error;
 -- Create role publicuser if it does not exist
 DO
 $$
@@ -14,3 +17,4 @@ $$ LANGUAGE plpgsql;
 
 -- Install the extension
 CREATE EXTENSION crankshaft VERSION 'dev' CASCADE;
+\set QUIET off
