@@ -8,12 +8,12 @@
 
 __author__ = "Taylor Oshan Tayoshan@gmail.com"
 
-from kernels import *
-from search import golden_section, equal_interval, flexible_bw
-from gwr import GWR
+from .kernels import *
+from .search import golden_section, equal_interval, flexible_bw
+from .gwr import GWR
 from crankshaft.regression.glm.family import Gaussian, Poisson, Binomial
 import pysal.spreg.user_output as USER
-from diagnostics import get_AICc, get_AIC, get_BIC, get_CV
+from .diagnostics import get_AICc, get_AIC, get_BIC, get_CV
 from scipy.spatial.distance import pdist, squareform
 from pysal.common import KDTree
 import numpy as np
@@ -197,7 +197,7 @@ class Sel_BW(object):
         
         if self.fb:
             self._fbw()
-            print self.bw[1]
+            print(self.bw[1])
             self.XB = self.bw[4]
             self.err = self.bw[5]
         else:

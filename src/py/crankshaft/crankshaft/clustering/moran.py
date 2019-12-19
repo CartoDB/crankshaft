@@ -75,7 +75,7 @@ class Moran(object):
         moran_global = ps.esda.moran.Moran(attr_vals, weight,
                                            permutations=permutations)
 
-        return zip([moran_global.I], [moran_global.EI])
+        return list(zip([moran_global.I], [moran_global.EI]))
 
     def local_stat(self, subquery, attr,
                    w_type, num_ngbrs, permutations, geom_col, id_col):
@@ -139,7 +139,7 @@ class Moran(object):
         lag = ps.weights.spatial_lag.lag_spatial(weight, lisa.y)
         lag_std = ps.weights.spatial_lag.lag_spatial(weight, lisa.z)
 
-        return zip(
+        return list(zip(
             quads,
             lisa.p_sim,
             lag,
@@ -148,7 +148,7 @@ class Moran(object):
             lisa.z,
             lisa.Is,
             weight.id_order
-        )
+        ))
 
     def global_rate_stat(self, subquery, numerator, denominator,
                          w_type, num_ngbrs, permutations, geom_col, id_col):
@@ -194,7 +194,7 @@ class Moran(object):
         lisa_rate = ps.esda.moran.Moran_Rate(numer, denom, weight,
                                              permutations=permutations)
 
-        return zip([lisa_rate.I], [lisa_rate.EI])
+        return list(zip([lisa_rate.I], [lisa_rate.EI]))
 
     def local_rate_stat(self, subquery, numerator, denominator,
                         w_type, num_ngbrs, permutations, geom_col, id_col):
@@ -262,7 +262,7 @@ class Moran(object):
         lag = ps.weights.spatial_lag.lag_spatial(weight, lisa.y)
         lag_std = ps.weights.spatial_lag.lag_spatial(weight, lisa.z)
 
-        return zip(
+        return list(zip(
             quads,
             lisa.p_sim,
             lag,
@@ -271,7 +271,7 @@ class Moran(object):
             lisa.z,
             lisa.Is,
             weight.id_order
-        )
+        ))
 
     def local_bivariate_stat(self, subquery, attr1, attr2,
                              permutations, geom_col, id_col,
@@ -303,7 +303,7 @@ class Moran(object):
         # find clustering of significance
         lisa_sig = quad_position(lisa.q)
 
-        return zip(lisa.Is, lisa_sig, lisa.p_sim, weight.id_order)
+        return list(zip(lisa.Is, lisa_sig, lisa.p_sim, weight.id_order))
 
 # Low level functions ----------------------------------------
 

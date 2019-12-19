@@ -118,7 +118,7 @@ class SegmentationTest(unittest.TestCase):
             model_parameters,
             id_col='cartodb_id')
         results = [(row[1], row[2]) for row in result]
-        zipped_values = zip(results, self.result_seg)
+        zipped_values = list(zip(results, self.result_seg))
         pre_res = [r[0] for r in self.true_result]
         acc_res = [r[1] for r in self.result_seg]
 

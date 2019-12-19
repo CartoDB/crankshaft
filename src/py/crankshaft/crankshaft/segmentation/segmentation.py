@@ -47,7 +47,7 @@ class Segmentation(object):
                                       model_parameters, 0.2)
         prediction = model.predict(target_features)
         accuracy_array = [accuracy] * prediction.shape[0]
-        return zip(target_ids, prediction, accuracy_array)
+        return list(zip(target_ids, prediction, accuracy_array))
 
     def create_and_predict_segment(self, query, variable, feature_columns,
                                    target_query, model_params,
@@ -79,7 +79,7 @@ class Segmentation(object):
         '''
         rowid = [{'ids': [2.9, 4.9, 4, 5, 6]}]
         '''
-        return zip(rowid[0]['ids'], result, accuracy_array)
+        return list(zip(rowid[0]['ids'], result, accuracy_array))
 
     def predict_segment(self, model, feature_columns, target_query,
                         feature_means):

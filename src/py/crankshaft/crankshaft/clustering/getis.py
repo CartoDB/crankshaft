@@ -47,4 +47,4 @@ class Getis(object):
         getis = ps.esda.getisord.G_Local(attr_vals, weight,
                                          star=True, permutations=permutations)
 
-        return zip(getis.z_sim, getis.p_sim, getis.p_z_sim, weight.id_order)
+        return list(zip(getis.z_sim, getis.p_sim, getis.p_z_sim, weight.id_order))

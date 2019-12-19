@@ -28,8 +28,8 @@ class Kmeans(object):
         ids = result[0]['ids']
 
         km = KMeans(n_clusters=no_clusters, n_init=no_init)
-        labels = km.fit_predict(zip(xs, ys))
-        return zip(ids, labels)
+        labels = km.fit_predict(list(zip(xs, ys)))
+        return list(zip(ids, labels))
 
     def nonspatial(self, subquery, colnames, no_clusters=5,
                    standardize=True, id_col='cartodb_id'):
@@ -75,18 +75,18 @@ class Kmeans(object):
         kmeans = KMeans(n_clusters=no_clusters,
                         random_state=0).fit(cluster_columns)
 
-        centers = [json.dumps(dict(zip(colnames, c)))
+        centers = [json.dumps(dict(list(zip(colnames, c))))
                    for c in kmeans.cluster_centers_[kmeans.labels_]]
 
         silhouettes = metrics.silhouette_samples(cluster_columns,
                                                  kmeans.labels_,
                                                  metric='sqeuclidean')
 
-        return zip(kmeans.labels_,
+        return list(zip(kmeans.labels_,
                    centers,
                    silhouettes,
                    [kmeans.inertia_] * kmeans.labels_.shape[0],
-                   data[0]['rowid'])
+                   data[0]['rowid']))
 
 
 # -- Preprocessing steps
@@ -99,7 +99,7 @@ def _extract_columns(data):
     # number of columns minus rowid column
     n_cols = len(data[0]) - 1
     return np.array([data[0]['arr_col{0}'.format(i+1)]
-                     for i in xrange(n_cols)],
+                     for i in range(n_cols)],
                     dtype=float).T
 
 

@@ -86,7 +86,7 @@ class GWRTest(unittest.TestCase):
 
         # unpack response
         coeffs, stand_errs, t_vals, t_vals_filtered, predicteds, \
-            residuals, r_squareds, bws, rowids = zip(*gwr_resp)
+            residuals, r_squareds, bws, rowids = list(zip(*gwr_resp))
 
         # prepare for comparision
         coeff_known_pctpov = self.knowns['est_pctpov']
@@ -98,13 +98,13 @@ class GWRTest(unittest.TestCase):
         # test pctpov coefficient estimates
         for idx, val in enumerate(coeff_known_pctpov):
             resp_idx = rowids.index(ids[idx])
-            self.assertAlmostEquals(val,
+            self.assertAlmostEqual(val,
                                     json.loads(coeffs[resp_idx])['pctpov'],
                                     places=4)
         # test pctrural tvals
         for idx, val in enumerate(tval_known_pctblack):
             resp_idx = rowids.index(ids[idx])
-            self.assertAlmostEquals(val,
+            self.assertAlmostEqual(val,
                                     json.loads(t_vals[resp_idx])['pctrural'],
                                     places=4)
 
@@ -119,7 +119,7 @@ class GWRTest(unittest.TestCase):
 
         # unpack response
         coeffs, stand_errs, t_vals, \
-            r_squareds, predicteds, rowid = zip(*gwr_resp)
+            r_squareds, predicteds, rowid = list(zip(*gwr_resp))
         threshold = 0.01
 
         for i, idx in enumerate(self.idx_ids_of_unknowns):

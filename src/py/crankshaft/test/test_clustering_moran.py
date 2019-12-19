@@ -72,7 +72,7 @@ class MoranTest(unittest.TestCase):
         result = moran.local_stat('subquery', 'value',
                                   'knn', 5, 99, 'the_geom', 'cartodb_id')
         result = [(row[0], row[6]) for row in result]
-        zipped_values = zip(result, self.moran_data)
+        zipped_values = list(zip(result, self.moran_data))
 
         for ([res_quad, res_val], [exp_val, exp_quad]) in zipped_values:
             self.assertAlmostEqual(res_val, exp_val)
@@ -91,7 +91,7 @@ class MoranTest(unittest.TestCase):
                                        'knn', 5, 99, 'the_geom', 'cartodb_id')
         result = [(row[0], row[6]) for row in result]
 
-        zipped_values = zip(result, self.moran_data)
+        zipped_values = list(zip(result, self.moran_data))
 
         for ([res_quad, res_val], [exp_val, exp_quad]) in zipped_values:
             self.assertAlmostEqual(res_val, exp_val)

@@ -1,5 +1,5 @@
 
-from __future__ import absolute_import, print_function
+
 import numpy as np
 import warnings
 
@@ -17,7 +17,7 @@ try:
     from scipy.lib._version import NumpyVersion
 except ImportError:
     import re
-    string_types = basestring 
+    string_types = str 
 
     class NumpyVersion():
         """Parse and compare numpy version strings.

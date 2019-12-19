@@ -1,4 +1,4 @@
-import gwr
-import sel_bw
-import diagnostics
-import kernels
+from . import gwr
+from . import sel_bw
+from . import diagnostics
+from . import kernels

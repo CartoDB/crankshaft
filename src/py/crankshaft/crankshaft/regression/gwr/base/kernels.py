@@ -117,4 +117,4 @@ class _Kernel(object):
         elif self.function =='exponential':
             return np.exp(-zs)
         else:
-            print('Unsupported kernel function', self.function)
+            print(('Unsupported kernel function', self.function))

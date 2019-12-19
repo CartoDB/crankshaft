@@ -1,6 +1,6 @@
 """class for fetching data"""
 import plpy
-import pysal_utils as pu
+from . import pysal_utils as pu
 
 NULL_VALUE_ERROR = ('No usable data passed to analysis. Check your input rows '
                     'for null values and fill in appropriately.')

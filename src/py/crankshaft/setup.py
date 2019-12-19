@@ -26,7 +26,7 @@ setup(
         'Intended Audience :: Mapping comunity',
         'Topic :: Maps :: Mapping Tools',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python',
     ],
 
     keywords='maps mapping tools spatial analysis geostatistics',

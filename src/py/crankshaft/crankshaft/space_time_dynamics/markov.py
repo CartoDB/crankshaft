@@ -91,7 +91,7 @@ class Markov(object):
         trend_up, trend_down, trend, volatility = get_prob_stats(prob_dist, sp_markov_result.classes[:, -1])
 
         # output the results
-        return zip(trend, trend_up, trend_down, volatility, weights.id_order)
+        return list(zip(trend, trend_up, trend_down, volatility, weights.id_order))
 
 
 

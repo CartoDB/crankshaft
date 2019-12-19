@@ -2,8 +2,8 @@
     Geographically weighted regression
 """
 import numpy as np
-from gwr.base.gwr import GWR as PySAL_GWR
-from gwr.base.sel_bw import Sel_BW
+from .gwr.base.gwr import GWR as PySAL_GWR
+from .gwr.base.sel_bw import Sel_BW
 import json
 from crankshaft.analysis_data_provider import AnalysisDataProvider
 import plpy
@@ -48,7 +48,7 @@ class GWR:
         # x, y are centroids of input geometries
         x = np.array(query_result[0]['x'], dtype=np.float)
         y = np.array(query_result[0]['y'], dtype=np.float)
-        coords = zip(x, y)
+        coords = list(zip(x, y))
 
         # extract dependent variable
         Y = np.array(query_result[0]['dep_var'], dtype=np.float).reshape((-1, 1))
@@ -88,7 +88,7 @@ class GWR:
         bw = np.repeat(float(bw), n)
 
         # create lists of json objs for model outputs
-        for idx in xrange(n):
+        for idx in range(n):
             coeffs.append(json.dumps({var: model.params[idx, k]
                                       for k, var in enumerate(ind_vars)}))
             stand_errs.append(json.dumps({var: model.bse[idx, k]
@@ -99,8 +99,8 @@ class GWR:
                     json.dumps({var: filtered_t[idx, k]
                                 for k, var in enumerate(ind_vars)}))
 
-        return zip(coeffs, stand_errs, t_vals, filtered_t_vals,
-                   predicted, residuals, r_squared, bw, rowid)
+        return list(zip(coeffs, stand_errs, t_vals, filtered_t_vals,
+                   predicted, residuals, r_squared, bw, rowid))
 
     def gwr_predict(self, subquery, dep_var, ind_vars,
                     bw=None, fixed=False, kernel='bisquare',
@@ -133,7 +133,7 @@ class GWR:
 
         x = np.array(query_result[0]['x'], dtype=np.float)
         y = np.array(query_result[0]['y'], dtype=np.float)
-        coords = np.array(zip(x, y), dtype=np.float)
+        coords = np.array(list(zip(x, y)), dtype=np.float)
 
         # extract dependent variable
         Y = np.array(query_result[0]['dep_var']).reshape((-1, 1))
@@ -190,7 +190,7 @@ class GWR:
         predicted = model.predy.flatten()
 
         m = len(model.predy)
-        for idx in xrange(m):
+        for idx in range(m):
             coeffs.append(json.dumps({var: model.params[idx, k]
                                       for k, var in enumerate(ind_vars)}))
             stand_errs.append(json.dumps({var: model.bse[idx, k]
@@ -198,5 +198,5 @@ class GWR:
             t_vals.append(json.dumps({var: model.tvalues[idx, k]
                                       for k, var in enumerate(ind_vars)}))
 
-        return zip(coeffs, stand_errs, t_vals,
-                   r_squared, predicted, rowid[test])
+        return list(zip(coeffs, stand_errs, t_vals,
+                   r_squared, predicted, rowid[test]))

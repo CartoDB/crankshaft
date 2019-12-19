@@ -1,2 +1,2 @@
 """Import all functions from for segmentation"""
-from segmentation import *
+from .segmentation import *

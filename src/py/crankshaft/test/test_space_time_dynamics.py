@@ -98,7 +98,7 @@ class SpaceTimeTests(unittest.TestCase):
 
         self.assertTrue(result is not None)
         result = [(row[0], row[1], row[2], row[3], row[4]) for row in result]
-        print result[0]
+        print(result[0])
         expected = self.markov_data
         for ([res_trend, res_up, res_down, res_vol, res_id],
              [exp_trend, exp_up, exp_down, exp_vol, exp_id]
