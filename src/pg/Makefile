@@ -33,7 +33,7 @@ ifneq ($(PG_PARALLEL), true)
 endif
 ifneq ($(PYTHON3), true)
 	$(eval TMPFILE := $(shell mktemp /tmp/$@.XXXXXXXXXX))
-	$(SED) -e 's/plpython3u/plpythonu/g' $$n > $(TMPFILE);
+	$(SED) -e 's/plpython3u/plpythonu/g' $@ > $(TMPFILE);
 	mv $(TMPFILE) $@
 endif
 
