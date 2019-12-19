@@ -1,7 +1,13 @@
+0.9.0 (XXXX-XX-XX)
+------------------
+* Compatibility with PG12.
+* Compatibility with python3 (enable with PYTHON3=true env variable, default in PG12+).
+
+
 0.8.2 (2019-02-07)
 ------------------
 * Update dependencies to match what it's being used in production.
-* Update travis to xenial, PG10 and 11, and postgis 2.6
+* Update travis to xenial, PG10 and 11, and postgis 2.5
 * Compatibility with PG11
 
 0.8.1 (2018-03-12)
