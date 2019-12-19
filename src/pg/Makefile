@@ -21,7 +21,7 @@ SOURCES_DATA = $(wildcard $(SOURCES_DATA_DIR)/*.sql)
 
 REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g'
 ifneq ($(PYTHON3), true)
-	REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g' -e
+	REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g' -e 's/plpython3u/plpythonu/g'
 endif
 
 $(DATA): $(SOURCES_DATA)
