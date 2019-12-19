@@ -11,22 +11,31 @@ env:
     - PGPORT=5432
     - POSTGIS_VERSION="2.5"
 
-  matrix:
-    - POSTGRESQL_VERSION="10"
-    - POSTGRESQL_VERSION="11"
+jobs:
+  include:
+    - env: POSTGRESQL_VERSION="9.6" POSTGIS_VERSION="2.5"
+    - env: POSTGRESQL_VERSION="10" POSTGIS_VERSION="2.5"
+    - env: POSTGRESQL_VERSION="11" POSTGIS_VERSION="2.5"
+    - env: POSTGRESQL_VERSION="12" POSTGIS_VERSION="2.5"
+    - env: POSTGRESQL_VERSION="12" POSTGIS_VERSION="3"
+  allow_failures:
+    - env: POSTGRESQL_VERSION="12" POSTGIS_VERSION="2.5"
+    - env: POSTGRESQL_VERSION="12" POSTGIS_VERSION="3"
 
 before_install:
 
   - sudo service postgresql stop;
   - sudo apt-get remove postgresql* -y
   - sudo apt-get install -y --allow-unauthenticated --no-install-recommends --no-install-suggests postgresql-$POSTGRESQL_VERSION postgresql-client-$POSTGRESQL_VERSION postgresql-server-dev-$POSTGRESQL_VERSION postgresql-common
-  - sudo apt-get install -y --allow-unauthenticated postgresql-$POSTGRESQL_VERSION-postgis-$POSTGIS_VERSION postgresql-$POSTGRESQL_VERSION-postgis-$POSTGIS_VERSION-scripts postgis postgresql-plpython-$POSTGRESQL_VERSION
+  - sudo apt-get install -y --allow-unauthenticated postgresql-$POSTGRESQL_VERSION-postgis-$POSTGIS_VERSION postgresql-$POSTGRESQL_VERSION-postgis-$POSTGIS_VERSION-scripts postgis
+
+  # For pre12, install plpython2. For PG12 install plpython3
+  - if [[ $POSTGRESQL_VERSION != '12' ]]; then sudo apt-get install -y postgresql-plpython-$POSTGRESQL_VERSION python python-pip python-software-properties python-joblib python-nose; else sudo apt-get install -y postgresql-plpython3-12 python3 python3-pip python3-software-properties python3-joblib python3-nose; fi;
+
   - sudo pg_dropcluster --stop $POSTGRESQL_VERSION main
   - sudo rm -rf /etc/postgresql/$POSTGRESQL_VERSION /var/lib/postgresql/$POSTGRESQL_VERSION
   - sudo pg_createcluster -u postgres $POSTGRESQL_VERSION main -- -A trust
   - sudo /etc/init.d/postgresql start $POSTGRESQL_VERSION || sudo journalctl -xe
-
-  - sudo apt-get -y install python-pip python-software-properties python-joblib python-nose
 
 install:
   - sudo make install
