@@ -177,7 +177,6 @@ class GWR(GLM):
                 W = ak[kernel](coords, bw, points)
             except:
                 raise TypeError('Unsupported kernel function  ', kernel)
-        
         return W
 
     def fit(self, ini_params=None, tol=1.0e-5, max_iter=20, solve='iwls'):
@@ -218,8 +217,7 @@ class GWR(GLM):
             p = np.zeros((m, 1))
             for i in range(m):
                 wi = self.W[i].reshape((-1,1))
-            	rslt = iwls(self.y, self.X, self.family, self.offset,
-            	        ini_params, tol, max_iter, wi=wi)
+                rslt = iwls(self.y, self.X, self.family, self.offset, ini_params, tol, max_iter, wi=wi)
                 params[i,:] = rslt[0].T
                 predy[i] = rslt[1][i]
                 v[i] = rslt[2][i]
@@ -259,7 +257,7 @@ class GWR(GLM):
         fit_params    : dict
                         key-value pairs of parameters that will be passed into fit method to define estimation
                         routine; see fit method for more details
-                        
+
         """
         if (exog_scale is None) & (exog_resid is None):
             train_gwr = self.fit(**fit_params)
