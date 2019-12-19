@@ -1,7 +1,3 @@
--- Install dependencies
-CREATE EXTENSION plpythonu;
-CREATE EXTENSION postgis;
-
 -- Create role publicuser if it does not exist
 DO
 $$
@@ -17,4 +13,4 @@ END
 $$ LANGUAGE plpgsql;
 
 -- Install the extension
-CREATE EXTENSION crankshaft VERSION 'dev';
+CREATE EXTENSION crankshaft VERSION 'dev' CASCADE;

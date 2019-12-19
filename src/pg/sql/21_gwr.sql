@@ -15,7 +15,7 @@ gwr = GWR()
 
 return gwr.gwr(subquery, dep_var, ind_vars, bw, fixed, kernel, geom_col, id_col)
 
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 
 CREATE OR REPLACE FUNCTION
@@ -33,4 +33,4 @@ gwr = GWR()
 
 return gwr.gwr_predict(subquery, dep_var, ind_vars, bw, fixed, kernel, geom_col, id_col)
 
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
