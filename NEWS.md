@@ -3,7 +3,6 @@
 * Compatibility with PG12.
 * Compatibility with python3 (enable with PYTHON3=true env variable, default in PG12+).
 
-
 0.8.2 (2019-02-07)
 ------------------
 * Update dependencies to match what it's being used in production.
