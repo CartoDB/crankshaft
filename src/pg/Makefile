@@ -14,8 +14,7 @@ DATA = \
     $(EXTENSION)--dev.sql \
     $(EXTENSION)--current--dev.sql \
     $(EXTENSION)--dev--current.sql \
-    $(EXTENSION)--$(RELEASE_VERSION)--dev.sql \
-    $(EXTENSION).control
+    $(EXTENSION)--$(RELEASE_VERSION)--dev.sql
 
 SOURCES_DATA_DIR = sql
 SOURCES_DATA = $(wildcard $(SOURCES_DATA_DIR)/*.sql)
@@ -24,6 +23,12 @@ REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g'
 ifneq ($(PYTHON3), true)
 	REPLACEMENTS = -e 's/@@VERSION@@/$(EXTVERSION)/g' -e 's/plpython3u/plpythonu/g'
 endif
+
+.PHONY: $(EXTENSION).control
+$(EXTENSION).control:
+	$(eval TMPFILE := $(shell mktemp /tmp/$@.XXXXXXXXXX))
+	$(SED) $(REPLACEMENTS) $@ > $(TMPFILE)
+	mv $(TMPFILE) $@
 
 $(DATA): $(SOURCES_DATA)
 	$(SED) $(REPLACEMENTS) $(SOURCES_DATA_DIR)/*.sql > $@
@@ -46,13 +51,14 @@ PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
 
 # This seems to be needed at least for PG 9.3.11
-all: $(DATA)
+all: $(DATA) $(EXTENSION).control
 
 test: export PGUSER=postgres
 test: installcheck
 
 # Release tasks
-.PHONY ../../release/$(EXTENSION).control: $(EXTENSION).control
+.PHONY: ../../release/$(EXTENSION).control
+../../release/$(EXTENSION).control: $(EXTENSION).control
 	cp $< $@
 
 # Prepare new release from the currently installed development version,
