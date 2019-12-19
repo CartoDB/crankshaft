@@ -1,0 +1,5 @@
+joblib==0.9.4
+numpy==1.11.0
+scipy==0.17.0
+pysal==1.14.3
+scikit-learn==0.17.0
