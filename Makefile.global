@@ -5,7 +5,6 @@ EXTVERSION        = $(shell grep default_version $(SELF_DIR)/src/pg/$(EXTENSION)
 RELEASE_VERSION  ?= $(EXTVERSION)
 
 SED               = sed
-NOSETESTS         = nosetests
 AWK               = awk
 
 PG_CONFIG         = pg_config
@@ -17,6 +16,8 @@ PYTHON3          ?= $(PG_12plus)
 
 ifeq ($(PYTHON3), true)
 PIP              := python3 -m pip
+NOSETESTS         = nosetests3
 else
 PIP              := python2 -m pip
+NOSETESTS         = nosetests
 endif
