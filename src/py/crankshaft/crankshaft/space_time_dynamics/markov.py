@@ -140,7 +140,7 @@ def rebin_data(time_data, num_time_per_bin):
 
     return np.array(
       [time_data[:, num_time_per_bin * i:num_time_per_bin * (i+1)].mean(axis=1)
-       for i in range(n_max)]).T
+       for i in range(int(n_max))]).T
 
 
 def get_prob_dist(transition_matrix, lag_indices, unit_indices):

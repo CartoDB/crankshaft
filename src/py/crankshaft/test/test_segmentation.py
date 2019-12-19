@@ -66,7 +66,7 @@ class SegmentationTest(unittest.TestCase):
         test_array = np.array([1.2, np.nan, 3.2, np.nan, np.nan])
         result = replace_nan_with_mean(test_array, means=None)[0]
         expectation = np.array([1.2, 2.2, 3.2, 2.2, 2.2], dtype=float)
-        self.assertItemsEqual(result, expectation)
+        self.assertEqual(sorted(result), sorted(expectation))
 
     def test_create_and_predict_segment(self):
         """test segmentation.test_create_and_predict"""
