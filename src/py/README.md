@@ -15,7 +15,6 @@ nosetests test/
   - Installed through it
   - Tested, when they have a test suite.
   - Fixed in the `requirements.txt`
-* At present we use Python version 2.7.3
 
 ---
 

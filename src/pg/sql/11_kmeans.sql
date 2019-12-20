@@ -14,7 +14,7 @@ from crankshaft.clustering import Kmeans
 kmeans = Kmeans()
 return kmeans.spatial(query, no_clusters, no_init)
 
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 -- Non-spatial k-means clustering
 -- query: sql query to retrieve all the needed data
@@ -44,7 +44,7 @@ kmeans = Kmeans()
 return kmeans.nonspatial(query, colnames, no_clusters,
                          standardize=standardize,
                          id_col=id_col)
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 
 CREATE OR REPLACE FUNCTION CDB_WeightedMeanS(

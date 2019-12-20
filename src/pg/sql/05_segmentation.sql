@@ -35,7 +35,7 @@ AS $$
         target_ids,
         model_params)
 
-$$ LANGUAGE plpythonu VOLATILE PARALLEL RESTRICTED;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL RESTRICTED;
 
 CREATE OR REPLACE FUNCTION
   CDB_CreateAndPredictSegment(
@@ -68,7 +68,7 @@ AS $$
         target_table,
         model_params
     )
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 CREATE OR REPLACE FUNCTION
   CDB_CreateAndPredictSegment(
@@ -99,4 +99,4 @@ AS $$
         target_query,
         model_params
     )
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;

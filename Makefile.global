@@ -3,9 +3,21 @@ EXTENSION         = crankshaft
 PACKAGE           = crankshaft
 EXTVERSION        = $(shell grep default_version $(SELF_DIR)/src/pg/$(EXTENSION).control | sed -e "s/default_version[[:space:]]*=[[:space:]]*'\([^']*\)'/\1/")
 RELEASE_VERSION  ?= $(EXTVERSION)
+
 SED               = sed
-PIP               = pip
-NOSETESTS         = nosetests
 AWK               = awk
+
 PG_CONFIG         = pg_config
-PG_PARALLEL      := $(shell $(PG_CONFIG) --version | ($(AWK) '{$$2*=1000; if ($$2 >= 9600) print 1; else print 0;}' 2> /dev/null || echo 0))
+PG_VERSION_1000  := $(shell $(PG_CONFIG) --version | $(AWK) '{$$2*=1000; print $$2}')
+PG_PARALLEL      := $(shell [ $(PG_VERSION_1000) -ge 9600 ] && echo true)
+
+PG_12plus        := $(shell [ $(PG_VERSION_1000) -ge 12000 ] && echo true)
+PYTHON3          ?= $(PG_12plus)
+
+ifeq ($(PYTHON3), true)
+PIP              := python3 -m pip
+NOSETESTS         = nosetests3
+else
+PIP              := python2 -m pip
+NOSETESTS         = nosetests
+endif

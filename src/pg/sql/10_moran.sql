@@ -15,7 +15,7 @@ AS $$
   moran = Moran()
   return moran.global_stat(subquery, column_name, w_type,
                            num_ngbrs, permutations, geom_col, id_col)
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Local (internal function) - DEPRECATED
 CREATE OR REPLACE FUNCTION
@@ -40,7 +40,7 @@ AS $$
                             num_ngbrs, permutations, geom_col, id_col)
   # remove spatial lag
   return [(r[6], r[0], r[1], r[7], r[5]) for r in result]
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Local (internal function)
 CREATE OR REPLACE FUNCTION
@@ -68,7 +68,7 @@ moran = Moran()
 return moran.local_stat(subquery, column_name, w_type,
                         num_ngbrs, permutations, geom_col, id_col)
 
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 
 -- Moran's I Local (public-facing function)
@@ -195,7 +195,7 @@ AS $$
   # TODO: use named parameters or a dictionary
   return moran.global_rate_stat(subquery, numerator, denominator, w_type,
                                 num_ngbrs, permutations, geom_col, id_col)
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 
 -- Moran's I Local Rate (internal function) - DEPRECATED
@@ -223,7 +223,7 @@ AS $$
   result = moran.local_rate_stat(subquery, numerator, denominator, w_type, num_ngbrs, permutations, geom_col, id_col)
   # remove spatial lag
   return [(r[6], r[0], r[1], r[7], r[4]) for r in result]
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Local Rate (public-facing function) - DEPRECATED
 CREATE OR REPLACE FUNCTION
@@ -279,7 +279,7 @@ return moran.local_rate_stat(
     geom_col,
     id_col
 )
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 -- Moran's I Rate
 -- Replaces CDB_AreasOfInterestLocalRate

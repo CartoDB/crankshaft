@@ -25,10 +25,6 @@ psql -c "SELECT * FROM pg_available_extension_versions WHERE name LIKE 'cranksha
 
 # Install in the fresh DB
 psql $DBNAME <<'EOF'
--- Install dependencies
-CREATE EXTENSION plpythonu;
-CREATE EXTENSION postgis;
-
 -- Create role publicuser if it does not exist
 DO
 $$
@@ -44,7 +40,7 @@ END
 $$ LANGUAGE plpgsql;
 
 -- Install the default version
-CREATE EXTENSION crankshaft;
+CREATE EXTENSION crankshaft CASCADE;
 \dx
 EOF
 
