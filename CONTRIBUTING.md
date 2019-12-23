@@ -39,9 +39,7 @@ ALTER EXTENSION crankshaft UPDATE TO 'dev';
 If the extension has not previously been installed in a database,
 it can be installed directly with:
 ```sql
-CREATE EXTENSION IF NOT EXISTS plpythonu;
-CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION crankshaft WITH VERSION 'dev';
+CREATE EXTENSION crankshaft WITH VERSION 'dev' CASCADE;
 ```
 
 Once the feature or bugfix is completed and all the tests are passing

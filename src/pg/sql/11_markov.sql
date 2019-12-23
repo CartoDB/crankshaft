@@ -27,7 +27,7 @@ AS $$
 
   ## TODO: use named parameters or a dictionary
   return markov.spatial_trend(subquery, time_cols, num_classes, w_type, num_ngbrs, permutations, geom_col, id_col)
-$$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
+$$ LANGUAGE plpython3u VOLATILE PARALLEL UNSAFE;
 
 -- input table format: identical to above but in a predictable format
 -- Sample function call:
@@ -53,7 +53,7 @@ $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 --   from crankshaft.clustering import moran_local
 --   # TODO: use named parameters or a dictionary
 --   return spatial_markov(subquery, time_cols, permutations, geom_column, id_col, w_type, num_ngbrs)
--- $$ LANGUAGE plpythonu;
+-- $$ LANGUAGE plpython3u;
 --
 -- -- input table format:
 -- -- id | geom | date  | measurement
@@ -79,4 +79,4 @@ $$ LANGUAGE plpythonu VOLATILE PARALLEL UNSAFE;
 --   from crankshaft.clustering import moran_local
 --   # TODO: use named parameters or a dictionary
 --   return spatial_markov(subquery, time_cols, permutations, geom_column, id_col, w_type, num_ngbrs)
--- $$ LANGUAGE plpythonu;
+-- $$ LANGUAGE plpython3u;
