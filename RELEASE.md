@@ -1,8 +1,5 @@
 # Release & Deployment Process
 
-The release process of a new version of the extension
-shall be performed by the designated *Release Manager*.
-
 ## Release steps
 * Make sure `develop` branch passes all the tests.
 * Merge `develop` into `master`

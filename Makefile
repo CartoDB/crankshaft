@@ -23,7 +23,7 @@ test:   ## Run the tests for the development version of the extension
 	$(MAKE) -C $(EXT_DIR) test
 
 # Generate a new release into release
-release: ## Generate a new release of the extension. Only for telease manager
+release: ## Generate a new release of the extension.
 	$(MAKE) -C $(EXT_DIR) release
 	$(MAKE) -C $(PYP_DIR) release
 
@@ -31,7 +31,7 @@ release: ## Generate a new release of the extension. Only for telease manager
 # Requires sudo.
 # Use the RELEASE_VERSION environment variable to deploy a specific version:
 #     sudo make deploy RELEASE_VERSION=1.0.0
-deploy: ## Deploy a released extension. Only for release manager. Requires sudo.
+deploy:
 	$(MAKE) -C $(EXT_DIR) deploy
 	$(MAKE) -C $(PYP_DIR) deploy
 
