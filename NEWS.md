@@ -1,4 +1,4 @@
-0.9.0 (XXXX-XX-XX)
+0.9.0 (2019-12-23)
 ------------------
 * Compatibility with PG12.
 * Compatibility with python3 (enable with PYTHON3=true env variable, default in PG12+).
