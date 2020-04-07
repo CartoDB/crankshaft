@@ -1,4 +1,3 @@
-dist: xenial
 language: c
 sudo: required
 
@@ -8,16 +7,19 @@ env:
     - PGUSER=postgres
     - PGDATABASE=postgres
     - PGOPTIONS='-c client_min_messages=NOTICE'
-    - PGPORT=5432
-    - POSTGIS_VERSION="2.5"
 
 jobs:
   include:
     - env: POSTGRESQL_VERSION="9.6" POSTGIS_VERSION="2.5"
+      dist: xenial
     - env: POSTGRESQL_VERSION="10" POSTGIS_VERSION="2.5"
+      dist: xenial
     - env: POSTGRESQL_VERSION="11" POSTGIS_VERSION="2.5"
+      dist: xenial
     - env: POSTGRESQL_VERSION="12" POSTGIS_VERSION="2.5"
+      dist: bionic
     - env: POSTGRESQL_VERSION="12" POSTGIS_VERSION="3"
+      dist: bionic
 
 before_install:
 
@@ -31,8 +33,8 @@ before_install:
 
   - sudo pg_dropcluster --stop $POSTGRESQL_VERSION main
   - sudo rm -rf /etc/postgresql/$POSTGRESQL_VERSION /var/lib/postgresql/$POSTGRESQL_VERSION
-  - sudo pg_createcluster -u postgres $POSTGRESQL_VERSION main -- -A trust
-  - sudo /etc/init.d/postgresql start $POSTGRESQL_VERSION || sudo journalctl -xe
+  - sudo pg_createcluster -u postgres $POSTGRESQL_VERSION main --start -- -A trust
+  - export PGPORT=$(pg_lsclusters | grep $POSTGRESQL_VERSION | awk '{print $3}')
 
 install:
   - sudo make install
@@ -44,3 +46,5 @@ script:
 after_failure:
   - pg_lsclusters
   - cat src/pg/test/regression.diffs
+  - echo $PGPORT
+  - cat /var/log/postgresql/postgresql-$POSTGRESQL_VERSION-main.log
