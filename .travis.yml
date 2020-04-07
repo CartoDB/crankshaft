@@ -16,8 +16,6 @@ jobs:
       dist: xenial
     - env: POSTGRESQL_VERSION="11" POSTGIS_VERSION="2.5"
       dist: xenial
-    - env: POSTGRESQL_VERSION="12" POSTGIS_VERSION="2.5"
-      dist: bionic
     - env: POSTGRESQL_VERSION="12" POSTGIS_VERSION="3"
       dist: bionic
 
@@ -30,6 +28,7 @@ before_install:
 
   # For pre12, install plpython2. For PG12 install plpython3
   - if [[ $POSTGRESQL_VERSION != '12' ]]; then sudo apt-get install -y postgresql-plpython-$POSTGRESQL_VERSION python python-pip python-software-properties python-joblib python-nose python-setuptools; else sudo apt-get install -y postgresql-plpython3-12 python3 python3-pip python3-software-properties python3-joblib python3-nose python3-setuptools; fi;
+  - if [[ $POSTGRESQL_VERSION == '12' ]]; then echo -e "joblib==0.11\nnumpy==1.13.3\nscipy==0.19.1\npysal==1.14.3\nscikit-learn==0.19.1" > ./src/py/crankshaft/requirements.txt && sed -i -e "s/.*install_requires.*$/    install_requires=['joblib==0.11.0', 'numpy==1.13.3', 'scipy==0.19.1', 'pysal==1.14.3', 'scikit-learn==0.19.1'],/g" ./src/py/crankshaft/setup.py; fi;
 
   - sudo pg_dropcluster --stop $POSTGRESQL_VERSION main
   - sudo rm -rf /etc/postgresql/$POSTGRESQL_VERSION /var/lib/postgresql/$POSTGRESQL_VERSION
