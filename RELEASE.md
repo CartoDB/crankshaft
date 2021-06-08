@@ -1,5 +1,7 @@
 # Release & Deployment Process
 
+:warning: Do not forget about updating dependencies in `cartodb-platform` and `carto-postgres-artifacts` :warning:
+
 ## Release steps
 * Make sure `develop` branch passes all the tests.
 * Merge `develop` into `master`
