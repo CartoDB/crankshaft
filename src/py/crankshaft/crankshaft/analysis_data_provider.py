@@ -136,6 +136,24 @@ class AnalysisDataProvider(object):
                 '''.format(**params)
         return plpy.execute(query)
 
+    def get_spatial_balanced_kmeans(self, params):
+        """fetch data for spatial kmeans"""
+
+        params.setdefault('value_column', 1)
+
+        query = ("SELECT "
+                 "array_agg({id_col} ORDER BY {id_col}) as ids,"
+                 "array_agg(ST_X({geom_col}) ORDER BY {id_col}) As xs,"
+                 "array_agg(ST_Y({geom_col}) ORDER BY {id_col}) As ys "
+                 "array_agg({value_column} ORDER BY {id_col}) As values"
+                 "FROM ({subquery}) As a "
+                 "WHERE {geom_col} IS NOT NULL").format(**params)
+        try:
+            data = plpy.execute(query)
+            return data
+        except plpy.SPIError, err:
+            plpy.error('Analysis failed: %s' % err)
+
     @verify_data
     def get_gwr(self, params):  # pylint: disable=no-self-use
         """fetch data for gwr analysis"""
